@@ -21,7 +21,7 @@
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
       background:linear-gradient(180deg,#f8faff, #f4f6fb 55%, #eef2f8);
       color:var(--text);
       min-height:100vh;
@@ -92,7 +92,7 @@
     }
     .primaryBtn{
       background:var(--accent);
-      color:white;
+      color:#fff;
       font-weight:800;
       box-shadow:0 10px 20px rgba(47,111,237,.18);
     }
@@ -194,7 +194,7 @@
       color:#8a93a8;
       padding:14px 10px 14px 0;
       text-align:right;
-      font: 600 14px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font:600 14px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       overflow:hidden;
       white-space:pre;
       user-select:none;
@@ -205,7 +205,7 @@
       outline:none;
       resize:none;
       padding:14px 14px 34px 14px;
-      font: 600 15px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font:600 15px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       color:#141824;
       white-space:pre;
       overflow:auto;
@@ -391,7 +391,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
@@ -410,13 +410,9 @@
     const OWNER_COOKIE = "qb_owner_token";
 
     const state = {
-      screen: "home", // home | editor | quiz
-      loading: false,
-      message: "",
-      docId: null,
+      screen: "loading", // loading | home | editor | quiz
+      docId: "",
       doc: null,
-      canEditByOwner: false,
-      unlockedByKey: false,
       draft: null,
       quiz: {
         phase: "question", // question | result | done
@@ -425,6 +421,7 @@
         selectedChoice: "",
         typedAnswer: "",
         lastResult: null,
+        attempts: {}
       }
     };
 
@@ -470,6 +467,7 @@
     function parseProblemLine(line){
       const raw = String(line ?? "").trim();
       if (!raw) return null;
+
       const parts = raw.split(/[=＝]/).map(v => v.trim());
       if (parts.length < 2) return null;
 
@@ -478,31 +476,29 @@
 
       let choice = false;
       let answerText = "";
-      if (parts[1] && parts[1].toLowerCase() === "choice") {
+
+      if ((parts[1] || "").toLowerCase() === "choice") {
         choice = true;
         answerText = parts.slice(2).join("=");
       } else {
         answerText = parts.slice(1).join("=");
       }
+
       const answers = splitAnswers(answerText);
       if (!answers.length) return null;
 
-      return {
-        question,
-        answers,
-        choice
-      };
+      return { question, answers, choice };
     }
 
     function parseProblemsFromText(text){
-      const lines = String(text ?? "").split(/\r?\n/);
-      return lines
+      return String(text ?? "")
+        .split(/\r?\n/)
         .map(parseProblemLine)
         .filter(Boolean);
     }
 
-    function shuffle(array){
-      const a = array.slice();
+    function shuffle(arr){
+      const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--){
         const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
@@ -520,9 +516,7 @@
       for (const part of parts){
         const idx = part.indexOf("=");
         const key = idx >= 0 ? part.slice(0, idx) : part;
-        if (key === name){
-          return decodeURIComponent(idx >= 0 ? part.slice(idx + 1) : "");
-        }
+        if (key === name) return decodeURIComponent(idx >= 0 ? part.slice(idx + 1) : "");
       }
       return "";
     }
@@ -530,51 +524,40 @@
     function getPathDocId(){
       const parts = location.pathname.split("/").filter(Boolean);
       if (!parts.length) return "";
-      const last = parts[parts.length - 1];
-      if (last === "index.html") return "";
-      if (parts[0] !== "q" && parts.length === 1) {
-        return "";
-      }
-      const maybe = parts[0] === "q" ? parts[1] : last;
-      if (!maybe) return "";
-      return decodeURIComponent(maybe).split("-").pop();
+      if (parts[0] !== "q") return "";
+      return decodeURIComponent(parts[1] || "");
     }
 
-    function getPrettyLink(docId, slug){
-      const host = location.origin;
-      return `${host}/q/${encodeURIComponent(slug)}-${encodeURIComponent(docId)}`;
+    function makeDocIdFromTitle(title){
+      return slugify(title);
     }
 
-    function currentQuestion(){
-      if (!state.doc || !state.doc.problems?.length) return null;
+    function makePrettyLink(docId){
+      return `${location.origin}/q/${encodeURIComponent(docId)}`;
+    }
+
+    function getCurrentQuestion(){
+      if (!state.doc?.problems?.length) return null;
       const idx = state.quiz.order[state.quiz.index];
       if (idx === undefined) return null;
       return { idx, problem: state.doc.problems[idx] };
     }
 
+    function isOwner(){
+      return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
+    }
+
+    function keyUnlocked(){
+      if (!state.docId) return false;
+      return getCookie(`qb_key_${state.docId}`) === "1";
+    }
+
     function canEditNow(){
       if (!state.doc) return false;
       if (state.doc.keyMode === "open") return true;
-      if (state.doc.ownerToken && getCookie(OWNER_COOKIE) && getCookie(OWNER_COOKIE) === state.doc.ownerToken) return true;
-      if (state.docId && getCookie(`qb_key_${state.docId}`) === "1") return true;
+      if (isOwner()) return true;
+      if (keyUnlocked()) return true;
       return false;
-    }
-
-    function startQuiz(docData){
-      state.doc = docData;
-      state.canEditByOwner = !!(docData.ownerToken && getCookie(OWNER_COOKIE) === docData.ownerToken);
-      state.unlockedByKey = !!(state.docId && getCookie(`qb_key_${state.docId}`) === "1");
-      state.quiz = {
-        phase: "question",
-        order: shuffle((docData.problems || []).map((_, i) => i)),
-        index: 0,
-        selectedChoice: "",
-        typedAnswer: "",
-        lastResult: null,
-      };
-      state.screen = "quiz";
-      document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
-      render();
     }
 
     function blankDraft(){
@@ -582,61 +565,74 @@
         title: "",
         subtitle: "",
         rawText: "",
-        keyMode: "key", // key | open
-        key: "",
-        slug: "quiz"
+        keyMode: "key",
+        key: ""
       };
     }
 
-    function openEditor(){
-      state.draft = state.doc
-        ? {
-            title: state.doc.title || "",
-            subtitle: state.doc.subtitle || "",
-            rawText: (state.doc.problems || [])
-              .map(p => `${p.question}=${p.choice ? "choice=" : ""}${p.answers.join(",")}`)
-              .join("\n"),
-            keyMode: state.doc.keyMode || "key",
-            key: state.doc.key || "",
-            slug: state.doc.slug || slugify(state.doc.title || "quiz")
-          }
-        : blankDraft();
-
-      state.screen = "editor";
-      render();
-    }
-
     function openCreate(){
+      state.docId = "";
       state.doc = null;
-      state.docId = null;
-      state.canEditByOwner = false;
-      state.unlockedByKey = false;
       state.draft = blankDraft();
       state.screen = "editor";
       render();
     }
 
-    function restartQuiz(){
-      if (!state.doc) return;
+    function openEditorFromDoc(){
+      state.draft = {
+        title: state.doc?.title || "",
+        subtitle: state.doc?.subtitle || "",
+        rawText: (state.doc?.problems || [])
+          .map(p => `${p.question}=${p.choice ? "choice=" : ""}${p.answers.join(",")}`)
+          .join("\n"),
+        keyMode: state.doc?.keyMode || "key",
+        key: state.doc?.key || ""
+      };
+      state.screen = "editor";
+      render();
+    }
+
+    function startQuiz(docData, docId){
+      state.doc = docData;
+      state.docId = docId;
       state.quiz = {
         phase: "question",
-        order: shuffle((state.doc.problems || []).map((_, i) => i)),
+        order: shuffle((docData.problems || []).map((_, i) => i)),
         index: 0,
         selectedChoice: "",
         typedAnswer: "",
         lastResult: null,
+        attempts: {}
       };
+      state.screen = "quiz";
+      document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
+      render();
+    }
+
+    function restartQuiz(){
+      if (!state.doc) return;
+      startQuiz(state.doc, state.docId);
+    }
+
+    function nextQuestion(){
+      state.quiz.index += 1;
+      state.quiz.selectedChoice = "";
+      state.quiz.typedAnswer = "";
+      state.quiz.lastResult = null;
+
+      if (state.quiz.index >= state.quiz.order.length) {
+        state.quiz.phase = "done";
+      } else {
+        state.quiz.phase = "question";
+      }
       render();
     }
 
     function submitAnswer(){
-      const q = currentQuestion();
+      const q = getCurrentQuestion();
       if (!q) return;
 
-      const given = q.problem.choice
-        ? state.quiz.selectedChoice
-        : state.quiz.typedAnswer;
-
+      const given = q.problem.choice ? state.quiz.selectedChoice : state.quiz.typedAnswer;
       if (!String(given || "").trim()){
         alert("答えを入れてね");
         return;
@@ -646,35 +642,22 @@
       const normalizedAnswers = q.problem.answers.map(normalizeAnswer);
       const correct = normalizedAnswers.includes(normalizedGiven);
 
+      state.quiz.attempts[q.idx] = { given, correct };
       state.quiz.lastResult = {
         idx: q.idx,
-        given,
-        correct,
         question: q.problem.question,
+        given,
         answers: q.problem.answers.slice(),
+        correct,
         choice: q.problem.choice
       };
       state.quiz.phase = "result";
       render();
     }
 
-    function goNext(){
-      state.quiz.index += 1;
-      state.quiz.selectedChoice = "";
-      state.quiz.typedAnswer = "";
-      state.quiz.lastResult = null;
-
-      if (state.quiz.index >= state.quiz.order.length){
-        state.quiz.phase = "done";
-      } else {
-        state.quiz.phase = "question";
-      }
-      render();
-    }
-
-    function updateLineNumbers(textarea, gutter){
-      const lines = Math.max(1, String(textarea.value || "").split(/\r?\n/).length + 1);
-      gutter.textContent = Array.from({length: lines}, (_, i) => i + 1).join("\n");
+    function updateGutter(textarea, gutter){
+      const count = Math.max(1, textarea.value.split(/\r?\n/).length + 1);
+      gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
       gutter.scrollTop = textarea.scrollTop;
     }
 
@@ -685,24 +668,24 @@
             <div class="titleWrap">
               <div>
                 <h2 class="siteTitle">問題作成サイト</h2>
-                <div class="subTop">タイトル・サブタイトル・問題をまとめて作って、そのまま遊べるやつ</div>
+                <div class="subTop">作って、そのまま遊べる。編集もできる。</div>
               </div>
             </div>
+            <div class="topActions"></div>
           </div>
 
           <div class="hero">
             <div class="card">
               <h1>作成して、公開して、答える。</h1>
               <p>
-                まずは「作成」を押すだけ。<br>
-                1行ごとに <b>問題=答え</b> を入れて保存すると、リンクができるよ。<br>
-                <b>問題=choice=答え1,答え2,答え3</b> で選択式にもできる。
+                1行ごとに <b>問題=答え</b> を入れるだけ。<br>
+                <b>問題=答え1,答え2</b> で複数正解、<b>問題=choice=答え1,答え2</b> で選択式にもできる。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn">作成</button>
               <div style="height:10px"></div>
               <div class="smallNote">
-                ※ この版は cookie で本人判定するので、作ったブラウザでは編集しやすい形。Key を使うと別端末でも編集できる。
+                ※ 作成したブラウザでは cookie で持ち主判定するよ。Key をつければ別端末でも編集できる。
               </div>
             </div>
           </div>
@@ -712,11 +695,7 @@
     }
 
     function renderEditor(){
-      const title = state.draft?.title || "";
-      const subtitle = state.draft?.subtitle || "";
-      const rawText = state.draft?.rawText || "";
-      const keyMode = state.draft?.keyMode || "key";
-      const key = state.draft?.key || "";
+      const draft = state.draft || blankDraft();
 
       app.innerHTML = `
         <div class="page">
@@ -724,11 +703,11 @@
             <div class="titleWrap">
               <div>
                 <h2 class="siteTitle">作成 / 編集</h2>
-                <div class="subTop">タイトルの右に Key ボタン。ここで公開編集か、Key あり編集かを決める。</div>
+                <div class="subTop">タイトルの右の Key ボタンで、open / Keyあり を切り替えられる。</div>
               </div>
             </div>
             <div class="topActions">
-              <button class="ghostBtn" id="backHomeBtn">戻る</button>
+              <button class="ghostBtn" id="backBtn">戻る</button>
             </div>
           </div>
 
@@ -736,7 +715,7 @@
             <div class="row">
               <div style="flex:1; min-width:220px;">
                 <div class="miniLabel">タイトル</div>
-                <input id="titleInput" class="input titleInput" type="text" placeholder="タイトル" value="${escapeHtml(title)}" />
+                <input id="titleInput" class="input titleInput" type="text" placeholder="タイトル" value="${escapeHtml(draft.title)}" />
               </div>
               <button class="ghostBtn" id="keyBtn" style="height:48px; align-self:end;">Key</button>
             </div>
@@ -744,7 +723,7 @@
             <div class="row">
               <div style="flex:1; min-width:220px;">
                 <div class="miniLabel">サブタイトル</div>
-                <input id="subtitleInput" class="input subtitleInput" type="text" placeholder="サブタイトル" value="${escapeHtml(subtitle)}" />
+                <input id="subtitleInput" class="input subtitleInput" type="text" placeholder="サブタイトル" value="${escapeHtml(draft.subtitle)}" />
               </div>
             </div>
 
@@ -756,14 +735,14 @@
 リンゴ=りんご
 2+2=4,四
 日本の首都=choice=東京,大阪,名古屋
-">${escapeHtml(rawText)}</textarea>
+">${escapeHtml(draft.rawText)}</textarea>
               </div>
               <div class="help">
                 1行に1問。<br>
                 <b>問題=答え</b> で普通の問題。<br>
                 <b>問題=答え1,答え2</b> で複数正解。<br>
                 <b>問題=choice=答え1,答え2,答え3</b> で選択式。<br>
-                ＝ や 、 でも大丈夫。
+                ＝ や 、 でもOK。
               </div>
             </div>
 
@@ -775,7 +754,7 @@
         </div>
       `;
 
-      const backHomeBtn = document.getElementById("backHomeBtn");
+      const backBtn = document.getElementById("backBtn");
       const titleInput = document.getElementById("titleInput");
       const subtitleInput = document.getElementById("subtitleInput");
       const problemText = document.getElementById("problemText");
@@ -785,26 +764,24 @@
       const saveBtn = document.getElementById("saveBtn");
 
       function refreshKeyStatus(){
-        if (state.draft.keyMode === "open"){
+        if (draft.keyMode === "open"){
           keyStatus.textContent = "Key: open（誰でも編集できる）";
-          keyBtn.textContent = "Key";
         } else {
-          keyStatus.textContent = state.draft.key ? "Key: 設定済み" : "Key: 未設定";
-          keyBtn.textContent = "Key";
+          keyStatus.textContent = draft.key ? "Key: 設定済み" : "Key: 未設定";
         }
       }
 
       titleInput.addEventListener("input", e => {
-        state.draft.title = e.target.value;
+        draft.title = e.target.value;
       });
 
       subtitleInput.addEventListener("input", e => {
-        state.draft.subtitle = e.target.value;
+        draft.subtitle = e.target.value;
       });
 
       problemText.addEventListener("input", e => {
-        state.draft.rawText = e.target.value;
-        updateLineNumbers(problemText, gutter);
+        draft.rawText = e.target.value;
+        updateGutter(problemText, gutter);
       });
 
       problemText.addEventListener("scroll", () => {
@@ -812,29 +789,26 @@
       });
 
       keyBtn.addEventListener("click", () => {
-        const current = state.draft.keyMode === "open"
-          ? "open"
-          : (state.draft.key || "");
-
+        const current = draft.keyMode === "open" ? "open" : (draft.key || "");
         const next = prompt("Key を入力。open にすると誰でも編集できます。", current);
         if (next === null) return;
 
         const v = next.trim();
         if (!v){
-          state.draft.keyMode = "key";
-          state.draft.key = "";
+          draft.keyMode = "key";
+          draft.key = "";
         } else if (v.toLowerCase() === "open"){
-          state.draft.keyMode = "open";
-          state.draft.key = "";
+          draft.keyMode = "open";
+          draft.key = "";
         } else {
-          state.draft.keyMode = "key";
-          state.draft.key = v;
+          draft.keyMode = "key";
+          draft.key = v;
         }
         refreshKeyStatus();
       });
 
-      backHomeBtn.addEventListener("click", () => {
-        if (confirm("今の編集は消えるけど、戻る？")){
+      backBtn.addEventListener("click", () => {
+        if (confirm("今の編集内容は消えるけど、戻る？")){
           state.screen = "home";
           state.draft = null;
           render();
@@ -842,88 +816,82 @@
       });
 
       saveBtn.addEventListener("click", async () => {
-        const title = state.draft.title.trim();
-        const subtitle = state.draft.subtitle.trim();
-        const problems = parseProblemsFromText(state.draft.rawText);
+        const title = draft.title.trim();
+        const subtitle = draft.subtitle.trim();
+        const problems = parseProblemsFromText(draft.rawText);
 
         if (!title){
           alert("タイトルを入れてね");
           return;
         }
         if (!problems.length){
-          alert("問題が1つも読めなかったよ。1行ずつ「問題=答え」の形で書いてね。");
+          alert("問題が1つも読めなかったよ。1行ずつ「問題=答え」で書いてね。");
           return;
         }
+
+        const oldDocId = state.docId || "";
+        const newDocId = makeDocIdFromTitle(title);
+        const ownerToken = getCookie(OWNER_COOKIE) || uid();
+        setCookie(OWNER_COOKIE, ownerToken);
+
+        const payload = {
+          title,
+          subtitle,
+          problems,
+          rawText: draft.rawText,
+          keyMode: draft.keyMode,
+          key: draft.keyMode === "open" ? "" : draft.key,
+          ownerToken,
+          slug: newDocId,
+          updatedAt: serverTimestamp(),
+          createdAt: state.doc?.createdAt || serverTimestamp()
+        };
 
         saveBtn.disabled = true;
         saveBtn.textContent = "保存中...";
 
         try{
-          const existingId = state.docId || uid();
-          const slug = slugify(title);
-          const ownerToken = getCookie(OWNER_COOKIE) || uid();
-          setCookie(OWNER_COOKIE, ownerToken);
+          await setDoc(doc(db, COLLECTION, newDocId), payload, { merge: true });
 
-          const payload = {
-            title,
-            subtitle,
-            problems,
-            rawText: state.draft.rawText,
-            keyMode: state.draft.keyMode,
-            key: state.draft.keyMode === "open" ? "" : (state.draft.key || ""),
-            ownerToken,
-            slug,
-            updatedAt: serverTimestamp(),
-            createdAt: state.doc?.createdAt || serverTimestamp()
-          };
+          if (oldDocId && oldDocId !== newDocId){
+            try{
+              await deleteDoc(doc(db, COLLECTION, oldDocId));
+            }catch(_){}
+          }
 
-          await setDoc(doc(db, COLLECTION, existingId), payload, { merge: true });
+          state.docId = newDocId;
+          state.doc = { ...payload, problems };
+          history.replaceState({}, "", `/q/${encodeURIComponent(newDocId)}`);
 
-          state.docId = existingId;
-          state.doc = {
-            ...payload,
-            ownerToken,
-            problems
-          };
+          const link = makePrettyLink(newDocId);
+          navigator.clipboard?.writeText(link).catch(() => {});
+          alert(`保存したよ！\n\n${link}`);
 
-          const link = getPrettyLink(existingId, slug);
-          history.replaceState({}, "", `/q/${encodeURIComponent(slug)}-${encodeURIComponent(existingId)}`);
-
-          state.canEditByOwner = true;
-          state.unlockedByKey = false;
-          startQuiz(state.doc);
-
-          setTimeout(() => {
-            navigator.clipboard?.writeText(link).catch(() => {});
-            alert("保存したよ。リンクをコピーしやすいようにしてあるけど、必要なら手動でもOK。");
-          }, 50);
-        } catch (err){
+          startQuiz(state.doc, newDocId);
+        }catch(err){
           console.error(err);
           alert("保存で失敗したよ。Firebase 設定か通信を見てみて。");
-        } finally {
+        }finally{
           saveBtn.disabled = false;
           saveBtn.textContent = "保存";
         }
       });
 
-      updateLineNumbers(problemText, gutter);
+      updateGutter(problemText, gutter);
       refreshKeyStatus();
       titleInput.focus();
     }
 
-    function renderQuestion(){
-      const q = currentQuestion();
+    function renderQuizQuestion(){
+      const q = getCurrentQuestion();
       if (!q){
         state.quiz.phase = "done";
         render();
         return;
       }
 
-      const progressText = `${state.quiz.index + 1} / ${state.quiz.order.length}`;
       const canEdit = canEditNow();
-      const topEditLabel = state.doc?.keyMode === "open" || canEdit
-        ? "編集"
-        : "Keyを入力して編集";
+      const editLabel = state.doc?.keyMode === "open" || canEdit ? "編集" : "Keyを入力して編集";
 
       app.innerHTML = `
         <div class="page">
@@ -935,14 +903,14 @@
               </div>
             </div>
             <div class="topActions">
-              ${canEdit || state.doc.keyMode === "open" ? `<button class="ghostBtn" id="editBtn">${topEditLabel}</button>` : `<button class="ghostBtn" id="keyEditBtn">${topEditLabel}</button>`}
+              <button class="ghostBtn" id="editBtn">${editLabel}</button>
             </div>
           </div>
 
           <div class="quizPanel">
             <div class="card">
               <div class="progress">
-                <div>問題 ${progressText}</div>
+                <div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div>
                 <div>${state.doc.problems.length}問中</div>
               </div>
               <div style="height:12px"></div>
@@ -950,15 +918,19 @@
             </div>
 
             <div class="card answerRow">
-              ${q.problem.choice ? `
-                <div class="miniLabel">選択してね</div>
-                <div id="choiceGrid" class="choiceGrid">
-                  ${q.problem.answers.map(ans => `<button type="button" class="choiceBtn" data-choice="${escapeHtml(ans)}">${escapeHtml(ans)}</button>`).join("")}
-                </div>
-              ` : `
-                <div class="miniLabel">答え</div>
-                <input id="answerInput" class="answerInput" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" />
-              `}
+              ${
+                q.problem.choice
+                  ? `
+                    <div class="miniLabel">選択してね</div>
+                    <div id="choiceGrid" class="choiceGrid">
+                      ${q.problem.answers.map(ans => `<button type="button" class="choiceBtn" data-choice="${escapeHtml(ans)}">${escapeHtml(ans)}</button>`).join("")}
+                    </div>
+                  `
+                  : `
+                    <div class="miniLabel">答え</div>
+                    <input id="answerInput" class="answerInput" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                  `
+              }
               <div class="quizActions">
                 <button class="submitBtn" id="submitBtn">✅</button>
               </div>
@@ -967,35 +939,26 @@
         </div>
       `;
 
-      const editBtn = document.getElementById("editBtn");
-      const keyEditBtn = document.getElementById("keyEditBtn");
-      const submitBtn = document.getElementById("submitBtn");
+      document.getElementById("editBtn").addEventListener("click", () => {
+        if (canEditNow()){
+          openEditorFromDoc();
+          return;
+        }
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) return;
 
-      if (editBtn){
-        editBtn.addEventListener("click", openEditor);
-      }
-      if (keyEditBtn){
-        keyEditBtn.addEventListener("click", () => {
-          const entered = prompt("Key を入力して編集", "");
-          if (entered === null) return;
-          const value = String(entered).trim();
+        if (state.doc.keyMode === "open"){
+          openEditorFromDoc();
+          return;
+        }
 
-          if (state.doc.keyMode === "open"){
-            openEditor();
-            return;
-          }
-
-          if (state.doc.key && value === state.doc.key){
-            if (state.docId){
-              setCookie(`qb_key_${state.docId}`, "1");
-            }
-            state.unlockedByKey = true;
-            openEditor();
-          } else {
-            alert("Key が違うよ");
-          }
-        });
-      }
+        if ((entered || "").trim() === (state.doc.key || "")){
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          openEditorFromDoc();
+        }else{
+          alert("Key が違うよ");
+        }
+      });
 
       if (q.problem.choice){
         const buttons = [...document.querySelectorAll(".choiceBtn")];
@@ -1005,7 +968,7 @@
             buttons.forEach(b => b.classList.toggle("selected", b === btn));
           });
         });
-      } else {
+      }else{
         const input = document.getElementById("answerInput");
         input.focus();
         input.addEventListener("input", e => {
@@ -1019,23 +982,20 @@
         });
       }
 
-      submitBtn.addEventListener("click", submitAnswer);
+      document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
 
     function renderResult(){
-      const r = state.quiz.lastResult;
-      if (!r){
+      const result = state.quiz.lastResult;
+      if (!result){
         state.quiz.phase = "question";
         render();
         return;
       }
 
-      const q = state.doc.problems[r.idx];
-      const answerText = q.answers.join(" / ");
+      const q = state.doc.problems[result.idx];
       const canEdit = canEditNow();
-      const topEditLabel = state.doc?.keyMode === "open" || canEdit
-        ? "編集"
-        : "Keyを入力して編集";
+      const editLabel = state.doc?.keyMode === "open" || canEdit ? "編集" : "Keyを入力して編集";
 
       app.innerHTML = `
         <div class="page">
@@ -1047,13 +1007,13 @@
               </div>
             </div>
             <div class="topActions">
-              ${canEdit || state.doc.keyMode === "open" ? `<button class="ghostBtn" id="editBtn">${topEditLabel}</button>` : `<button class="ghostBtn" id="keyEditBtn">${topEditLabel}</button>`}
+              <button class="ghostBtn" id="editBtn">${editLabel}</button>
             </div>
           </div>
 
           <div class="quizPanel">
-            <div class="${r.correct ? "resultGood" : "resultBad"}">
-              ${r.correct ? "正解！" : "ちがう！"}
+            <div class="${result.correct ? "resultGood" : "resultBad"}">
+              ${result.correct ? "正解！" : "ちがう！"}
             </div>
 
             <div class="card">
@@ -1061,10 +1021,10 @@
               <div class="questionBox" style="font-size:22px;">${escapeHtml(q.question)}</div>
               <div style="height:12px"></div>
               <div class="miniLabel">答え</div>
-              <div class="explain">${escapeHtml(answerText)}</div>
+              <div class="explain">${escapeHtml(q.answers.join(" / "))}</div>
               <div style="height:12px"></div>
               <div class="miniLabel">あなたの答え</div>
-              <div class="explain">${escapeHtml(r.given)}</div>
+              <div class="explain">${escapeHtml(result.given)}</div>
             </div>
 
             <div class="quizActions">
@@ -1074,70 +1034,35 @@
         </div>
       `;
 
-      const editBtn = document.getElementById("editBtn");
-      const keyEditBtn = document.getElementById("keyEditBtn");
-      const nextBtn = document.getElementById("nextBtn");
+      document.getElementById("editBtn").addEventListener("click", () => {
+        if (canEditNow()){
+          openEditorFromDoc();
+          return;
+        }
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) return;
 
-      if (editBtn) editBtn.addEventListener("click", openEditor);
-      if (keyEditBtn) {
-        keyEditBtn.addEventListener("click", () => {
-          const entered = prompt("Key を入力して編集", "");
-          if (entered === null) return;
-          const value = String(entered).trim();
+        if (state.doc.keyMode === "open"){
+          openEditorFromDoc();
+          return;
+        }
 
-          if (state.doc.keyMode === "open"){
-            openEditor();
-            return;
-          }
+        if ((entered || "").trim() === (state.doc.key || "")){
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          openEditorFromDoc();
+        }else{
+          alert("Key が違うよ");
+        }
+      });
 
-          if (state.doc.key && value === state.doc.key){
-            if (state.docId){
-              setCookie(`qb_key_${state.docId}`, "1");
-            }
-            state.unlockedByKey = true;
-            openEditor();
-          } else {
-            alert("Key が違うよ");
-          }
-        });
-      }
-
-      nextBtn.addEventListener("click", goNext);
+      document.getElementById("nextBtn").addEventListener("click", nextQuestion);
     }
 
     function renderDone(){
       const total = state.doc.problems.length;
-      const correctCount = state.quiz.order.reduce((acc, idx) => {
-        const q = state.doc.problems[idx];
-        const given = state.quiz.typedAnswer; // not used
-        const result = state.quiz.orderMap?.[idx];
-        return acc;
-      }, 0);
-
-      const answers = state.doc.problems.map(p => p.answers.join(" / "));
-      let score = 0;
-      const reviewItems = state.doc.problems.map((p, i) => {
-        const idx = state.quiz.order[i];
-        return "";
-      });
-
-      // ここは終了時の正答数を計算
-      const doneMap = state.quiz.doneMap || {};
-      const doneCount = state.quiz.correctCount || 0;
-
-      const listHtml = state.doc.problems.map((p, i) => {
-        const attempted = state.quiz.attempts?.[i];
-        const isGood = attempted?.correct;
-        return `
-          <div class="reviewItem">
-            <div class="reviewQ">${escapeHtml(p.question)}</div>
-            <div class="reviewA">答え: ${escapeHtml(p.answers.join(" / "))}</div>
-            <div class="reviewU">あなた: ${escapeHtml(attempted?.given ?? "")} ${
-              attempted ? `<span class="reviewMark ${isGood ? "good" : "bad"}">${isGood ? "○" : "×"}</span>` : ""
-            }</div>
-          </div>
-        `;
-      }).join("");
+      const correctCount = Object.values(state.quiz.attempts).filter(v => v.correct).length;
+      const canEdit = canEditNow();
+      const editLabel = state.doc?.keyMode === "open" || canEdit ? "編集" : "Keyを入力して編集";
 
       app.innerHTML = `
         <div class="page">
@@ -1149,15 +1074,15 @@
               </div>
             </div>
             <div class="topActions">
-              ${canEditNow() || state.doc.keyMode === "open" ? `<button class="ghostBtn" id="editBtn">編集</button>` : `<button class="ghostBtn" id="keyEditBtn">Keyを入力して編集</button>`}
+              <button class="ghostBtn" id="editBtn">${editLabel}</button>
             </div>
           </div>
 
           <div class="summaryGrid">
             <div class="card">
-              <div class="summaryScore">${escapeHtml(String(state.quiz.correctCount ?? 0))} / ${escapeHtml(String(total))} 問正解</div>
+              <div class="summaryScore">${correctCount} / ${total} 問正解</div>
               <div style="height:10px"></div>
-              <div class="smallNote">おつかれさま。もう一回やり直せるよ。</div>
+              <div class="smallNote">全問終わったよ。もう一回できる。</div>
             </div>
 
             <div class="quizActions" style="justify-content:flex-start;">
@@ -1167,7 +1092,7 @@
             <div class="card">
               <div class="miniLabel">全問題と答え</div>
               <div class="reviewList">
-                ${state.doc.problems.map((p, i) => `
+                ${state.doc.problems.map((p) => `
                   <div class="reviewItem">
                     <div class="reviewQ">${escapeHtml(p.question)}</div>
                     <div class="reviewA">答え: ${escapeHtml(p.answers.join(" / "))}</div>
@@ -1179,40 +1104,32 @@
         </div>
       `;
 
-      const editBtn = document.getElementById("editBtn");
-      const keyEditBtn = document.getElementById("keyEditBtn");
-      const restartBtn = document.getElementById("restartBtn");
+      document.getElementById("editBtn").addEventListener("click", () => {
+        if (canEditNow()){
+          openEditorFromDoc();
+          return;
+        }
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) return;
 
-      if (editBtn) editBtn.addEventListener("click", openEditor);
-      if (keyEditBtn) {
-        keyEditBtn.addEventListener("click", () => {
-          const entered = prompt("Key を入力して編集", "");
-          if (entered === null) return;
-          const value = String(entered).trim();
+        if (state.doc.keyMode === "open"){
+          openEditorFromDoc();
+          return;
+        }
 
-          if (state.doc.keyMode === "open"){
-            openEditor();
-            return;
-          }
+        if ((entered || "").trim() === (state.doc.key || "")){
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1`);
+          openEditorFromDoc();
+        }else{
+          alert("Key が違うよ");
+        }
+      });
 
-          if (state.doc.key && value === state.doc.key){
-            if (state.docId){
-              setCookie(`qb_key_${state.docId}`, "1");
-            }
-            state.unlockedByKey = true;
-            openEditor();
-          } else {
-            alert("Key が違うよ");
-          }
-        });
-      }
-      if (restartBtn) restartBtn.addEventListener("click", restartQuiz);
+      document.getElementById("restartBtn").addEventListener("click", restartQuiz);
     }
 
     async function loadFromRoute(){
       const id = getPathDocId();
-      state.docId = id || null;
-
       if (!id){
         state.screen = "home";
         render();
@@ -1220,21 +1137,11 @@
       }
 
       state.screen = "loading";
-      app.innerHTML = `
-        <div class="page">
-          <div class="hero">
-            <div class="card">
-              <h1>読み込み中…</h1>
-              <p>Firestore からデータを取りにいってるよ。</p>
-            </div>
-          </div>
-        </div>
-      `;
+      render();
 
       try{
         const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()){
-          state.message = "その問題は見つからなかったよ";
           state.screen = "home";
           render();
           return;
@@ -1250,179 +1157,47 @@
           keyMode: data.keyMode || "key",
           key: data.key || "",
           ownerToken: data.ownerToken || "",
-          slug: data.slug || slugify(data.title || "quiz"),
+          slug: data.slug || id,
           createdAt: data.createdAt || null,
           updatedAt: data.updatedAt || null
         };
 
-        state.doc = docData;
-        state.canEditByOwner = !!(docData.ownerToken && getCookie(OWNER_COOKIE) === docData.ownerToken);
-        state.unlockedByKey = !!(state.docId && getCookie(`qb_key_${state.docId}`) === "1");
-        state.quiz = {
-          phase: "question",
-          order: shuffle((docData.problems || []).map((_, i) => i)),
-          index: 0,
-          selectedChoice: "",
-          typedAnswer: "",
-          lastResult: null,
-          attempts: {},
-          correctCount: 0,
-        };
-
-        state.screen = "quiz";
-        document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
-        render();
-      } catch (err){
+        startQuiz(docData, id);
+      }catch(err){
         console.error(err);
-        state.message = "読み込みで失敗したよ";
         state.screen = "home";
         render();
       }
     }
 
-    function submitAnswerWrapped(){
-      const q = currentQuestion();
-      if (!q) return;
-
-      const given = q.problem.choice
-        ? state.quiz.selectedChoice
-        : state.quiz.typedAnswer;
-
-      if (!String(given || "").trim()){
-        alert("答えを入れてね");
-        return;
-      }
-
-      const normalizedGiven = normalizeAnswer(given);
-      const normalizedAnswers = q.problem.answers.map(normalizeAnswer);
-      const correct = normalizedAnswers.includes(normalizedGiven);
-
-      if (!state.quiz.attempts) state.quiz.attempts = {};
-      state.quiz.attempts[q.idx] = {
-        given,
-        correct
-      };
-      state.quiz.correctCount = Object.values(state.quiz.attempts).filter(v => v.correct).length;
-
-      state.quiz.lastResult = {
-        idx: q.idx,
-        given,
-        correct,
-        question: q.problem.question,
-        answers: q.problem.answers.slice(),
-        choice: q.problem.choice
-      };
-      state.quiz.phase = "result";
-      render();
+    function renderLoading(){
+      app.innerHTML = `
+        <div class="page">
+          <div class="hero">
+            <div class="card">
+              <h1>読み込み中…</h1>
+              <p>Firestore から問題データを取ってるよ。</p>
+            </div>
+          </div>
+        </div>
+      `;
     }
-
-    function goNextWrapped(){
-      state.quiz.index += 1;
-      state.quiz.selectedChoice = "";
-      state.quiz.typedAnswer = "";
-
-      if (state.quiz.index >= state.quiz.order.length){
-        state.quiz.phase = "done";
-      } else {
-        state.quiz.phase = "question";
-      }
-      render();
-    }
-
-    // 上の renderQuestion / renderResult / renderDone で使う関数を差し替え
-    const submitAnswer = submitAnswerWrapped;
-    const goNext = goNextWrapped;
 
     function render(){
+      if (state.screen === "loading") return renderLoading();
       if (state.screen === "home") return renderHome();
       if (state.screen === "editor") return renderEditor();
 
       if (state.screen === "quiz"){
         if (!state.doc || !state.doc.problems || !state.doc.problems.length){
-          app.innerHTML = `
-            <div class="page">
-              <div class="hero">
-                <div class="card">
-                  <h1>問題がないよ</h1>
-                  <p>編集画面から 1 行ずつ「問題=答え」を入れて保存してね。</p>
-                  <div style="height:10px"></div>
-                  <button class="bigBtn" id="backHome2">作成に戻る</button>
-                </div>
-              </div>
-            </div>
-          `;
-          document.getElementById("backHome2").addEventListener("click", openCreate);
+          state.screen = "home";
+          render();
           return;
         }
 
+        if (state.quiz.phase === "question") return renderQuizQuestion();
         if (state.quiz.phase === "result") return renderResult();
-        if (state.quiz.phase === "done"){
-          const total = state.doc.problems.length;
-          app.innerHTML = `
-            <div class="page">
-              <div class="topbar">
-                <div class="titleWrap">
-                  <div>
-                    <h2 class="siteTitle">${escapeHtml(state.doc.title || "問題")}</h2>
-                    <div class="subTop">${escapeHtml(state.doc.subtitle || "")}</div>
-                  </div>
-                </div>
-                <div class="topActions">
-                  ${canEditNow() || state.doc.keyMode === "open" ? `<button class="ghostBtn" id="editBtn">編集</button>` : `<button class="ghostBtn" id="keyEditBtn">Keyを入力して編集</button>`}
-                </div>
-              </div>
-
-              <div class="summaryGrid">
-                <div class="card">
-                  <div class="summaryScore">${escapeHtml(String(state.quiz.correctCount ?? 0))} / ${escapeHtml(String(total))} 問正解</div>
-                  <div style="height:10px"></div>
-                  <div class="smallNote">全問終わったよ。もう一回できる。</div>
-                </div>
-
-                <div class="quizActions" style="justify-content:flex-start;">
-                  <button class="primaryBtn" id="restartBtn">もう一度！</button>
-                </div>
-
-                <div class="card">
-                  <div class="miniLabel">全問題と答え</div>
-                  <div class="reviewList">
-                    ${state.doc.problems.map((p) => `
-                      <div class="reviewItem">
-                        <div class="reviewQ">${escapeHtml(p.question)}</div>
-                        <div class="reviewA">答え: ${escapeHtml(p.answers.join(" / "))}</div>
-                      </div>
-                    `).join("")}
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
-          const editBtn = document.getElementById("editBtn");
-          const keyEditBtn = document.getElementById("keyEditBtn");
-          const restartBtn = document.getElementById("restartBtn");
-          if (editBtn) editBtn.addEventListener("click", openEditor);
-          if (keyEditBtn) {
-            keyEditBtn.addEventListener("click", () => {
-              const entered = prompt("Key を入力して編集", "");
-              if (entered === null) return;
-              const value = String(entered).trim();
-              if (state.doc.keyMode === "open"){
-                openEditor();
-                return;
-              }
-              if (state.doc.key && value === state.doc.key){
-                if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-                state.unlockedByKey = true;
-                openEditor();
-              } else {
-                alert("Key が違うよ");
-              }
-            });
-          }
-          if (restartBtn) restartBtn.addEventListener("click", restartQuiz);
-          return;
-        }
-        return renderQuestion();
+        if (state.quiz.phase === "done") return renderDone();
       }
     }
 
