@@ -1,12 +1,9 @@
-{
-  "hosting": {
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
+  authDomain: "quiz-f46d6.firebaseapp.com",
+  projectId: "quiz-f46d6",
+  storageBucket: "quiz-f46d6.firebasestorage.app",
+  messagingSenderId: "75573053604",
+  appId: "1:75573053604:web:6b20006ca68e685e18fe31",
+  measurementId: "G-KQVMD2YYDP"
+};
