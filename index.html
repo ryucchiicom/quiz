@@ -26,9 +26,7 @@
       color:var(--text);
       min-height:100vh;
     }
-    button, input, textarea{
-      font:inherit;
-    }
+    button, input, textarea{ font:inherit; }
     button{
       border:none;
       border-radius:14px;
@@ -36,7 +34,7 @@
       cursor:pointer;
       transition:.15s transform, .15s opacity, .15s background;
     }
-    button:active{transform:scale(.98)}
+    button:active{ transform:scale(.98) }
     .page{
       max-width:980px;
       margin:0 auto;
@@ -96,13 +94,7 @@
       font-weight:800;
       box-shadow:0 10px 20px rgba(47,111,237,.18);
     }
-    .primaryBtn:hover{background:var(--accent2)}
-    .dangerBtn{
-      background:#ffecec;
-      color:#a22b2b;
-      font-weight:800;
-      border:1px solid #ffd0d0;
-    }
+    .primaryBtn:hover{ background:var(--accent2) }
     .card{
       background:var(--panel);
       border:1px solid rgba(15,23,42,.08);
@@ -363,26 +355,25 @@
       line-height:1.6;
       word-break:break-word;
     }
-    .reviewMark.good{color:var(--good); font-weight:900;}
-    .reviewMark.bad{color:var(--bad); font-weight:900;}
+    .reviewMark.good{ color:var(--good); font-weight:900; }
+    .reviewMark.bad{ color:var(--bad); font-weight:900; }
     .smallNote{
       color:var(--muted);
       font-size:12px;
       line-height:1.7;
     }
-    .hide{display:none !important;}
     @media (max-width: 640px){
-      .page{padding:14px}
-      .siteTitle{font-size:22px}
-      .lineEditorWrap{grid-template-columns:52px 1fr; min-height:380px}
-      .gutter{font-size:13px}
-      .questionBox{font-size:22px}
-      .answerInput{font-size:16px}
-      .bigBtn{width:100%; justify-content:center; text-align:center}
-      .quizActions{justify-content:stretch}
-      .quizActions button{flex:1}
-      .topbar{align-items:flex-start}
-      .topActions{width:100%}
+      .page{ padding:14px }
+      .siteTitle{ font-size:22px }
+      .lineEditorWrap{ grid-template-columns:52px 1fr; min-height:380px }
+      .gutter{ font-size:13px }
+      .questionBox{ font-size:22px }
+      .answerInput{ font-size:16px }
+      .bigBtn{ width:100%; justify-content:center; text-align:center }
+      .quizActions{ justify-content:stretch }
+      .quizActions button{ flex:1 }
+      .topbar{ align-items:flex-start }
+      .topActions{ width:100% }
     }
   </style>
 </head>
@@ -402,20 +393,20 @@
       appId: "YOUR_APP_ID"
     };
 
-    const firebaseApp = initializeApp(firebaseConfig);
-    const db = getFirestore(firebaseApp);
+    const appFirebase = initializeApp(firebaseConfig);
+    const db = getFirestore(appFirebase);
     const app = document.getElementById("app");
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
 
     const state = {
-      screen: "loading", // loading | home | editor | quiz
+      screen: "loading",
       docId: "",
       doc: null,
       draft: null,
       quiz: {
-        phase: "question", // question | result | done
+        phase: "question",
         order: [],
         index: 0,
         selectedChoice: "",
@@ -425,12 +416,12 @@
       }
     };
 
-    function uid(){
+    function uid() {
       if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
-    function slugify(text){
+    function slugify(text) {
       return (text || "quiz")
         .trim()
         .toLowerCase()
@@ -440,7 +431,7 @@
         .replace(/^-+|-+$/g, "") || "quiz";
     }
 
-    function escapeHtml(str){
+    function escapeHtml(str) {
       return String(str ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -449,7 +440,7 @@
         .replace(/'/g, "&#39;");
     }
 
-    function normalizeAnswer(str){
+    function normalizeAnswer(str) {
       return String(str ?? "")
         .replace(/\u3000/g, " ")
         .trim()
@@ -457,14 +448,14 @@
         .toLowerCase();
     }
 
-    function splitAnswers(text){
+    function splitAnswers(text) {
       return String(text ?? "")
         .split(/[、,]/)
         .map(v => v.trim())
         .filter(Boolean);
     }
 
-    function parseProblemLine(line){
+    function parseProblemLine(line) {
       const raw = String(line ?? "").trim();
       if (!raw) return null;
 
@@ -490,30 +481,30 @@
       return { question, answers, choice };
     }
 
-    function parseProblemsFromText(text){
+    function parseProblemsFromText(text) {
       return String(text ?? "")
         .split(/\r?\n/)
         .map(parseProblemLine)
         .filter(Boolean);
     }
 
-    function shuffle(arr){
+    function shuffle(arr) {
       const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--){
+      for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
     }
 
-    function setCookie(name, value, days = 3650){
+    function setCookie(name, value, days = 3650) {
       const maxAge = days * 24 * 60 * 60;
       document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
     }
 
-    function getCookie(name){
+    function getCookie(name) {
       const parts = document.cookie ? document.cookie.split("; ") : [];
-      for (const part of parts){
+      for (const part of parts) {
         const idx = part.indexOf("=");
         const key = idx >= 0 ? part.slice(0, idx) : part;
         if (key === name) return decodeURIComponent(idx >= 0 ? part.slice(idx + 1) : "");
@@ -521,38 +512,27 @@
       return "";
     }
 
-    function getPathDocId(){
+    function getPathDocId() {
       const parts = location.pathname.split("/").filter(Boolean);
       if (!parts.length) return "";
       if (parts[0] !== "q") return "";
       return decodeURIComponent(parts[1] || "");
     }
 
-    function makeDocIdFromTitle(title){
-      return slugify(title);
-    }
-
-    function makePrettyLink(docId){
+    function makePrettyLink(docId) {
       return `${location.origin}/q/${encodeURIComponent(docId)}`;
     }
 
-    function getCurrentQuestion(){
-      if (!state.doc?.problems?.length) return null;
-      const idx = state.quiz.order[state.quiz.index];
-      if (idx === undefined) return null;
-      return { idx, problem: state.doc.problems[idx] };
-    }
-
-    function isOwner(){
+    function isOwner() {
       return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
     }
 
-    function keyUnlocked(){
+    function keyUnlocked() {
       if (!state.docId) return false;
       return getCookie(`qb_key_${state.docId}`) === "1";
     }
 
-    function canEditNow(){
+    function canEditNow() {
       if (!state.doc) return false;
       if (state.doc.keyMode === "open") return true;
       if (isOwner()) return true;
@@ -560,7 +540,14 @@
       return false;
     }
 
-    function blankDraft(){
+    function getCurrentQuestion() {
+      if (!state.doc?.problems?.length) return null;
+      const idx = state.quiz.order[state.quiz.index];
+      if (idx === undefined) return null;
+      return { idx, problem: state.doc.problems[idx] };
+    }
+
+    function blankDraft() {
       return {
         title: "",
         subtitle: "",
@@ -570,7 +557,7 @@
       };
     }
 
-    function openCreate(){
+    function openCreate() {
       state.docId = "";
       state.doc = null;
       state.draft = blankDraft();
@@ -578,7 +565,7 @@
       render();
     }
 
-    function openEditorFromDoc(){
+    function openEditorFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
@@ -592,7 +579,7 @@
       render();
     }
 
-    function startQuiz(docData, docId){
+    function startQuiz(docData, docId) {
       state.doc = docData;
       state.docId = docId;
       state.quiz = {
@@ -609,12 +596,12 @@
       render();
     }
 
-    function restartQuiz(){
+    function restartQuiz() {
       if (!state.doc) return;
       startQuiz(state.doc, state.docId);
     }
 
-    function nextQuestion(){
+    function nextQuestion() {
       state.quiz.index += 1;
       state.quiz.selectedChoice = "";
       state.quiz.typedAnswer = "";
@@ -628,12 +615,12 @@
       render();
     }
 
-    function submitAnswer(){
+    function submitAnswer() {
       const q = getCurrentQuestion();
       if (!q) return;
 
       const given = q.problem.choice ? state.quiz.selectedChoice : state.quiz.typedAnswer;
-      if (!String(given || "").trim()){
+      if (!String(given || "").trim()) {
         alert("答えを入れてね");
         return;
       }
@@ -655,13 +642,13 @@
       render();
     }
 
-    function updateGutter(textarea, gutter){
+    function updateGutter(textarea, gutter) {
       const count = Math.max(1, textarea.value.split(/\r?\n/).length + 1);
       gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
       gutter.scrollTop = textarea.scrollTop;
     }
 
-    function renderHome(){
+    function renderHome() {
       app.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -671,7 +658,6 @@
                 <div class="subTop">作って、そのまま遊べる。編集もできる。</div>
               </div>
             </div>
-            <div class="topActions"></div>
           </div>
 
           <div class="hero">
@@ -684,9 +670,7 @@
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn">作成</button>
               <div style="height:10px"></div>
-              <div class="smallNote">
-                ※ 作成したブラウザでは cookie で持ち主判定するよ。Key をつければ別端末でも編集できる。
-              </div>
+              <div class="smallNote">※ 作成したブラウザでは cookie で持ち主判定するよ。Key をつければ別端末でも編集できる。</div>
             </div>
           </div>
         </div>
@@ -694,7 +678,7 @@
       document.getElementById("createBtn").addEventListener("click", openCreate);
     }
 
-    function renderEditor(){
+    function renderEditor() {
       const draft = state.draft || blankDraft();
 
       app.innerHTML = `
@@ -763,8 +747,8 @@
       const keyStatus = document.getElementById("keyStatus");
       const saveBtn = document.getElementById("saveBtn");
 
-      function refreshKeyStatus(){
-        if (draft.keyMode === "open"){
+      function refreshKeyStatus() {
+        if (draft.keyMode === "open") {
           keyStatus.textContent = "Key: open（誰でも編集できる）";
         } else {
           keyStatus.textContent = draft.key ? "Key: 設定済み" : "Key: 未設定";
@@ -794,10 +778,10 @@
         if (next === null) return;
 
         const v = next.trim();
-        if (!v){
+        if (!v) {
           draft.keyMode = "key";
           draft.key = "";
-        } else if (v.toLowerCase() === "open"){
+        } else if (v.toLowerCase() === "open") {
           draft.keyMode = "open";
           draft.key = "";
         } else {
@@ -808,7 +792,7 @@
       });
 
       backBtn.addEventListener("click", () => {
-        if (confirm("今の編集内容は消えるけど、戻る？")){
+        if (confirm("今の編集内容は消えるけど、戻る？")) {
           state.screen = "home";
           state.draft = null;
           render();
@@ -820,17 +804,17 @@
         const subtitle = draft.subtitle.trim();
         const problems = parseProblemsFromText(draft.rawText);
 
-        if (!title){
+        if (!title) {
           alert("タイトルを入れてね");
           return;
         }
-        if (!problems.length){
+        if (!problems.length) {
           alert("問題が1つも読めなかったよ。1行ずつ「問題=答え」で書いてね。");
           return;
         }
 
+        const newDocId = slugify(title);
         const oldDocId = state.docId || "";
-        const newDocId = makeDocIdFromTitle(title);
         const ownerToken = getCookie(OWNER_COOKIE) || uid();
         setCookie(OWNER_COOKIE, ownerToken);
 
@@ -850,13 +834,13 @@
         saveBtn.disabled = true;
         saveBtn.textContent = "保存中...";
 
-        try{
+        try {
           await setDoc(doc(db, COLLECTION, newDocId), payload, { merge: true });
 
-          if (oldDocId && oldDocId !== newDocId){
-            try{
+          if (oldDocId && oldDocId !== newDocId) {
+            try {
               await deleteDoc(doc(db, COLLECTION, oldDocId));
-            }catch(_){}
+            } catch (_) {}
           }
 
           state.docId = newDocId;
@@ -866,12 +850,11 @@
           const link = makePrettyLink(newDocId);
           navigator.clipboard?.writeText(link).catch(() => {});
           alert(`保存したよ！\n\n${link}`);
-
           startQuiz(state.doc, newDocId);
-        }catch(err){
+        } catch (err) {
           console.error(err);
           alert("保存で失敗したよ。Firebase 設定か通信を見てみて。");
-        }finally{
+        } finally {
           saveBtn.disabled = false;
           saveBtn.textContent = "保存";
         }
@@ -882,16 +865,15 @@
       titleInput.focus();
     }
 
-    function renderQuizQuestion(){
+    function renderQuizQuestion() {
       const q = getCurrentQuestion();
-      if (!q){
+      if (!q) {
         state.quiz.phase = "done";
         render();
         return;
       }
 
-      const canEdit = canEditNow();
-      const editLabel = state.doc?.keyMode === "open" || canEdit ? "編集" : "Keyを入力して編集";
+      const editLabel = canEditNow() ? "編集" : "Keyを入力して編集";
 
       app.innerHTML = `
         <div class="page">
@@ -919,17 +901,15 @@
 
             <div class="card answerRow">
               ${
-                q.problem.choice
-                  ? `
-                    <div class="miniLabel">選択してね</div>
-                    <div id="choiceGrid" class="choiceGrid">
-                      ${q.problem.answers.map(ans => `<button type="button" class="choiceBtn" data-choice="${escapeHtml(ans)}">${escapeHtml(ans)}</button>`).join("")}
-                    </div>
-                  `
-                  : `
-                    <div class="miniLabel">答え</div>
-                    <input id="answerInput" class="answerInput" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" />
-                  `
+                q.problem.choice ? `
+                  <div class="miniLabel">選択してね</div>
+                  <div id="choiceGrid" class="choiceGrid">
+                    ${q.problem.answers.map(ans => `<button type="button" class="choiceBtn" data-choice="${escapeHtml(ans)}">${escapeHtml(ans)}</button>`).join("")}
+                  </div>
+                ` : `
+                  <div class="miniLabel">答え</div>
+                  <input id="answerInput" class="answerInput" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                `
               }
               <div class="quizActions">
                 <button class="submitBtn" id="submitBtn">✅</button>
@@ -940,27 +920,27 @@
       `;
 
       document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEditNow()){
+        if (canEditNow()) {
           openEditorFromDoc();
           return;
         }
         const entered = prompt("Key を入力して編集", "");
         if (entered === null) return;
 
-        if (state.doc.keyMode === "open"){
+        if (state.doc.keyMode === "open") {
           openEditorFromDoc();
           return;
         }
 
-        if ((entered || "").trim() === (state.doc.key || "")){
+        if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
           openEditorFromDoc();
-        }else{
+        } else {
           alert("Key が違うよ");
         }
       });
 
-      if (q.problem.choice){
+      if (q.problem.choice) {
         const buttons = [...document.querySelectorAll(".choiceBtn")];
         buttons.forEach(btn => {
           btn.addEventListener("click", () => {
@@ -968,14 +948,14 @@
             buttons.forEach(b => b.classList.toggle("selected", b === btn));
           });
         });
-      }else{
+      } else {
         const input = document.getElementById("answerInput");
         input.focus();
         input.addEventListener("input", e => {
           state.quiz.typedAnswer = e.target.value;
         });
         input.addEventListener("keydown", e => {
-          if (e.key === "Enter"){
+          if (e.key === "Enter") {
             e.preventDefault();
             submitAnswer();
           }
@@ -985,17 +965,16 @@
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
 
-    function renderResult(){
+    function renderQuizResult() {
       const result = state.quiz.lastResult;
-      if (!result){
+      if (!result) {
         state.quiz.phase = "question";
         render();
         return;
       }
 
       const q = state.doc.problems[result.idx];
-      const canEdit = canEditNow();
-      const editLabel = state.doc?.keyMode === "open" || canEdit ? "編集" : "Keyを入力して編集";
+      const editLabel = canEditNow() ? "編集" : "Keyを入力して編集";
 
       app.innerHTML = `
         <div class="page">
@@ -1035,22 +1014,22 @@
       `;
 
       document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEditNow()){
+        if (canEditNow()) {
           openEditorFromDoc();
           return;
         }
         const entered = prompt("Key を入力して編集", "");
         if (entered === null) return;
 
-        if (state.doc.keyMode === "open"){
+        if (state.doc.keyMode === "open") {
           openEditorFromDoc();
           return;
         }
 
-        if ((entered || "").trim() === (state.doc.key || "")){
+        if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
           openEditorFromDoc();
-        }else{
+        } else {
           alert("Key が違うよ");
         }
       });
@@ -1058,11 +1037,10 @@
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
     }
 
-    function renderDone(){
+    function renderQuizDone() {
       const total = state.doc.problems.length;
       const correctCount = Object.values(state.quiz.attempts).filter(v => v.correct).length;
-      const canEdit = canEditNow();
-      const editLabel = state.doc?.keyMode === "open" || canEdit ? "編集" : "Keyを入力して編集";
+      const editLabel = canEditNow() ? "編集" : "Keyを入力して編集";
 
       app.innerHTML = `
         <div class="page">
@@ -1092,7 +1070,7 @@
             <div class="card">
               <div class="miniLabel">全問題と答え</div>
               <div class="reviewList">
-                ${state.doc.problems.map((p) => `
+                ${state.doc.problems.map(p => `
                   <div class="reviewItem">
                     <div class="reviewQ">${escapeHtml(p.question)}</div>
                     <div class="reviewA">答え: ${escapeHtml(p.answers.join(" / "))}</div>
@@ -1105,22 +1083,22 @@
       `;
 
       document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEditNow()){
+        if (canEditNow()) {
           openEditorFromDoc();
           return;
         }
         const entered = prompt("Key を入力して編集", "");
         if (entered === null) return;
 
-        if (state.doc.keyMode === "open"){
+        if (state.doc.keyMode === "open") {
           openEditorFromDoc();
           return;
         }
 
-        if ((entered || "").trim() === (state.doc.key || "")){
-          if (state.docId) setCookie(`qb_key_${state.docId}`, "1`);
+        if ((entered || "").trim() === (state.doc.key || "")) {
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
           openEditorFromDoc();
-        }else{
+        } else {
           alert("Key が違うよ");
         }
       });
@@ -1128,9 +1106,41 @@
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
     }
 
-    async function loadFromRoute(){
+    function renderLoading() {
+      app.innerHTML = `
+        <div class="page">
+          <div class="hero">
+            <div class="card">
+              <h1>読み込み中…</h1>
+              <p>Firestore から問題データを取ってるよ。</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      if (state.screen === "loading") return renderLoading();
+      if (state.screen === "home") return renderHome();
+      if (state.screen === "editor") return renderEditor();
+
+      if (state.screen === "quiz") {
+        if (!state.doc || !state.doc.problems || !state.doc.problems.length) {
+          state.screen = "home";
+          render();
+          return;
+        }
+
+        if (state.quiz.phase === "question") return renderQuizQuestion();
+        if (state.quiz.phase === "result") return renderQuizResult();
+        if (state.quiz.phase === "done") return renderQuizDone();
+      }
+    }
+
+    async function loadFromRoute() {
       const id = getPathDocId();
-      if (!id){
+
+      if (!id) {
         state.screen = "home";
         render();
         return;
@@ -1139,9 +1149,9 @@
       state.screen = "loading";
       render();
 
-      try{
+      try {
         const snap = await getDoc(doc(db, COLLECTION, id));
-        if (!snap.exists()){
+        if (!snap.exists()) {
           state.screen = "home";
           render();
           return;
@@ -1163,46 +1173,14 @@
         };
 
         startQuiz(docData, id);
-      }catch(err){
+      } catch (err) {
         console.error(err);
         state.screen = "home";
         render();
       }
     }
 
-    function renderLoading(){
-      app.innerHTML = `
-        <div class="page">
-          <div class="hero">
-            <div class="card">
-              <h1>読み込み中…</h1>
-              <p>Firestore から問題データを取ってるよ。</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function render(){
-      if (state.screen === "loading") return renderLoading();
-      if (state.screen === "home") return renderHome();
-      if (state.screen === "editor") return renderEditor();
-
-      if (state.screen === "quiz"){
-        if (!state.doc || !state.doc.problems || !state.doc.problems.length){
-          state.screen = "home";
-          render();
-          return;
-        }
-
-        if (state.quiz.phase === "question") return renderQuizQuestion();
-        if (state.quiz.phase === "result") return renderResult();
-        if (state.quiz.phase === "done") return renderDone();
-      }
-    }
-
     window.addEventListener("popstate", loadFromRoute);
-
     loadFromRoute();
   </script>
 </body>
