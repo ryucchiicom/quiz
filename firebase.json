@@ -1,16 +1,59 @@
 saveBtn.addEventListener("click", async () => {
-  console.log("save click start");
+  const title = d.title.trim();
+  const subtitle = d.subtitle.trim();
+  const problems = parseProblems(d.rawText);
+
+  if (!title) return alert("タイトルを入れてね");
+  if (!problems.length) return alert("問題が1つも読めなかったよ。");
+
+  const newId = slugify(title);
+  const ownerToken = getCookie(OWNER_COOKIE) || uid();
+  setCookie(OWNER_COOKIE, ownerToken);
+
+  const payload = {
+    title,
+    subtitle,
+    problems,
+    rawText: d.rawText,
+    keyMode: d.keyMode,
+    key: d.keyMode === "open" ? "" : d.key,
+    ownerToken,
+    slug: newId,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = "保存中...";
 
   try {
-    console.log("before setDoc");
-    await setDoc(doc(db, COLLECTION, newDocId), payload, { merge: true });
+    console.log("before setDoc", newId, payload);
+
+    await setDoc(doc(db, COL, newId), payload);
+
     console.log("after setDoc");
-    alert("保存できたよ");
+
+    if (state.docId && state.docId !== newId) {
+      try {
+        await deleteDoc(doc(db, COL, state.docId));
+      } catch (e) {
+        console.warn("old doc delete skipped", e);
+      }
+    }
+
+    state.docId = newId;
+    state.doc = { ...payload, problems };
+    history.replaceState({}, "", `/q/${encodeURIComponent(newId)}`);
+
+    const link = prettyLink(newId);
+    navigator.clipboard?.writeText(link).catch(() => {});
+    alert(`保存したよ！\n\n${link}`);
+    startQuiz(state.doc, newId);
+
   } catch (err) {
-    console.error("setDoc failed:", err);
-    alert("保存で失敗したよ");
+    console.error("save failed:", err);
+    alert("保存で失敗したよ。コンソールを見てね。");
   } finally {
-    console.log("save click end");
     saveBtn.disabled = false;
     saveBtn.textContent = "保存";
   }
