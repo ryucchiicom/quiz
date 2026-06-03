@@ -29,7 +29,11 @@ saveBtn.addEventListener("click", async () => {
   try {
     console.log("before setDoc", newId, payload);
 
-    await setDoc(doc(db, COL, newId), payload);
+    alert("① setDocの前");
+
+    await setDoc(doc(db, COLLECTION, existingId), payload, { merge: true });
+
+    alert("② setDocの後");
 
     console.log("after setDoc");
 
