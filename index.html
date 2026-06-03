@@ -217,6 +217,10 @@
       word-break:break-word;
     }
 
+    body.dark .sectionText{
+      color:#d7def0;
+    }
+
     .question{
       font-size:clamp(22px,4vw,32px);
       font-weight:900;
@@ -288,6 +292,13 @@
       border-radius:16px;
       line-height:1.8;
       word-break:break-word;
+      color:#2b3241;
+    }
+
+    body.dark .explain{
+      background:#182133;
+      border-color:#2d3a4f;
+      color:#e7ecf7;
     }
 
     .summary{
@@ -322,6 +333,10 @@
       font-weight:900;
       color:#334155;
       line-height:1.4;
+    }
+
+    body.dark .reviewSection{
+      color:#d7def0;
     }
 
     .reviewQ{
@@ -383,10 +398,6 @@
       text-decoration:none;
     }
 
-    .themeBtn{
-      min-width:96px;
-    }
-
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
@@ -399,7 +410,6 @@
       .topbar{align-items:flex-start}
       .listItem{align-items:flex-start;flex-direction:column}
       .listActions{justify-content:flex-start}
-      .themeBtn{min-width:auto}
     }
   </style>
 </head>
@@ -429,7 +439,6 @@
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
     const LIST_KEY = "qb_my_quizzes";
-    const THEME_KEY = "qb_theme";
 
     const state = {
       screen: "loading",
@@ -447,6 +456,7 @@
     };
 
     let resultEnterHandler = null;
+    const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
 
     function uid() {
       if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
@@ -586,10 +596,6 @@
       try { localStorage.setItem(key, value); } catch {}
     }
 
-    function safeLocalRemove(key) {
-      try { localStorage.removeItem(key); } catch {}
-    }
-
     function loadMyQuizList() {
       try {
         const raw = safeLocalGet(LIST_KEY);
@@ -632,28 +638,8 @@
       saveMyQuizList(next);
     }
 
-    function getStoredTheme() {
-      const stored = safeLocalGet(THEME_KEY);
-      if (stored === "dark" || stored === "light") return stored;
-      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-
-    function applyTheme(theme) {
-      document.body.classList.toggle("dark", theme === "dark");
-      safeLocalSet(THEME_KEY, theme);
-    }
-
-    function currentTheme() {
-      return document.body.classList.contains("dark") ? "dark" : "light";
-    }
-
-    function toggleTheme() {
-      applyTheme(currentTheme() === "dark" ? "light" : "dark");
-      render();
-    }
-
-    function themeLabel() {
-      return currentTheme() === "dark" ? "☀️ ライト" : "🌙 ダーク";
+    function applySystemTheme() {
+      document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
     }
 
     function clearResultEnterHandler() {
@@ -731,10 +717,6 @@
       };
     }
 
-    function openCreate() {
-      location.hash = "#/create";
-    }
-
     function openEditFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
@@ -809,15 +791,6 @@
       gutter.scrollTop = textarea.scrollTop;
     }
 
-    function themeButtonHtml() {
-      return `<button class="ghost themeBtn" id="themeBtn">${themeLabel()}</button>`;
-    }
-
-    function bindThemeButton() {
-      const btn = document.getElementById("themeBtn");
-      if (btn) btn.addEventListener("click", toggleTheme);
-    }
-
     function bindHomeActions() {
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -873,9 +846,6 @@
               <h1 class="title">問題作成サイト</h1>
               <div class="sub">作って、そのまま遊べる</div>
             </div>
-            <div class="row">
-              ${themeButtonHtml()}
-            </div>
           </div>
 
           <div class="hero">
@@ -901,8 +871,9 @@
         </div>
       `;
 
-      document.getElementById("createBtn").addEventListener("click", openCreate);
-      bindThemeButton();
+      document.getElementById("createBtn").addEventListener("click", () => {
+        location.hash = "#/create";
+      });
       bindHomeActions();
     }
 
@@ -919,7 +890,6 @@
               <div class="sub">タイトルの右に Key ボタン</div>
             </div>
             <div class="row">
-              ${themeButtonHtml()}
               <button class="ghost" id="backBtn">戻る</button>
             </div>
           </div>
@@ -1077,7 +1047,6 @@
 
       lineNumbers(problemText, gutter);
       refreshKeyStatus();
-      bindThemeButton();
       titleInput.focus();
     }
 
@@ -1100,7 +1069,6 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${themeButtonHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1150,11 +1118,9 @@
       });
 
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
-      bindThemeButton();
     }
 
     function renderResult() {
-      clearResultEnterHandler();
       const r = state.quiz.lastResult;
       if (!r) {
         state.quiz.phase = "question";
@@ -1173,7 +1139,6 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${themeButtonHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1213,7 +1178,6 @@
       });
 
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
-      bindThemeButton();
       enableResultEnterHandler();
     }
 
@@ -1232,7 +1196,6 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${themeButtonHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1276,7 +1239,6 @@
       });
 
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
-      bindThemeButton();
     }
 
     function renderLoading() {
@@ -1311,6 +1273,7 @@
     }
 
     async function loadRoute() {
+      applySystemTheme();
       const r = route();
 
       if (r.name === "home") {
@@ -1371,7 +1334,18 @@
       }
     }
 
-    applyTheme(getStoredTheme());
+    if (systemDark) {
+      const onThemeChange = () => {
+        applySystemTheme();
+        render();
+      };
+      if (systemDark.addEventListener) {
+        systemDark.addEventListener("change", onThemeChange);
+      } else if (systemDark.addListener) {
+        systemDark.addListener(onThemeChange);
+      }
+    }
+
     window.addEventListener("hashchange", loadRoute);
     loadRoute();
   </script>
