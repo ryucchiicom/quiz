@@ -28,18 +28,16 @@ saveBtn.addEventListener("click", async () => {
 
   try {
     console.log("before setDoc", newId, payload);
-
     alert("① setDocの前");
 
-    await setDoc(doc(db, COLLECTION, existingId), payload, { merge: true });
+    await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
 
     alert("② setDocの後");
-
     console.log("after setDoc");
 
     if (state.docId && state.docId !== newId) {
       try {
-        await deleteDoc(doc(db, COL, state.docId));
+        await deleteDoc(doc(db, COLLECTION, state.docId));
       } catch (e) {
         console.warn("old doc delete skipped", e);
       }
@@ -53,7 +51,6 @@ saveBtn.addEventListener("click", async () => {
     navigator.clipboard?.writeText(link).catch(() => {});
     alert(`保存したよ！\n\n${link}`);
     startQuiz(state.doc, newId);
-
   } catch (err) {
     console.error("save failed:", err);
     alert("保存で失敗したよ。コンソールを見てね。");
