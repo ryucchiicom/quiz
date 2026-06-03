@@ -5,46 +5,272 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>問題作成サイト</title>
   <style>
-    :root{--bg:#f5f7fb;--panel:#fff;--line:#d8dbe5;--text:#1f2430;--muted:#6b7280;--accent:#2f6fed;--good:#118a3a;--bad:#d33c3c;--radius:18px;--shadow:0 12px 30px rgba(20,25,40,.08)}
+    :root{
+      --bg:#f5f7fb;
+      --panel:#fff;
+      --line:#d8dbe5;
+      --text:#1f2430;
+      --muted:#6b7280;
+      --accent:#2f6fed;
+      --accent2:#1f5ad1;
+      --good:#118a3a;
+      --bad:#d33c3c;
+      --radius:18px;
+      --shadow:0 12px 30px rgba(20,25,40,.08);
+    }
     *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:linear-gradient(180deg,#f8faff,#eef2f8);color:var(--text);min-height:100vh}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+      background:linear-gradient(180deg,#f8faff,#eef2f8);
+      color:var(--text);
+      min-height:100vh;
+    }
     button,input,textarea{font:inherit}
-    button{border:none;border-radius:14px;padding:12px 16px;cursor:pointer}
-    .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh}
-    .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;position:sticky;top:0;padding:8px 0 12px;backdrop-filter:blur(8px)}
-    .title{font-size:28px;font-weight:900;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .sub{margin-top:4px;color:var(--muted);font-size:13px}
-    .card{background:var(--panel);border:1px solid rgba(15,23,42,.08);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-    .hero{max-width:860px;margin:36px auto 0;display:grid;gap:16px}
-    .bigBtn,.primary{background:var(--accent);color:#fff;font-weight:800}
-    .ghost{background:#eef3ff;color:#244a9c;border:1px solid #d7e2ff;font-weight:700}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .input{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px 15px;outline:none}
-    .input:focus{border-color:#9ab8ff;box-shadow:0 0 0 4px rgba(47,111,237,.08)}
-    .label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
-    .gridEditor{display:grid;grid-template-columns:64px 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;min-height:420px;background:#fff}
-    .gutter{background:#f5f7fb;border-right:1px solid var(--line);padding:14px 10px 14px 0;text-align:right;color:#8a93a8;font:600 14px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;white-space:pre;user-select:none;overflow:hidden}
-    .textarea{width:100%;border:none;outline:none;resize:none;padding:14px;font:600 15px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;white-space:pre;overflow:auto;tab-size:2}
-    .help,.note{color:var(--muted);font-size:13px;line-height:1.8}
-    .quiz{max-width:860px;margin:20px auto 0;display:grid;gap:14px}
-    .progress{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;font-weight:700}
-    .question{font-size:clamp(22px,4vw,32px);font-weight:900;line-height:1.4;word-break:break-word}
-    .answer{width:100%;font-size:18px;padding:16px;border-radius:16px;border:1px solid var(--line);outline:none}
-    .choiceGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-    .choice{background:#f4f7ff;border:1px solid #d6e1ff;color:#173a88;font-weight:800;padding:14px 12px;border-radius:16px}
-    .choice.selected{background:#dfe9ff;border-color:#9ab8ff;box-shadow:0 0 0 4px rgba(47,111,237,.08)}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
-    .submit{background:var(--accent);color:#fff;font-weight:900;padding:14px 20px;border-radius:16px;min-width:116px}
-    .next{background:#1c9c59;color:#fff;font-weight:900;padding:14px 20px;border-radius:16px;min-width:116px}
-    .good{border:1px solid rgba(17,138,58,.22);background:#effaf3;color:var(--good);padding:14px 16px;border-radius:16px;font-weight:900;font-size:18px}
-    .bad{border:1px solid rgba(211,60,60,.22);background:#fff3f3;color:var(--bad);padding:14px 16px;border-radius:16px;font-weight:900;font-size:18px}
-    .explain{background:#f8faff;border:1px solid #dbe4fb;padding:14px 16px;border-radius:16px;line-height:1.8;word-break:break-word}
-    .summary{max-width:860px;margin:20px auto 0;display:grid;gap:14px}
-    .score{font-size:28px;font-weight:1000;line-height:1.2}
-    .reviewList{display:grid;gap:10px}
-    .reviewItem{border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:#fff;display:grid;gap:6px}
-    .reviewQ{font-weight:900;font-size:16px;word-break:break-word}
-    .reviewA{font-size:14px;color:var(--muted);line-height:1.6;word-break:break-word}
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      cursor:pointer;
+    }
+    .page{
+      max-width:980px;
+      margin:0 auto;
+      padding:16px;
+      min-height:100vh;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      position:sticky;
+      top:0;
+      padding:8px 0 12px;
+      backdrop-filter:blur(8px);
+      z-index:5;
+    }
+    .title{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.1;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .hero{
+      max-width:860px;
+      margin:36px auto 0;
+      display:grid;
+      gap:16px;
+    }
+    .bigBtn,.primary{
+      background:var(--accent);
+      color:#fff;
+      font-weight:800;
+    }
+    .ghost{
+      background:#eef3ff;
+      color:#244a9c;
+      border:1px solid #d7e2ff;
+      font-weight:700;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px 15px;
+      outline:none;
+    }
+    .input:focus{
+      border-color:#9ab8ff;
+      box-shadow:0 0 0 4px rgba(47,111,237,.08);
+    }
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+    .gridEditor{
+      display:grid;
+      grid-template-columns:64px 1fr;
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:420px;
+      background:#fff;
+    }
+    .gutter{
+      background:#f5f7fb;
+      border-right:1px solid var(--line);
+      padding:14px 10px 14px 0;
+      text-align:right;
+      color:#8a93a8;
+      font:600 14px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      user-select:none;
+      overflow:hidden;
+    }
+    .textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      resize:none;
+      padding:14px;
+      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      overflow:auto;
+      tab-size:2;
+    }
+    .help,.note{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+    .quiz{
+      max-width:860px;
+      margin:20px auto 0;
+      display:grid;
+      gap:14px;
+    }
+    .progress{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+    .sectionText{
+      font-size:18px;
+      font-weight:900;
+      line-height:1.35;
+      color:#334155;
+      word-break:break-word;
+    }
+    .question{
+      font-size:clamp(22px,4vw,32px);
+      font-weight:900;
+      line-height:1.4;
+      word-break:break-word;
+    }
+    .answer{
+      width:100%;
+      font-size:18px;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      outline:none;
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .submit{
+      background:var(--accent);
+      color:#fff;
+      font-weight:900;
+      padding:14px 20px;
+      border-radius:16px;
+      min-width:116px;
+    }
+    .next{
+      background:#1c9c59;
+      color:#fff;
+      font-weight:900;
+      padding:14px 20px;
+      border-radius:16px;
+      min-width:116px;
+    }
+    .good{
+      border:1px solid rgba(17,138,58,.22);
+      background:#effaf3;
+      color:var(--good);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
+    }
+    .bad{
+      border:1px solid rgba(211,60,60,.22);
+      background:#fff3f3;
+      color:var(--bad);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
+    }
+    .explain{
+      background:#f8faff;
+      border:1px solid #dbe4fb;
+      padding:14px 16px;
+      border-radius:16px;
+      line-height:1.8;
+      word-break:break-word;
+    }
+    .summary{
+      max-width:860px;
+      margin:20px auto 0;
+      display:grid;
+      gap:14px;
+    }
+    .score{
+      font-size:28px;
+      font-weight:1000;
+      line-height:1.2;
+    }
+    .reviewList{
+      display:grid;
+      gap:10px;
+    }
+    .reviewItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:#fff;
+      display:grid;
+      gap:6px;
+    }
+    .reviewSection{
+      font-size:15px;
+      font-weight:900;
+      color:#334155;
+      line-height:1.4;
+    }
+    .reviewQ{
+      font-weight:900;
+      font-size:16px;
+      word-break:break-word;
+    }
+    .reviewA{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.6;
+      word-break:break-word;
+    }
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
@@ -63,7 +289,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -71,18 +297,17 @@
       projectId: "quiz-f46d6",
       storageBucket: "quiz-f46d6.firebasestorage.app",
       messagingSenderId: "75573053604",
-      appId: "1:75573053604:web:6b20006ca68e685e18fe31"
+      appId: "1:75573053604:web:6b20006ca68e685e18fe31",
+      measurementId: "G-KQVMD2YYDP"
     };
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
 
     const root = document.getElementById("app");
-    if (!root) {
-      throw new Error('Missing <div id="app"></div>');
-    }
+    if (!root) throw new Error('Missing <div id="app"></div>');
 
-    const COL = "quizzes";
+    const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
 
     const state = {
@@ -94,7 +319,6 @@
         phase: "question",
         order: [],
         index: 0,
-        selectedChoice: "",
         typedAnswer: "",
         lastResult: null,
         attempts: {}
@@ -143,25 +367,69 @@
     function parseLine(line) {
       const raw = String(line ?? "").trim();
       if (!raw) return null;
+
+      const hasEq = raw.includes("=") || raw.includes("＝");
+      if (!hasEq) {
+        return { kind: "section", text: raw };
+      }
+
       const parts = raw.split(/[=＝]/).map(v => v.trim());
       if (parts.length < 2) return null;
+
       const question = parts[0];
       if (!question) return null;
-      let choice = false;
+
       let answerText = "";
       if ((parts[1] || "").toLowerCase() === "choice") {
-        choice = true;
         answerText = parts.slice(2).join("=");
       } else {
         answerText = parts.slice(1).join("=");
       }
+
       const answers = splitAnswers(answerText);
       if (!answers.length) return null;
-      return { question, answers, choice };
+
+      return { kind: "item", question, answers };
     }
 
-    function parseProblems(text) {
-      return String(text ?? "").split(/\r?\n/).map(parseLine).filter(Boolean);
+    function parseItems(text) {
+      const lines = String(text ?? "").split(/\r?\n/);
+      const items = [];
+      let currentSection = "";
+
+      for (const line of lines) {
+        const parsed = parseLine(line);
+        if (!parsed) continue;
+
+        if (parsed.kind === "section") {
+          currentSection = parsed.text;
+          continue;
+        }
+
+        items.push({
+          section: currentSection,
+          question: parsed.question,
+          answers: parsed.answers,
+          rawLine: line.trim()
+        });
+      }
+
+      return items;
+    }
+
+    function itemsToRawText(items) {
+      const lines = [];
+      let lastSection = null;
+
+      for (const item of items || []) {
+        if (item.section && item.section !== lastSection) {
+          lines.push(item.section);
+          lastSection = item.section;
+        }
+        lines.push(`${item.question}=${(item.answers || []).join(",")}`);
+      }
+
+      return lines.join("\n");
     }
 
     function shuffle(arr) {
@@ -187,10 +455,24 @@
       return "";
     }
 
-    function pathId() {
-      const parts = location.pathname.split("/").filter(Boolean);
-      if (parts[0] !== "q") return "";
-      return decodeURIComponent(parts[1] || "");
+    function basePath() {
+      const p = location.pathname;
+      if (p.endsWith("/")) return p;
+      const i = p.lastIndexOf("/");
+      return i >= 0 ? p.slice(0, i + 1) : "/";
+    }
+
+    function prettyLink(id) {
+      return `${location.origin}${basePath()}#/quiz/${encodeURIComponent(id)}`;
+    }
+
+    function route() {
+      const raw = location.hash.replace(/^#/, "");
+      const parts = raw.split("/").filter(Boolean);
+      if (!parts.length) return { name: "home" };
+      if (parts[0] === "create") return { name: "create" };
+      if (parts[0] === "quiz" && parts[1]) return { name: "quiz", id: decodeURIComponent(parts[1]) };
+      return { name: "home" };
     }
 
     function isOwner() {
@@ -208,18 +490,20 @@
     }
 
     function currentQuestion() {
-      if (!state.doc?.problems?.length) return null;
+      if (!state.doc?.items?.length) return null;
       const idx = state.quiz.order[state.quiz.index];
       if (idx === undefined) return null;
-      return { idx, problem: state.doc.problems[idx] };
+      return { idx, item: state.doc.items[idx] };
     }
 
     function blankDraft() {
-      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
-    }
-
-    function prettyLink(id) {
-      return `${location.origin}/q/${encodeURIComponent(id)}`;
+      return {
+        title: "",
+        subtitle: "",
+        rawText: "",
+        keyMode: "key",
+        key: ""
+      };
     }
 
     function openCreate() {
@@ -234,9 +518,7 @@
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
-        rawText: (state.doc?.problems || [])
-          .map(p => `${p.question}=${p.choice ? "choice=" : ""}${p.answers.join(",")}`)
-          .join("\n"),
+        rawText: itemsToRawText(state.doc?.items || []),
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
@@ -249,9 +531,8 @@
       state.docId = id;
       state.quiz = {
         phase: "question",
-        order: shuffle((docData.problems || []).map((_, i) => i)),
+        order: shuffle((docData.items || []).map((_, i) => i)),
         index: 0,
-        selectedChoice: "",
         typedAnswer: "",
         lastResult: null,
         attempts: {}
@@ -268,7 +549,6 @@
 
     function nextQuestion() {
       state.quiz.index += 1;
-      state.quiz.selectedChoice = "";
       state.quiz.typedAnswer = "";
       state.quiz.lastResult = null;
       state.quiz.phase = state.quiz.index >= state.quiz.order.length ? "done" : "question";
@@ -278,12 +558,14 @@
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
-      const given = q.problem.choice ? state.quiz.selectedChoice : state.quiz.typedAnswer;
+
+      const given = state.quiz.typedAnswer;
       if (!String(given || "").trim()) {
         alert("答えを入れてね");
         return;
       }
-      const correct = q.problem.answers.map(norm).includes(norm(given));
+
+      const correct = q.item.answers.map(norm).includes(norm(given));
       state.quiz.attempts[q.idx] = { given, correct };
       state.quiz.lastResult = { idx: q.idx, given, correct };
       state.quiz.phase = "result";
@@ -310,7 +592,7 @@
               <h1 style="margin:0;font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-.03em">作成して、公開して、答える。</h1>
               <p style="margin:12px 0 0;color:var(--muted);line-height:1.8;font-size:16px">
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
-                <b>問題=答え1,答え2</b> で複数正解、<b>問題=choice=答え1,答え2</b> で選択式にもできる。
+                <b>= なしの行</b> は共通見出しになるよ。たとえば「日本について」の下にいくつか問題を並べられる。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn">作成</button>
@@ -353,12 +635,18 @@
               <div class="gridEditor">
                 <div id="gutter" class="gutter"></div>
                 <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
-リンゴ=りんご
-2+2=4,四
-日本の首都=choice=東京,大阪,名古屋
+日本について
+首都=東京
+人口=約1.2億人
+面積=377975km²
 ">${esc(d.rawText)}</textarea>
               </div>
-              <div class="help">1行に1問。<b>問題=答え</b>。<b>問題=答え1,答え2</b>。<b>問題=choice=答え1,答え2</b>。</div>
+              <div class="help">
+                1行に1つ書くよ。<br>
+                <b>= なしの行</b> は共通見出し。<br>
+                <b>問題=答え</b> で普通の問題。<br>
+                <b>問題=答え1,答え2</b> で複数正解。
+              </div>
             </div>
             <div class="row" style="justify-content:space-between">
               <div id="keyStatus" class="note"></div>
@@ -382,8 +670,13 @@
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
-      problemText.addEventListener("input", e => { d.rawText = e.target.value; lineNumbers(problemText, gutter); });
-      problemText.addEventListener("scroll", () => { gutter.scrollTop = problemText.scrollTop; });
+      problemText.addEventListener("input", e => {
+        d.rawText = e.target.value;
+        lineNumbers(problemText, gutter);
+      });
+      problemText.addEventListener("scroll", () => {
+        gutter.scrollTop = problemText.scrollTop;
+      });
 
       keyBtn.addEventListener("click", () => {
         const cur = d.keyMode === "open" ? "open" : (d.key || "");
@@ -407,6 +700,7 @@
         if (confirm("今の編集は消えるけど戻る？")) {
           state.screen = "home";
           state.draft = null;
+          location.hash = "";
           render();
         }
       });
@@ -415,52 +709,59 @@
         console.log("save clicked");
         const title = d.title.trim();
         const subtitle = d.subtitle.trim();
-        const problems = parseProblems(d.rawText);
+        const items = parseItems(d.rawText);
 
         if (!title) return alert("タイトルを入れてね");
-        if (!problems.length) return alert("問題が1つも読めなかったよ。");
+        if (!items.length) return alert("問題が1つも読めなかったよ。");
 
         const newId = slugify(title);
+        const oldId = state.docId || "";
         const ownerToken = getCookie(OWNER_COOKIE) || uid();
         setCookie(OWNER_COOKIE, ownerToken);
 
         const payload = {
           title,
           subtitle,
-          problems,
+          items,
+          problems: items,
           rawText: d.rawText,
           keyMode: d.keyMode,
           key: d.keyMode === "open" ? "" : d.key,
           ownerToken,
           slug: newId,
-          createdAt: state.doc?.createdAt || serverTimestamp(),
-          updatedAt: serverTimestamp()
+          createdAt: state.doc?.createdAt || Date.now(),
+          updatedAt: Date.now()
         };
 
         saveBtn.disabled = true;
         saveBtn.textContent = "保存中...";
 
         try {
+          console.log("before setDoc", newId);
           alert("① setDocの前");
-          console.log("before setDoc", newId, payload);
 
-          await setDoc(doc(db, COL, newId), payload, { merge: true });
+          await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
 
           console.log("after setDoc");
           alert("② setDocの後");
 
-          state.docId = newId;
-          state.doc = { ...payload, problems };
-          history.replaceState({}, "", `/q/${encodeURIComponent(newId)}`);
+          if (oldId && oldId !== newId) {
+            try {
+              await deleteDoc(doc(db, COLLECTION, oldId));
+            } catch (_) {}
+          }
 
+          state.docId = newId;
+          state.doc = { ...payload, items };
           const link = prettyLink(newId);
+          history.replaceState({}, "", `#/quiz/${encodeURIComponent(newId)}`);
           navigator.clipboard?.writeText(link).catch(() => {});
           alert(`保存したよ！\n\n${link}`);
 
           startQuiz(state.doc, newId);
         } catch (err) {
           console.error("save failed:", err);
-          alert("保存で失敗したよ。コンソールを見てね。");
+          alert(`保存で失敗したよ: ${err?.message || err}`);
         } finally {
           saveBtn.disabled = false;
           saveBtn.textContent = "保存";
@@ -487,24 +788,28 @@
               <h1 class="title">${esc(state.doc.title || "問題")}</h1>
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
-            <div class="row"><button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button></div>
+            <div class="row">
+              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
           </div>
 
           <div class="quiz">
             <div class="card">
-              <div class="progress"><div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div><div>${state.doc.problems.length}問中</div></div>
+              <div class="progress">
+                <div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div>
+                <div>${state.doc.items.length}問中</div>
+              </div>
               <div style="height:12px"></div>
-              <div class="question">${esc(q.problem.question)}</div>
+              ${q.item.section ? `<div class="sectionText">${esc(q.item.section)}</div><div style="height:10px"></div>` : ""}
+              <div class="question">${esc(q.item.question)}</div>
             </div>
+
             <div class="card" style="display:grid;gap:10px">
-              ${q.problem.choice ? `
-                <div class="label">選択してね</div>
-                <div id="choiceGrid" class="choiceGrid">${q.problem.answers.map(a => `<button type="button" class="choice" data-choice="${esc(a)}">${esc(a)}</button>`).join("")}</div>
-              ` : `
-                <div class="label">答え</div>
-                <input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false">
-              `}
-              <div class="actions"><button class="submit" id="submitBtn">✅</button></div>
+              <div class="label">答え</div>
+              <input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+              <div class="actions">
+                <button class="submit" id="submitBtn">✅</button>
+              </div>
             </div>
           </div>
         </div>
@@ -522,23 +827,15 @@
         alert("Key が違うよ");
       });
 
-      if (q.problem.choice) {
-        const buttons = [...document.querySelectorAll(".choice")];
-        buttons.forEach(btn => btn.addEventListener("click", () => {
-          state.quiz.selectedChoice = btn.dataset.choice || "";
-          buttons.forEach(b => b.classList.toggle("selected", b === btn));
-        }));
-      } else {
-        const input = document.getElementById("answerInput");
-        input.focus();
-        input.addEventListener("input", e => state.quiz.typedAnswer = e.target.value);
-        input.addEventListener("keydown", e => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            submitAnswer();
-          }
-        });
-      }
+      const input = document.getElementById("answerInput");
+      input.focus();
+      input.addEventListener("input", e => state.quiz.typedAnswer = e.target.value);
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          submitAnswer();
+        }
+      });
 
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
@@ -551,7 +848,7 @@
         return;
       }
 
-      const q = state.doc.problems[r.idx];
+      const q = state.doc.items[r.idx];
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -559,12 +856,16 @@
               <h1 class="title">${esc(state.doc.title || "問題")}</h1>
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
-            <div class="row"><button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button></div>
+            <div class="row">
+              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
           </div>
 
           <div class="quiz">
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
+
             <div class="card">
+              ${q.section ? `<div class="sectionText">${esc(q.section)}</div><div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
               <div class="question" style="font-size:22px">${esc(q.question)}</div>
               <div style="height:12px"></div>
@@ -574,7 +875,10 @@
               <div class="label">あなたの答え</div>
               <div class="explain">${esc(r.given)}</div>
             </div>
-            <div class="actions"><button class="next" id="nextBtn">次へ</button></div>
+
+            <div class="actions">
+              <button class="next" id="nextBtn">次へ</button>
+            </div>
           </div>
         </div>
       `;
@@ -595,7 +899,7 @@
     }
 
     function renderDone() {
-      const total = state.doc.problems.length;
+      const total = state.doc.items.length;
       const correctCount = Object.values(state.quiz.attempts).filter(v => v.correct).length;
 
       root.innerHTML = `
@@ -605,7 +909,9 @@
               <h1 class="title">${esc(state.doc.title || "問題")}</h1>
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
-            <div class="row"><button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button></div>
+            <div class="row">
+              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
           </div>
 
           <div class="summary">
@@ -613,14 +919,19 @@
               <div class="score">${correctCount} / ${total} 問正解</div>
               <div class="note" style="margin-top:10px">もう一回やり直せるよ。</div>
             </div>
-            <div class="actions" style="justify-content:flex-start"><button class="primary" id="restartBtn">もう一度！</button></div>
+
+            <div class="actions" style="justify-content:flex-start">
+              <button class="primary" id="restartBtn">もう一度！</button>
+            </div>
+
             <div class="card">
               <div class="label">全問題と答え</div>
               <div class="reviewList">
-                ${state.doc.problems.map(p => `
+                ${state.doc.items.map(item => `
                   <div class="reviewItem">
-                    <div class="reviewQ">${esc(p.question)}</div>
-                    <div class="reviewA">答え: ${esc(p.answers.join(" / "))}</div>
+                    ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
+                    <div class="reviewQ">${esc(item.question)}</div>
+                    <div class="reviewA">答え: ${esc(item.answers.join(" / "))}</div>
                   </div>
                 `).join("")}
               </div>
@@ -663,7 +974,7 @@
       if (state.screen === "editor") return renderEditor();
 
       if (state.screen === "quiz") {
-        if (!state.doc || !state.doc.problems || !state.doc.problems.length) {
+        if (!state.doc || !state.doc.items || !state.doc.items.length) {
           state.screen = "home";
           return render();
         }
@@ -674,46 +985,65 @@
     }
 
     async function loadRoute() {
-      const id = pathId();
-      if (!id) {
+      const r = route();
+
+      if (r.name === "home") {
         state.screen = "home";
         render();
         return;
       }
 
-      state.screen = "loading";
-      render();
+      if (r.name === "create") {
+        openCreate();
+        return;
+      }
 
-      try {
-        const snap = await getDoc(doc(db, COL, id));
-        if (!snap.exists()) {
+      if (r.name === "quiz") {
+        state.screen = "loading";
+        render();
+
+        try {
+          const snap = await getDoc(doc(db, COLLECTION, r.id));
+          if (!snap.exists()) {
+            state.screen = "home";
+            render();
+            return;
+          }
+
+          const data = snap.data() || {};
+          const items = Array.isArray(data.items)
+            ? data.items
+            : Array.isArray(data.problems)
+              ? data.problems.map(p => ({
+                  section: p.section || "",
+                  question: p.question,
+                  answers: p.answers || [],
+                  rawLine: p.rawLine || ""
+                }))
+              : parseItems(data.rawText || "");
+
+          startQuiz({
+            title: data.title || "問題",
+            subtitle: data.subtitle || "",
+            items,
+            problems: items,
+            rawText: data.rawText || "",
+            keyMode: data.keyMode || "key",
+            key: data.key || "",
+            ownerToken: data.ownerToken || "",
+            slug: data.slug || r.id,
+            createdAt: data.createdAt || null,
+            updatedAt: data.updatedAt || null
+          }, r.id);
+        } catch (err) {
+          console.error(err);
           state.screen = "home";
           render();
-          return;
         }
-
-        const data = snap.data() || {};
-        const problems = Array.isArray(data.problems) ? data.problems : parseProblems(data.rawText || "");
-        startQuiz({
-          title: data.title || "問題",
-          subtitle: data.subtitle || "",
-          problems,
-          rawText: data.rawText || "",
-          keyMode: data.keyMode || "key",
-          key: data.key || "",
-          ownerToken: data.ownerToken || "",
-          slug: data.slug || id,
-          createdAt: data.createdAt || null,
-          updatedAt: data.updatedAt || null
-        }, id);
-      } catch (err) {
-        console.error(err);
-        state.screen = "home";
-        render();
       }
     }
 
-    window.addEventListener("popstate", loadRoute);
+    window.addEventListener("hashchange", loadRoute);
     loadRoute();
   </script>
 </body>
