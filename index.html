@@ -43,7 +43,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea{font:inherit}
+    button,input,textarea,select{font:inherit}
     button{
       border:none;
       border-radius:14px;
@@ -172,6 +172,7 @@
       overflow:hidden;
       min-height:420px;
       background:var(--panel);
+      align-items:stretch;
     }
 
     .gutter{
@@ -194,7 +195,7 @@
       padding:14px;
       font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       white-space:pre;
-      overflow:auto;
+      overflow:hidden;
       tab-size:2;
       background:var(--panel);
       color:var(--text);
@@ -411,6 +412,21 @@
       word-break:break-word;
     }
 
+    .commentBox{
+      display:grid;
+      gap:12px;
+    }
+
+    .commentText{
+      min-height:86px;
+      resize:none;
+      overflow:hidden;
+    }
+
+    .commentSelect{
+      padding:10px 12px;
+    }
+
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
@@ -453,6 +469,7 @@
     const OWNER_COOKIE = "qb_owner_token";
     const MY_KEY = "qb_my_quizzes";
     const ACCESS_KEY = "qb_access_quizzes";
+    const COMMENT_USER_KEY = "qb_comment_user";
 
     const state = {
       screen: "loading",
@@ -468,6 +485,10 @@
         lastResult: null,
         attempts: {}
       }
+    };
+
+    const uiState = {
+      openComments: new Set()
     };
 
     let resultEnterHandler = null;
@@ -574,6 +595,14 @@
       }
 
       return lines.join("\n");
+    }
+
+    function sortComments(comments) {
+      return [...(comments || [])].sort((a, b) => {
+        const bt = normalizeTs(b.updatedAt) || normalizeTs(b.createdAt) || 0;
+        const at = normalizeTs(a.updatedAt) || normalizeTs(a.createdAt) || 0;
+        return bt - at;
+      });
     }
 
     function shuffle(arr) {
@@ -690,6 +719,15 @@
       saveMyList(next);
     }
 
+    function getCommentUserId() {
+      let id = safeLocalGet(COMMENT_USER_KEY);
+      if (!id) {
+        id = uid();
+        safeLocalSet(COMMENT_USER_KEY, id);
+      }
+      return id;
+    }
+
     function normalizeTs(value) {
       if (typeof value === "number") return value;
       if (!value) return null;
@@ -724,18 +762,25 @@
 
     function enableResultEnterHandler() {
       clearResultEnterHandler();
+
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
 
       resultEnterHandler = (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
-        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) return;
         e.preventDefault();
         nextQuestion();
       };
 
       window.addEventListener("keydown", resultEnterHandler);
+    }
+
+    function resizeToContent(el) {
+      if (!el) return;
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
     }
 
     function basePath() {
@@ -762,15 +807,34 @@
       return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
     }
 
-    function keyMatchAndUnlocked(id, docKey) {
+    function setAccessModeForDoc(docData, id) {
+      if (docData.keyMode === "open") {
+        state.accessMode = isOwner() ? "owner" : "open";
+        return;
+      }
+
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
+
       const rec = findAccessRecord(id);
-      return !!(rec && docKey && rec.key === docKey);
+      if (rec && docData.key && rec.key === docData.key) {
+        state.accessMode = "key";
+        return;
+      }
+
+      if (rec && docData.key && rec.key !== docData.key) {
+        removeAccessRecord(id);
+      }
+
+      state.accessMode = "none";
     }
 
     function canEdit() {
       if (!state.doc) return false;
       if (state.doc.keyMode === "open") return true;
-      return state.accessMode === "owner" || state.accessMode === "key";
+      return state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open";
     }
 
     function currentQuestion() {
@@ -784,22 +848,6 @@
       return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
     }
 
-    function setAccessModeForDoc(docData, id) {
-      if (docData.keyMode === "open") {
-        state.accessMode = isOwner() ? "owner" : "open";
-        return;
-      }
-      if (isOwner()) {
-        state.accessMode = "owner";
-        return;
-      }
-      if (keyMatchAndUnlocked(id, docData.key)) {
-        state.accessMode = "key";
-        return;
-      }
-      state.accessMode = "none";
-    }
-
     function openEditFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
@@ -810,6 +858,186 @@
       };
       state.screen = "editor";
       render();
+    }
+
+    function touchLocalProject(updatedAt) {
+      if (!state.docId || !state.doc) return;
+
+      const meta = {
+        id: state.docId,
+        title: state.doc.title || "",
+        subtitle: state.doc.subtitle || "",
+        createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+        updatedAt
+      };
+
+      if (isOwner()) {
+        upsertMyMeta(meta);
+        return;
+      }
+
+      if (state.accessMode === "key") {
+        rememberAccess(state.docId, state.doc.key || findAccessRecord(state.docId)?.key || "", meta);
+      }
+    }
+
+    function sortByUpdated(comments) {
+      return sortComments(comments).map(c => c);
+    }
+
+    function canViewComment(c) {
+      if (!c) return false;
+      if (c.visibility === "public") return true;
+      if (state.doc?.keyMode === "open") return true;
+      if (isOwner()) return true;
+      if (state.accessMode === "key") return true;
+      return c.authorId === getCommentUserId();
+    }
+
+    function canManageComment(c) {
+      if (!c) return false;
+      if (state.doc?.keyMode === "open") return true;
+      if (isOwner()) return true;
+      if (state.accessMode === "key") return true;
+      return c.authorId === getCommentUserId();
+    }
+
+    async function persistComments(nextComments) {
+      if (!state.docId) return;
+      const now = Date.now();
+      const normalized = sortComments(nextComments);
+      state.doc.comments = normalized;
+      state.doc.updatedAt = now;
+
+      await setDoc(doc(db, COLLECTION, state.docId), {
+        comments: normalized,
+        updatedAt: now
+      }, { merge: true });
+
+      touchLocalProject(now);
+      render();
+    }
+
+    async function addCommentFromForm() {
+      const textEl = document.getElementById("commentText");
+      const visEl = document.getElementById("commentVisibility");
+      if (!textEl || !visEl) return;
+
+      const content = String(textEl.value || "").trim();
+      const visibility = visEl.value === "private" ? "private" : "public";
+
+      if (!content) {
+        alert("コメントを入れてね");
+        return;
+      }
+
+      const now = Date.now();
+      const comment = {
+        id: uid(),
+        authorId: getCommentUserId(),
+        content,
+        visibility,
+        createdAt: now,
+        updatedAt: now
+      };
+
+      uiState.openComments.add(comment.id);
+
+      const next = sortComments([comment, ...(state.doc.comments || [])]);
+      await persistComments(next);
+    }
+
+    async function updateCommentVisibility(commentId) {
+      const sel = document.getElementById(`commentVis_${commentId}`);
+      if (!sel) return;
+      const nextVis = sel.value === "private" ? "private" : "public";
+
+      const next = (state.doc.comments || []).map(c => {
+        if (c.id !== commentId) return c;
+        return { ...c, visibility: nextVis, updatedAt: Date.now() };
+      });
+
+      await persistComments(next);
+    }
+
+    async function deleteComment(commentId) {
+      if (!confirm("このコメントを削除する？")) return;
+
+      const next = (state.doc.comments || []).filter(c => c.id !== commentId);
+      uiState.openComments.delete(commentId);
+      await persistComments(next);
+    }
+
+    function toggleComment(commentId) {
+      if (uiState.openComments.has(commentId)) {
+        uiState.openComments.delete(commentId);
+      } else {
+        uiState.openComments.add(commentId);
+      }
+      render();
+    }
+
+    function renderEditorLeftActionHtml() {
+      if (!state.doc) return `<div class="note"></div>`;
+      if (isOwner()) return `<button class="danger" id="leftActionBtn">削除</button>`;
+      if (state.accessMode === "key") return `<button class="danger" id="leftActionBtn">脱退</button>`;
+      return `<div class="note"></div>`;
+    }
+
+    function renderCommentSection() {
+      const comments = sortByUpdated(state.doc.comments || []);
+      const currentUser = getCommentUserId();
+
+      const listHtml = comments.length ? comments.map(c => {
+        const visible = canViewComment(c);
+        const open = uiState.openComments.has(c.id);
+        const label = visible ? (open ? "閉じる" : "コメント") : "🫥";
+        const badge = c.visibility === "public" ? "公開" : "非公開";
+        const manage = canManageComment(c);
+        const authorTag = c.authorId === currentUser ? "自分" : "";
+
+        return `
+          <div class="reviewItem">
+            <div class="row" style="justify-content:space-between; align-items:center">
+              <div class="reviewSection">${esc(badge)}${authorTag ? `・${esc(authorTag)}` : ""}</div>
+              <button class="ghost miniAction" data-comment-toggle="${esc(c.id)}" ${visible ? "" : "disabled"}>${esc(label)}</button>
+            </div>
+            ${visible && open ? `
+              <div class="reviewQ">${esc(c.content)}</div>
+              <div class="metaLine">更新: ${esc(formatMinute(c.updatedAt || c.createdAt))}</div>
+              ${manage ? `
+                <div class="row" style="gap:8px; align-items:center">
+                  <select id="commentVis_${esc(c.id)}" class="input commentSelect" style="max-width:140px">
+                    <option value="public" ${c.visibility === "public" ? "selected" : ""}>公開</option>
+                    <option value="private" ${c.visibility === "private" ? "selected" : ""}>非公開</option>
+                  </select>
+                  <button class="ghost miniAction" data-comment-save="${esc(c.id)}">更新</button>
+                  <button class="danger miniAction" data-comment-delete="${esc(c.id)}">削除</button>
+                </div>
+              ` : ""}
+            ` : ""}
+          </div>
+        `;
+      }).join("") : `<div class="note">コメントはまだないよ。</div>`;
+
+      return `
+        <div class="card commentBox">
+          <div class="label" style="font-size:14px">コメント</div>
+          <div class="row" style="align-items:flex-start">
+            <textarea id="commentText" class="textarea commentText" placeholder="コメントを入力"></textarea>
+            <div style="min-width:160px; display:grid; gap:8px">
+              <select id="commentVisibility" class="input commentSelect">
+                <option value="public">公開</option>
+                <option value="private">非公開</option>
+              </select>
+              <button class="primary" id="commentSubmit">コメント</button>
+            </div>
+          </div>
+          <div class="reviewList">
+            ${listHtml}
+          </div>
+        </div>
+      `;
     }
 
     function startQuiz(docData, id) {
@@ -832,7 +1060,7 @@
           title: docData.title || "",
           subtitle: docData.subtitle || "",
           createdAt: normalizeTs(docData.createdAt) || Date.now(),
-          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+          updatedAt: Date.now()
         });
       }
 
@@ -880,36 +1108,8 @@
     }
 
     function lineNumbers(textarea, gutter) {
-      const count = Math.max(1, textarea.value.split(/\r?\n/).length + 1);
+      const count = Math.max(1, textarea.value.split(/\r?\n/).length);
       gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
-      gutter.scrollTop = textarea.scrollTop;
-    }
-
-    function topButtonHtml() {
-      return `<button class="ghost" id="topBtn">トップ</button>`;
-    }
-
-    function renderAccessButtons() {
-      if (!state.doc) return `<div class="note">編集権限を読み込み中…</div>`;
-
-      if (state.accessMode === "owner") {
-        return `<button class="danger" id="deleteBtn">削除</button>`;
-      }
-
-      if (state.accessMode === "key") {
-        return `<button class="danger" id="leaveBtn">脱退</button>`;
-      }
-
-      return `<div class="note">公開編集モード。削除は主催者のみ。</div>`;
-    }
-
-    function bindTopButton() {
-      const topBtn = document.getElementById("topBtn");
-      if (topBtn) {
-        topBtn.addEventListener("click", () => {
-          location.hash = "";
-        });
-      }
     }
 
     function bindHomeActions() {
@@ -953,6 +1153,40 @@
           location.hash = "#/create";
         });
       }
+    }
+
+    function bindCommentSection() {
+      const commentText = document.getElementById("commentText");
+      if (commentText) {
+        resizeToContent(commentText);
+        commentText.addEventListener("input", () => resizeToContent(commentText));
+      }
+
+      const submitBtn = document.getElementById("commentSubmit");
+      if (submitBtn) {
+        submitBtn.addEventListener("click", addCommentFromForm);
+      }
+
+      document.querySelectorAll("[data-comment-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.commentToggle || "";
+          if (id) toggleComment(id);
+        });
+      });
+
+      document.querySelectorAll("[data-comment-save]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.commentSave || "";
+          if (id) updateCommentVisibility(id);
+        });
+      });
+
+      document.querySelectorAll("[data-comment-delete]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.commentDelete || "";
+          if (id) deleteComment(id);
+        });
+      });
     }
 
     function renderHome() {
@@ -1033,6 +1267,13 @@
       bindHomeActions();
     }
 
+    function editorActionHtml() {
+      if (!state.doc) return `<div class="note"></div>`;
+      if (isOwner()) return `<button class="danger" id="leftActionBtn">削除</button>`;
+      if (state.accessMode === "key") return `<button class="danger" id="leftActionBtn">脱退</button>`;
+      return `<div class="note"></div>`;
+    }
+
     function renderEditor() {
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
@@ -1046,7 +1287,7 @@
               <div class="sub">タイトルの右に Key ボタン</div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn">トップ</button>
             </div>
           </div>
 
@@ -1064,6 +1305,11 @@
               <input id="subInput" class="input" type="text" placeholder="サブタイトル" value="${esc(d.subtitle)}">
             </div>
 
+            <div class="row" style="justify-content:space-between; align-items:center">
+              <div id="editorLeftActionArea">${editorActionHtml()}</div>
+              <button class="primary" id="saveBtn">保存</button>
+            </div>
+
             <div>
               <div class="label">問題欄</div>
               <div class="gridEditor">
@@ -1075,22 +1321,6 @@
 面積=377975km²
 ">${esc(d.rawText)}</textarea>
               </div>
-              <div class="help">
-                1行に1つ書くよ。<br>
-                <b>= なしの行</b> は共通見出し。<br>
-                <b>問題=答え</b> で普通の問題。<br>
-                <b>問題=答え1,答え2</b> で複数正解。
-              </div>
-            </div>
-
-            <div class="row" style="justify-content:space-between">
-              <div id="keyStatus" class="note"></div>
-              <button class="primary" id="saveBtn">保存</button>
-            </div>
-
-            <div class="row" style="justify-content:space-between; margin-top:6px">
-              <div class="note">削除すると元に戻せないよ。ちゃんと確認する。</div>
-              <div id="bottomActionArea"></div>
             </div>
           </div>
         </div>
@@ -1101,32 +1331,23 @@
       const problemText = document.getElementById("problemText");
       const gutter = document.getElementById("gutter");
       const keyBtn = document.getElementById("keyBtn");
-      const keyStatus = document.getElementById("keyStatus");
       const saveBtn = document.getElementById("saveBtn");
-      const bottomActionArea = document.getElementById("bottomActionArea");
       const topBtn = document.getElementById("topBtn");
+      const leftActionBtn = document.getElementById("leftActionBtn");
 
       function refreshKeyStatus() {
         if (!state.doc) {
-          keyStatus.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
           keyBtn.disabled = false;
           keyBtn.textContent = "Key";
-          keyBtn.title = "";
           return;
         }
 
         if (isOwner()) {
-          keyStatus.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
           keyBtn.disabled = false;
           keyBtn.textContent = "Key";
-          keyBtn.title = "";
         } else {
-          keyStatus.textContent = state.doc.keyMode === "open"
-            ? "公開編集モード"
-            : "Keyは主催者のみ変更できます";
           keyBtn.disabled = true;
           keyBtn.textContent = "Key";
-          keyBtn.title = "Keyは主催者のみ変更できます";
         }
       }
 
@@ -1134,11 +1355,15 @@
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
       problemText.addEventListener("input", e => {
         d.rawText = e.target.value;
+        resizeToContent(problemText);
         lineNumbers(problemText, gutter);
       });
-      problemText.addEventListener("scroll", () => {
-        gutter.scrollTop = problemText.scrollTop;
-      });
+
+      if (topBtn) {
+        topBtn.addEventListener("click", () => {
+          location.hash = "";
+        });
+      }
 
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
@@ -1160,9 +1385,52 @@
         refreshKeyStatus();
       });
 
-      if (topBtn) {
-        topBtn.addEventListener("click", () => {
-          location.hash = "";
+      if (leftActionBtn) {
+        leftActionBtn.addEventListener("click", async () => {
+          if (isOwner()) {
+            if (!state.docId) {
+              alert("まだ保存されてないから削除できないよ");
+              return;
+            }
+
+            const title = state.doc?.title || state.draft?.title || "";
+            const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
+            if (typed === null) return;
+            if (typed.trim() !== title.trim()) {
+              alert("タイトルが違うから削除をやめたよ");
+              return;
+            }
+
+            if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+
+            leftActionBtn.disabled = true;
+            try {
+              await deleteDoc(doc(db, COLLECTION, state.docId));
+              removeMyMeta(state.docId);
+              removeAccessRecord(state.docId);
+              state.docId = "";
+              state.doc = null;
+              state.draft = null;
+              location.hash = "";
+              alert("削除したよ");
+              render();
+            } catch (err) {
+              console.error("delete failed:", err);
+              alert(`削除で失敗したよ: ${err?.message || err}`);
+            } finally {
+              leftActionBtn.disabled = false;
+            }
+            return;
+          }
+
+          if (state.accessMode === "key") {
+            if (!confirm("本当に共同編集から脱退しますか？")) return;
+            removeAccessRecord(state.docId);
+            state.accessMode = "none";
+            location.hash = `#/${encodeURIComponent(state.docId)}`;
+            alert("脱退したよ");
+            render();
+          }
         });
       }
 
@@ -1180,6 +1448,7 @@
         setCookie(OWNER_COOKIE, ownerToken);
 
         const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
+        const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
         const payload = {
           title,
@@ -1192,7 +1461,8 @@
           ownerToken,
           slug: newId,
           createdAt: existingCreatedAt,
-          updatedAt: Date.now()
+          updatedAt: Date.now(),
+          comments: existingComments
         };
 
         saveBtn.disabled = true;
@@ -1210,7 +1480,7 @@
           }
 
           state.docId = newId;
-          state.doc = { ...payload, items };
+          state.doc = { ...payload, items, comments: sortComments(existingComments) };
 
           if (isOwner()) {
             upsertMyMeta({
@@ -1223,15 +1493,12 @@
           }
 
           if (state.accessMode === "key") {
-            const currentKey = state.doc?.key || d.key || "";
-            if (currentKey) {
-              rememberAccess(newId, currentKey, {
-                title: payload.title,
-                subtitle: payload.subtitle,
-                createdAt: payload.createdAt,
-                updatedAt: payload.updatedAt
-              });
-            }
+            rememberAccess(newId, state.doc?.key || d.key || "", {
+              title: payload.title,
+              subtitle: payload.subtitle,
+              createdAt: payload.createdAt,
+              updatedAt: payload.updatedAt
+            });
           }
 
           location.hash = `#/${encodeURIComponent(newId)}`;
@@ -1249,61 +1516,7 @@
         }
       });
 
-      bottomActionArea.innerHTML = renderAccessButtons();
-
-      const deleteBtn = document.getElementById("deleteBtn");
-      const leaveBtn = document.getElementById("leaveBtn");
-
-      if (deleteBtn) {
-        deleteBtn.addEventListener("click", async () => {
-          if (!state.docId) {
-            alert("まだ保存されてないから削除できないよ");
-            return;
-          }
-
-          const title = state.doc?.title || state.draft?.title || "";
-          const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
-          if (typed === null) return;
-          if (typed.trim() !== title.trim()) {
-            alert("タイトルが違うから削除をやめたよ");
-            return;
-          }
-
-          if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
-
-          deleteBtn.disabled = true;
-
-          try {
-            await deleteDoc(doc(db, COLLECTION, state.docId));
-            removeMyMeta(state.docId);
-            removeAccessRecord(state.docId);
-            state.docId = "";
-            state.doc = null;
-            state.draft = null;
-            location.hash = "";
-            alert("削除したよ");
-            render();
-          } catch (err) {
-            console.error("delete failed:", err);
-            alert(`削除で失敗したよ: ${err?.message || err}`);
-          } finally {
-            deleteBtn.disabled = false;
-          }
-        });
-      }
-
-      if (leaveBtn) {
-        leaveBtn.addEventListener("click", () => {
-          if (!state.docId) return;
-          if (!confirm("本当に共同編集から脱退しますか？")) return;
-          removeAccessRecord(state.docId);
-          state.accessMode = "none";
-          location.hash = `#/${encodeURIComponent(state.docId)}`;
-          alert("脱退したよ");
-          render();
-        });
-      }
-
+      resizeToContent(problemText);
       lineNumbers(problemText, gutter);
       refreshKeyStatus();
       titleInput.focus();
@@ -1328,7 +1541,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn">トップ</button>
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1366,7 +1579,7 @@
         if (state.doc.keyMode === "open") return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
+          rememberAccess(state.docId, state.doc.key || "", {
             title: state.doc.title || "",
             subtitle: state.doc.subtitle || "",
             createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
@@ -1391,6 +1604,62 @@
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
 
+    function renderCommentSection() {
+      const comments = sortByUpdated(state.doc.comments || []);
+      const currentUser = getCommentUserId();
+
+      const listHtml = comments.length ? comments.map(c => {
+        const visible = canViewComment(c);
+        const open = uiState.openComments.has(c.id);
+        const label = visible ? (open ? "閉じる" : "コメント") : "🫥";
+        const badge = c.visibility === "public" ? "公開" : "非公開";
+        const manage = canManageComment(c);
+        const authorTag = c.authorId === currentUser ? "自分" : "";
+
+        return `
+          <div class="reviewItem">
+            <div class="row" style="justify-content:space-between; align-items:center">
+              <div class="reviewSection">${esc(badge)}${authorTag ? `・${esc(authorTag)}` : ""}</div>
+              <button class="ghost miniAction" data-comment-toggle="${esc(c.id)}" ${visible ? "" : "disabled"}>${esc(label)}</button>
+            </div>
+            ${visible && open ? `
+              <div class="reviewQ">${esc(c.content)}</div>
+              <div class="metaLine">更新: ${esc(formatMinute(c.updatedAt || c.createdAt))}</div>
+              ${manage ? `
+                <div class="row" style="gap:8px; align-items:center">
+                  <select id="commentVis_${esc(c.id)}" class="input commentSelect" style="max-width:140px">
+                    <option value="public" ${c.visibility === "public" ? "selected" : ""}>公開</option>
+                    <option value="private" ${c.visibility === "private" ? "selected" : ""}>非公開</option>
+                  </select>
+                  <button class="ghost miniAction" data-comment-save="${esc(c.id)}">更新</button>
+                  <button class="danger miniAction" data-comment-delete="${esc(c.id)}">削除</button>
+                </div>
+              ` : ""}
+            ` : ""}
+          </div>
+        `;
+      }).join("") : `<div class="note">コメントはまだないよ。</div>`;
+
+      return `
+        <div class="card commentBox">
+          <div class="label" style="font-size:14px">コメント</div>
+          <div class="row" style="align-items:flex-start">
+            <textarea id="commentText" class="textarea commentText" placeholder="コメントを入力"></textarea>
+            <div style="min-width:160px; display:grid; gap:8px">
+              <select id="commentVisibility" class="input commentSelect">
+                <option value="public">公開</option>
+                <option value="private">非公開</option>
+              </select>
+              <button class="primary" id="commentSubmit">コメント</button>
+            </div>
+          </div>
+          <div class="reviewList">
+            ${listHtml}
+          </div>
+        </div>
+      `;
+    }
+
     function renderResult() {
       const r = state.quiz.lastResult;
       if (!r) {
@@ -1410,7 +1679,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn">トップ</button>
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1448,7 +1717,7 @@
         if (state.doc.keyMode === "open") return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
+          rememberAccess(state.docId, state.doc.key || "", {
             title: state.doc.title || "",
             subtitle: state.doc.subtitle || "",
             createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
@@ -1479,7 +1748,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn">トップ</button>
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1489,6 +1758,8 @@
               <div class="score">${correctCount} / ${total} 問正解</div>
               <div class="note" style="margin-top:10px">もう一回やり直せるよ。</div>
             </div>
+
+            ${renderCommentSection()}
 
             <div class="actions" style="justify-content:flex-start">
               <button class="primary" id="restartBtn">もう一度！</button>
@@ -1521,7 +1792,7 @@
         if (state.doc.keyMode === "open") return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
+          rememberAccess(state.docId, state.doc.key || "", {
             title: state.doc.title || "",
             subtitle: state.doc.subtitle || "",
             createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
@@ -1534,6 +1805,7 @@
       });
 
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
+      bindCommentSection();
     }
 
     function renderLoading() {
@@ -1603,7 +1875,8 @@
           ownerToken: data.ownerToken || "",
           slug: data.slug || id,
           createdAt: data.createdAt || null,
-          updatedAt: data.updatedAt || null
+          updatedAt: data.updatedAt || null,
+          comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
         };
 
         setAccessModeForDoc(state.doc, id);
@@ -1632,7 +1905,7 @@
 
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
+          rememberAccess(state.docId, state.doc.key || "", {
             title: state.doc.title || "",
             subtitle: state.doc.subtitle || "",
             createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
@@ -1711,7 +1984,8 @@
             ownerToken: data.ownerToken || "",
             slug: data.slug || r.id,
             createdAt: data.createdAt || null,
-            updatedAt: data.updatedAt || null
+            updatedAt: data.updatedAt || null,
+            comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
           };
           state.docId = r.id;
 
