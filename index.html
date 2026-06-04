@@ -404,13 +404,6 @@
       white-space:nowrap;
     }
 
-    .linkBtn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      text-decoration:none;
-    }
-
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
@@ -687,7 +680,7 @@
     }
 
     function prettyLink(id) {
-      return `${location.origin}${basePath()}#/quiz/${encodeURIComponent(id)}`;
+      return `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
     }
 
     function route() {
@@ -695,8 +688,7 @@
       const parts = raw.split("/").filter(Boolean);
       if (!parts.length) return { name: "home" };
       if (parts[0] === "create") return { name: "create" };
-      if (parts[0] === "quiz" && parts[1]) return { name: "quiz", id: decodeURIComponent(parts[1]) };
-      return { name: "home" };
+      return { name: "quiz", id: decodeURIComponent(parts[0]) };
     }
 
     function isOwner() {
@@ -728,18 +720,6 @@
         keyMode: "key",
         key: ""
       };
-    }
-
-    function openEditFromDoc() {
-      state.draft = {
-        title: state.doc?.title || "",
-        subtitle: state.doc?.subtitle || "",
-        rawText: itemsToRawText(state.doc?.items || []),
-        keyMode: state.doc?.keyMode || "key",
-        key: state.doc?.key || ""
-      };
-      state.screen = "editor";
-      render();
     }
 
     function startQuiz(docData, id) {
@@ -804,12 +784,8 @@
       gutter.scrollTop = textarea.scrollTop;
     }
 
-    function actionButtonsHtml(includeTop = false) {
-      return `
-        <div class="row">
-          <button class="ghost" id="topBtn">トップ</button>
-        </div>
-      `;
+    function topButtonHtml() {
+      return `<button class="ghost" id="topBtn">トップ</button>`;
     }
 
     function bindTopButton() {
@@ -824,13 +800,13 @@
     function bindHomeActions() {
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/quiz/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
         });
       });
 
       document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/quiz/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+          location.hash = `#/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
         });
       });
 
@@ -920,7 +896,7 @@
               <div class="sub">タイトルの右に Key ボタン</div>
             </div>
             <div class="row">
-              ${actionButtonsHtml()}
+              ${topButtonHtml()}
             </div>
           </div>
 
@@ -1064,7 +1040,7 @@
             updatedAt: Date.now()
           });
 
-          history.replaceState({}, "", `#/quiz/${encodeURIComponent(newId)}`);
+          location.hash = `#/${encodeURIComponent(newId)}`;
           const link = prettyLink(newId);
           navigator.clipboard?.writeText(link).catch(() => {});
           alert(`保存したよ！\n\n${link}`);
@@ -1138,7 +1114,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${actionButtonsHtml()}
+              ${topButtonHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1213,7 +1189,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${actionButtonsHtml()}
+              ${topButtonHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1275,7 +1251,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
-              ${actionButtonsHtml()}
+              ${topButtonHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
