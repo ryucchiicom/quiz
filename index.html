@@ -122,6 +122,19 @@
       border-color:#2d3a4f;
     }
 
+    .danger{
+      background:#ffeded;
+      color:#a72b2b;
+      border:1px solid #ffc7c7;
+      font-weight:800;
+    }
+
+    body.dark .danger{
+      background:#2a1620;
+      color:#ffaaaa;
+      border-color:#5b2a39;
+    }
+
     .row{
       display:flex;
       gap:10px;
@@ -791,6 +804,23 @@
       gutter.scrollTop = textarea.scrollTop;
     }
 
+    function actionButtonsHtml(includeTop = false) {
+      return `
+        <div class="row">
+          <button class="ghost" id="topBtn">トップ</button>
+        </div>
+      `;
+    }
+
+    function bindTopButton() {
+      const topBtn = document.getElementById("topBtn");
+      if (topBtn) {
+        topBtn.addEventListener("click", () => {
+          location.hash = "";
+        });
+      }
+    }
+
     function bindHomeActions() {
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -890,7 +920,7 @@
               <div class="sub">タイトルの右に Key ボタン</div>
             </div>
             <div class="row">
-              <button class="ghost" id="backBtn">戻る</button>
+              ${actionButtonsHtml()}
             </div>
           </div>
 
@@ -931,6 +961,11 @@
               <div id="keyStatus" class="note"></div>
               <button class="primary" id="saveBtn">保存</button>
             </div>
+
+            <div class="row" style="justify-content:space-between; margin-top:6px">
+              <div class="note">削除すると元に戻せないよ。ちゃんと確認する。</div>
+              <button class="danger" id="deleteBtn">削除</button>
+            </div>
           </div>
         </div>
       `;
@@ -942,6 +977,7 @@
       const keyBtn = document.getElementById("keyBtn");
       const keyStatus = document.getElementById("keyStatus");
       const saveBtn = document.getElementById("saveBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
 
       function refreshKeyStatus() {
         keyStatus.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
@@ -975,10 +1011,8 @@
         refreshKeyStatus();
       });
 
-      document.getElementById("backBtn").addEventListener("click", () => {
-        if (confirm("今の編集は消えるけど戻る？")) {
-          location.hash = "";
-        }
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
       });
 
       saveBtn.addEventListener("click", async () => {
@@ -1045,6 +1079,41 @@
         }
       });
 
+      deleteBtn.addEventListener("click", async () => {
+        if (!state.docId) {
+          alert("まだ保存されてないから削除できないよ");
+          return;
+        }
+
+        const title = state.doc?.title || state.draft?.title || "";
+        const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
+        if (typed === null) return;
+        if (typed.trim() !== title.trim()) {
+          alert("タイトルが違うから削除をやめたよ");
+          return;
+        }
+
+        if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+
+        deleteBtn.disabled = true;
+
+        try {
+          await deleteDoc(doc(db, COLLECTION, state.docId));
+          removeMyQuizMeta(state.docId);
+          state.docId = "";
+          state.doc = null;
+          state.draft = null;
+          location.hash = "";
+          alert("削除したよ");
+          render();
+        } catch (err) {
+          console.error("delete failed:", err);
+          alert(`削除で失敗したよ: ${err?.message || err}`);
+        } finally {
+          deleteBtn.disabled = false;
+        }
+      });
+
       lineNumbers(problemText, gutter);
       refreshKeyStatus();
       titleInput.focus();
@@ -1069,6 +1138,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
+              ${actionButtonsHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1094,6 +1164,10 @@
           </div>
         </div>
       `;
+
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
+      });
 
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
@@ -1139,6 +1213,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
+              ${actionButtonsHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1164,6 +1239,10 @@
           </div>
         </div>
       `;
+
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
+      });
 
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
@@ -1196,6 +1275,7 @@
               <div class="sub">${esc(state.doc.subtitle || "")}</div>
             </div>
             <div class="row">
+              ${actionButtonsHtml()}
               <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -1225,6 +1305,10 @@
           </div>
         </div>
       `;
+
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
+      });
 
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
