@@ -451,13 +451,15 @@
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
-    const LIST_KEY = "qb_my_quizzes";
+    const MY_KEY = "qb_my_quizzes";
+    const ACCESS_KEY = "qb_access_quizzes";
 
     const state = {
       screen: "loading",
       docId: "",
       doc: null,
       draft: null,
+      accessMode: "none", // none | owner | open | key
       quiz: {
         phase: "question",
         order: [],
@@ -515,9 +517,7 @@
       if (!raw) return null;
 
       const hasEq = raw.includes("=") || raw.includes("＝");
-      if (!hasEq) {
-        return { kind: "section", text: raw };
-      }
+      if (!hasEq) return { kind: "section", text: raw };
 
       const parts = raw.split(/[=＝]/).map(v => v.trim());
       if (parts.length < 2) return null;
@@ -546,12 +546,10 @@
       for (const line of lines) {
         const parsed = parseLine(line);
         if (!parsed) continue;
-
         if (parsed.kind === "section") {
           currentSection = parsed.text;
           continue;
         }
-
         items.push({
           section: currentSection,
           question: parsed.question,
@@ -609,9 +607,9 @@
       try { localStorage.setItem(key, value); } catch {}
     }
 
-    function loadMyQuizList() {
+    function loadMyList() {
       try {
-        const raw = safeLocalGet(LIST_KEY);
+        const raw = safeLocalGet(MY_KEY);
         const list = raw ? JSON.parse(raw) : [];
         return Array.isArray(list) ? list : [];
       } catch {
@@ -619,12 +617,55 @@
       }
     }
 
-    function saveMyQuizList(list) {
-      safeLocalSet(LIST_KEY, JSON.stringify(list.slice(0, 50)));
+    function saveMyList(list) {
+      safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50)));
     }
 
-    function upsertMyQuizMeta(meta) {
-      const list = loadMyQuizList();
+    function loadAccessList() {
+      try {
+        const raw = safeLocalGet(ACCESS_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveAccessList(list) {
+      safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50)));
+    }
+
+    function findAccessRecord(id) {
+      return loadAccessList().find(v => v.id === id) || null;
+    }
+
+    function rememberAccess(id, key, meta = {}) {
+      if (!id || !key) return;
+      const list = loadAccessList();
+      const next = {
+        id,
+        key,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
+
+      const idx = list.findIndex(v => v.id === id);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
+
+      list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      saveAccessList(list);
+    }
+
+    function removeAccessRecord(id) {
+      const next = loadAccessList().filter(v => v.id !== id);
+      saveAccessList(next);
+    }
+
+    function upsertMyMeta(meta) {
+      const list = loadMyList();
       const id = String(meta?.id || "");
       if (!id) return;
 
@@ -637,19 +678,16 @@
       };
 
       const idx = list.findIndex(v => v.id === id);
-      if (idx >= 0) {
-        list[idx] = { ...list[idx], ...next };
-      } else {
-        list.unshift(next);
-      }
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
 
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      saveMyQuizList(list);
+      saveMyList(list);
     }
 
-    function removeMyQuizMeta(id) {
-      const next = loadMyQuizList().filter(v => v.id !== id);
-      saveMyQuizList(next);
+    function removeMyMeta(id) {
+      const next = loadMyList().filter(v => v.id !== id);
+      saveMyList(next);
     }
 
     function normalizeTs(value) {
@@ -686,7 +724,6 @@
 
     function enableResultEnterHandler() {
       clearResultEnterHandler();
-
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
 
@@ -712,10 +749,6 @@
       return `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
     }
 
-    function editLink(id) {
-      return `${location.origin}${basePath()}#/edit/${encodeURIComponent(id)}`;
-    }
-
     function route() {
       const raw = location.hash.replace(/^#/, "");
       const parts = raw.split("/").filter(Boolean);
@@ -729,14 +762,15 @@
       return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
     }
 
-    function keyUnlocked() {
-      return !!(state.docId && getCookie(`qb_key_${state.docId}`) === "1");
+    function keyMatchAndUnlocked(id, docKey) {
+      const rec = findAccessRecord(id);
+      return !!(rec && docKey && rec.key === docKey);
     }
 
     function canEdit() {
       if (!state.doc) return false;
       if (state.doc.keyMode === "open") return true;
-      return isOwner() || keyUnlocked();
+      return state.accessMode === "owner" || state.accessMode === "key";
     }
 
     function currentQuestion() {
@@ -747,13 +781,23 @@
     }
 
     function blankDraft() {
-      return {
-        title: "",
-        subtitle: "",
-        rawText: "",
-        keyMode: "key",
-        key: ""
-      };
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+    }
+
+    function setAccessModeForDoc(docData, id) {
+      if (docData.keyMode === "open") {
+        state.accessMode = isOwner() ? "owner" : "open";
+        return;
+      }
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
+      if (keyMatchAndUnlocked(id, docData.key)) {
+        state.accessMode = "key";
+        return;
+      }
+      state.accessMode = "none";
     }
 
     function openEditFromDoc() {
@@ -771,6 +815,27 @@
     function startQuiz(docData, id) {
       state.doc = docData;
       state.docId = id;
+      setAccessModeForDoc(docData, id);
+
+      if (state.accessMode === "key") {
+        rememberAccess(id, docData.key, {
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id,
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
       state.quiz = {
         phase: "question",
         order: shuffle((docData.items || []).map((_, i) => i)),
@@ -781,17 +846,6 @@
       };
       state.screen = "quiz";
       document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
-
-      if (isOwner()) {
-        upsertMyQuizMeta({
-          id,
-          title: docData.title || "",
-          subtitle: docData.subtitle || "",
-          createdAt: normalizeTs(docData.createdAt) || Date.now(),
-          updatedAt: Date.now()
-        });
-      }
-
       render();
     }
 
@@ -835,6 +889,20 @@
       return `<button class="ghost" id="topBtn">トップ</button>`;
     }
 
+    function renderAccessButtons() {
+      if (!state.doc) return `<div class="note">編集権限を読み込み中…</div>`;
+
+      if (state.accessMode === "owner") {
+        return `<button class="danger" id="deleteBtn">削除</button>`;
+      }
+
+      if (state.accessMode === "key") {
+        return `<button class="danger" id="leaveBtn">脱退</button>`;
+      }
+
+      return `<div class="note">公開編集モード。削除は主催者のみ。</div>`;
+    }
+
     function bindTopButton() {
       const topBtn = document.getElementById("topBtn");
       if (topBtn) {
@@ -870,6 +938,15 @@
         });
       });
 
+      document.querySelectorAll("[data-leave-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.leaveQuiz || "";
+          if (!confirm("本当に共同編集から脱退しますか？")) return;
+          removeAccessRecord(id);
+          render();
+        });
+      });
+
       const createBtn = document.getElementById("createBtn");
       if (createBtn) {
         createBtn.addEventListener("click", () => {
@@ -882,8 +959,10 @@
       clearResultEnterHandler();
       document.title = "問題作成サイト";
 
-      const myQuizzes = loadMyQuizList();
-      const listHtml = myQuizzes.length ? myQuizzes.map(item => `
+      const myQuizzes = loadMyList();
+      const accessQuizzes = loadAccessList().filter(item => !myQuizzes.some(m => m.id === item.id));
+
+      const myListHtml = myQuizzes.length ? myQuizzes.map(item => `
         <div class="listItem">
           <div class="listMeta">
             <div class="reviewQ">${esc(item.title || "無題")}</div>
@@ -897,9 +976,24 @@
             <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}">コピー</button>
           </div>
         </div>
-      `).join("") : `
-        <div class="note">まだないよ。作成ボタンからどうぞ。</div>
-      `;
+      `).join("") : `<div class="note">まだないよ。作成ボタンからどうぞ。</div>`;
+
+      const accessListHtml = accessQuizzes.length ? accessQuizzes.map(item => `
+        <div class="listItem">
+          <div class="listMeta">
+            <div class="reviewQ">${esc(item.title || "無題")}</div>
+            <div class="reviewA">${esc(item.subtitle || "")}</div>
+            <div class="metaLine">作成: ${esc(formatMinute(item.createdAt))}</div>
+            <div class="metaLine">最終編集: ${esc(formatMinute(item.updatedAt))}</div>
+          </div>
+          <div class="listActions">
+            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}">開く</button>
+            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}">編集</button>
+            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}">コピー</button>
+            <button class="ghost miniAction" data-leave-quiz="${esc(item.id)}">脱退</button>
+          </div>
+        </div>
+      `).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`;
 
       root.innerHTML = `
         <div class="page">
@@ -924,10 +1018,13 @@
             </div>
 
             <div class="card">
-              <div class="label" style="font-size:14px">自分が作ったやつ</div>
-              <div class="listGrid">
-                ${listHtml}
-              </div>
+              <div class="label" style="font-size:14px">マイクイズ</div>
+              <div class="listGrid">${myListHtml}</div>
+            </div>
+
+            <div class="card">
+              <div class="label" style="font-size:14px">共同編集</div>
+              <div class="listGrid">${accessListHtml}</div>
             </div>
           </div>
         </div>
@@ -993,7 +1090,7 @@
 
             <div class="row" style="justify-content:space-between; margin-top:6px">
               <div class="note">削除すると元に戻せないよ。ちゃんと確認する。</div>
-              <button class="danger" id="deleteBtn">削除</button>
+              <div id="bottomActionArea"></div>
             </div>
           </div>
         </div>
@@ -1006,11 +1103,31 @@
       const keyBtn = document.getElementById("keyBtn");
       const keyStatus = document.getElementById("keyStatus");
       const saveBtn = document.getElementById("saveBtn");
-      const deleteBtn = document.getElementById("deleteBtn");
+      const bottomActionArea = document.getElementById("bottomActionArea");
       const topBtn = document.getElementById("topBtn");
 
       function refreshKeyStatus() {
-        keyStatus.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
+        if (!state.doc) {
+          keyStatus.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
+          keyBtn.disabled = false;
+          keyBtn.textContent = "Key";
+          keyBtn.title = "";
+          return;
+        }
+
+        if (isOwner()) {
+          keyStatus.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
+          keyBtn.disabled = false;
+          keyBtn.textContent = "Key";
+          keyBtn.title = "";
+        } else {
+          keyStatus.textContent = state.doc.keyMode === "open"
+            ? "公開編集モード"
+            : "Keyは主催者のみ変更できます";
+          keyBtn.disabled = true;
+          keyBtn.textContent = "Key";
+          keyBtn.title = "Keyは主催者のみ変更できます";
+        }
       }
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
@@ -1024,6 +1141,8 @@
       });
 
       keyBtn.addEventListener("click", () => {
+        if (state.doc && !isOwner()) return;
+
         const cur = d.keyMode === "open" ? "open" : (d.key || "");
         const next = prompt("Key を入力。open で誰でも編集。", cur);
         if (next === null) return;
@@ -1086,18 +1205,34 @@
             try {
               await deleteDoc(doc(db, COLLECTION, oldId));
             } catch (_) {}
-            removeMyQuizMeta(oldId);
+            removeMyMeta(oldId);
+            removeAccessRecord(oldId);
           }
 
           state.docId = newId;
           state.doc = { ...payload, items };
-          upsertMyQuizMeta({
-            id: newId,
-            title: payload.title,
-            subtitle: payload.subtitle,
-            createdAt: payload.createdAt,
-            updatedAt: payload.updatedAt
-          });
+
+          if (isOwner()) {
+            upsertMyMeta({
+              id: newId,
+              title: payload.title,
+              subtitle: payload.subtitle,
+              createdAt: payload.createdAt,
+              updatedAt: payload.updatedAt
+            });
+          }
+
+          if (state.accessMode === "key") {
+            const currentKey = state.doc?.key || d.key || "";
+            if (currentKey) {
+              rememberAccess(newId, currentKey, {
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
+          }
 
           location.hash = `#/${encodeURIComponent(newId)}`;
           const link = prettyLink(newId);
@@ -1114,40 +1249,60 @@
         }
       });
 
-      deleteBtn.addEventListener("click", async () => {
-        if (!state.docId) {
-          alert("まだ保存されてないから削除できないよ");
-          return;
-        }
+      bottomActionArea.innerHTML = renderAccessButtons();
 
-        const title = state.doc?.title || state.draft?.title || "";
-        const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
-        if (typed === null) return;
-        if (typed.trim() !== title.trim()) {
-          alert("タイトルが違うから削除をやめたよ");
-          return;
-        }
+      const deleteBtn = document.getElementById("deleteBtn");
+      const leaveBtn = document.getElementById("leaveBtn");
 
-        if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+          if (!state.docId) {
+            alert("まだ保存されてないから削除できないよ");
+            return;
+          }
 
-        deleteBtn.disabled = true;
+          const title = state.doc?.title || state.draft?.title || "";
+          const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
+          if (typed === null) return;
+          if (typed.trim() !== title.trim()) {
+            alert("タイトルが違うから削除をやめたよ");
+            return;
+          }
 
-        try {
-          await deleteDoc(doc(db, COLLECTION, state.docId));
-          removeMyQuizMeta(state.docId);
-          state.docId = "";
-          state.doc = null;
-          state.draft = null;
-          location.hash = "";
-          alert("削除したよ");
+          if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+
+          deleteBtn.disabled = true;
+
+          try {
+            await deleteDoc(doc(db, COLLECTION, state.docId));
+            removeMyMeta(state.docId);
+            removeAccessRecord(state.docId);
+            state.docId = "";
+            state.doc = null;
+            state.draft = null;
+            location.hash = "";
+            alert("削除したよ");
+            render();
+          } catch (err) {
+            console.error("delete failed:", err);
+            alert(`削除で失敗したよ: ${err?.message || err}`);
+          } finally {
+            deleteBtn.disabled = false;
+          }
+        });
+      }
+
+      if (leaveBtn) {
+        leaveBtn.addEventListener("click", () => {
+          if (!state.docId) return;
+          if (!confirm("本当に共同編集から脱退しますか？")) return;
+          removeAccessRecord(state.docId);
+          state.accessMode = "none";
+          location.hash = `#/${encodeURIComponent(state.docId)}`;
+          alert("脱退したよ");
           render();
-        } catch (err) {
-          console.error("delete failed:", err);
-          alert(`削除で失敗したよ: ${err?.message || err}`);
-        } finally {
-          deleteBtn.disabled = false;
-        }
-      });
+        });
+      }
 
       lineNumbers(problemText, gutter);
       refreshKeyStatus();
@@ -1211,6 +1366,13 @@
         if (state.doc.keyMode === "open") return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
           return openEditFromDoc();
         }
         alert("Key が違うよ");
@@ -1286,6 +1448,13 @@
         if (state.doc.keyMode === "open") return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
           return openEditFromDoc();
         }
         alert("Key が違うよ");
@@ -1352,6 +1521,13 @@
         if (state.doc.keyMode === "open") return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
           return openEditFromDoc();
         }
         alert("Key が違うよ");
@@ -1430,7 +1606,20 @@
           updatedAt: data.updatedAt || null
         };
 
-        if (canEdit() || state.doc.keyMode === "open") {
+        setAccessModeForDoc(state.doc, id);
+
+        if (state.accessMode === "key") {
+          rememberAccess(id, state.doc.key, {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          openEditFromDoc();
+          return;
+        }
+
+        if (state.accessMode === "owner" || state.accessMode === "open") {
           openEditFromDoc();
           return;
         }
@@ -1443,6 +1632,13 @@
 
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
           openEditFromDoc();
         } else {
           alert("Key が違うよ");
@@ -1466,6 +1662,9 @@
       }
 
       if (r.name === "create") {
+        state.doc = null;
+        state.docId = "";
+        state.accessMode = "none";
         state.draft = blankDraft();
         state.screen = "editor";
         render();
@@ -1501,7 +1700,7 @@
                 }))
               : parseItems(data.rawText || "");
 
-          startQuiz({
+          state.doc = {
             title: data.title || "問題",
             subtitle: data.subtitle || "",
             items,
@@ -1513,7 +1712,21 @@
             slug: data.slug || r.id,
             createdAt: data.createdAt || null,
             updatedAt: data.updatedAt || null
-          }, r.id);
+          };
+          state.docId = r.id;
+
+          setAccessModeForDoc(state.doc, r.id);
+
+          if (state.accessMode === "key") {
+            rememberAccess(r.id, state.doc.key, {
+              title: state.doc.title || "",
+              subtitle: state.doc.subtitle || "",
+              createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+              updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+            });
+          }
+
+          startQuiz(state.doc, r.id);
         } catch (err) {
           console.error(err);
           state.screen = "home";
