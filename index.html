@@ -18,6 +18,10 @@
       --bad:#d33c3c;
       --radius:18px;
       --shadow:0 12px 30px rgba(20,25,40,.08);
+      --ownerBorder:#2f6fed;
+      --ownerBg:#eef4ff;
+      --editorBorder:#3abff3;
+      --editorBg:#eefaff;
     }
 
     body.dark{
@@ -32,6 +36,10 @@
       --good:#39c66d;
       --bad:#ff7676;
       --shadow:0 12px 30px rgba(0,0,0,.26);
+      --ownerBorder:#5b8cff;
+      --ownerBg:rgba(91,140,255,.13);
+      --editorBorder:#58b8ff;
+      --editorBg:rgba(58,168,255,.13);
     }
 
     *{box-sizing:border-box}
@@ -494,28 +502,42 @@
     }
 
     .commentOwner{
-      border-color:rgba(47,111,237,.42);
-      background:rgba(47,111,237,.08);
-    }
-
-    body.dark .commentOwner{
-      border-color:rgba(91,140,255,.45);
-      background:rgba(91,140,255,.12);
+      border-color:var(--ownerBorder);
+      background:var(--ownerBg);
     }
 
     .commentEditor{
-      border-color:rgba(58,168,255,.42);
-      background:rgba(58,168,255,.08);
-    }
-
-    body.dark .commentEditor{
-      border-color:rgba(88,189,255,.45);
-      background:rgba(58,168,255,.12);
+      border-color:var(--editorBorder);
+      background:var(--editorBg);
     }
 
     .commentViewer{
       border-color:var(--line);
       background:var(--panel);
+    }
+
+    .suggestionPanel{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    .suggestionChip{
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      background:rgba(127,127,127,.06);
+      color:var(--text);
+    }
+
+    .suggestionLabel{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      margin-right:2px;
     }
 
     .hide{display:none !important;}
@@ -565,6 +587,14 @@
     const COMMENT_TOKEN_KEY = "qb_comment_token";
     const COMMENT_NAME_KEY = "qb_comment_name";
 
+    const COMMENT_TAG_SUGGESTIONS = [
+      "[random]",
+      "[choice]",
+      "[random choice]",
+      "[number]",
+      "[game start online]"
+    ];
+
     const state = {
       screen: "loading",
       docId: "",
@@ -584,7 +614,8 @@
         typedAnswer: "",
         lastResult: null,
         attempts: {},
-        onlyWrong: false
+        onlyWrong: false,
+        selectedChoice: ""
       }
     };
 
@@ -615,12 +646,20 @@
         .replace(/'/g, "&#39;");
     }
 
+    function escBr(s) {
+      return esc(s).replace(/\n/g, "<br>");
+    }
+
     function norm(s) {
       return String(s ?? "")
         .replace(/\u3000/g, " ")
         .trim()
         .replace(/\s+/g, " ")
         .toLowerCase();
+    }
+
+    function normalizeNumberText(s) {
+      return String(s ?? "").replace(/[^\d-]/g, "");
     }
 
     function splitAnswers(text) {
@@ -630,65 +669,237 @@
         .filter(Boolean);
     }
 
-    function parseLine(line) {
-      const raw = String(line ?? "").trim();
-      if (!raw) return null;
+    function extractLeadingTags(line) {
+      let rest = String(line ?? "").trimStart();
+      const tags = [];
+      while (rest.startsWith("[")) {
+        const end = rest.indexOf("]");
+        if (end < 0) break;
+        const tag = rest.slice(1, end).trim();
+        if (!tag) break;
+        tags.push(tag);
+        rest = rest.slice(end + 1).trimStart();
+      }
+      return { tags, rest };
+    }
 
-      const hasEq = raw.includes("=") || raw.includes("＝");
-      if (!hasEq) return { kind: "section", text: raw };
+    function cleanQuestionText(text) {
+      return String(text ?? "")
+        .replace(/\[(?:Q|\?|A|!|\*|correct)\]/gi, "")
+        .trim();
+    }
 
-      const parts = raw.split(/[=＝]/).map(v => v.trim());
-      if (parts.length < 2) return null;
+    function cleanChoiceOptionText(text) {
+      return String(text ?? "")
+        .replace(/\[(?:Q|\?|A|!|\*|correct)\]/gi, "")
+        .replace(/^\s*(?:\[!\]|\[A\]|\[correct\]|!|\*|＊)\s*/i, "")
+        .replace(/\s*(?:\[!\]|\[A\]|\[correct\]|!|\*|＊)\s*$/i, "")
+        .trim();
+    }
 
-      const question = parts[0];
+    function parseChoiceOptions(answerRaw) {
+      const parts = String(answerRaw ?? "")
+        .split(",")
+        .map(v => v.trim())
+        .filter(Boolean);
+
+      const options = parts.map(part => {
+        const hasCorrectMark = /(^|[\s\[])(?:\[!\]|\[A\]|\[correct\]|!|\*|＊)/i.test(part) || part.includes("[!]") || part.includes("[A]");
+        let text = part.includes("=") ? part.split("=").pop().trim() : part.trim();
+        text = cleanChoiceOptionText(text);
+        return { text, correct: hasCorrectMark };
+      }).filter(v => v.text);
+
+      if (options.length && !options.some(v => v.correct)) {
+        options[0].correct = true;
+      }
+
+      return options;
+    }
+
+    function defaultGlobalSettings() {
+      return {
+        randomOrder: false,
+        responseMode: "normal", // normal | choice | number
+        randomChoice: false,
+        online: {
+          enabled: false,
+          raw: ""
+        }
+      };
+    }
+
+    function parseGlobalSettings(tags, rawConfig = "") {
+      const settings = defaultGlobalSettings();
+      for (const rawTag of tags) {
+        const tag = String(rawTag).trim().toLowerCase();
+        if (tag === "random") {
+          settings.randomOrder = true;
+        } else if (tag === "choice") {
+          settings.responseMode = "choice";
+          settings.randomChoice = false;
+        } else if (tag === "random choice") {
+          settings.responseMode = "choice";
+          settings.randomChoice = true;
+        } else if (tag === "number") {
+          settings.responseMode = "number";
+          settings.randomChoice = false;
+        } else if (tag === "game start online") {
+          settings.online.enabled = true;
+        }
+      }
+      settings.online.raw = String(rawConfig || "").trim();
+      return settings;
+    }
+
+    function resolveItemSettings(itemTags, globalSettings) {
+      let mode = globalSettings.responseMode || "normal";
+      let randomChoice = !!globalSettings.randomChoice;
+
+      for (const rawTag of itemTags) {
+        const tag = String(rawTag).trim().toLowerCase();
+        if (tag === "choice") {
+          mode = "choice";
+          randomChoice = false;
+        } else if (tag === "random choice") {
+          mode = "choice";
+          randomChoice = true;
+        } else if (tag === "number") {
+          mode = "number";
+        }
+      }
+
+      return { mode, randomChoice };
+    }
+
+    function parseItemLine(content, itemTags, currentSection, globalSettings) {
+      const eqIndex = content.search(/[=＝]/);
+      if (eqIndex < 0) return null;
+
+      const question = cleanQuestionText(content.slice(0, eqIndex).trim());
+      const answerRaw = content.slice(eqIndex + 1).trim();
       if (!question) return null;
 
-      let answerText = "";
-      if ((parts[1] || "").toLowerCase() === "choice") {
-        answerText = parts.slice(2).join("=");
-      } else {
-        answerText = parts.slice(1).join("=");
+      const { mode, randomChoice } = resolveItemSettings(itemTags, globalSettings);
+
+      if (mode === "choice") {
+        const options = parseChoiceOptions(answerRaw);
+        if (!options.length) return null;
+
+        return {
+          section: currentSection || "",
+          question,
+          mode: "choice",
+          randomChoice,
+          options,
+          answers: options.map(o => o.text),
+          tags: itemTags.slice(),
+          rawLine: content
+        };
       }
 
-      const answers = splitAnswers(answerText);
+      if (mode === "number") {
+        const answers = splitAnswers(answerRaw).map(normalizeNumberText).filter(Boolean);
+        if (!answers.length) return null;
+
+        return {
+          section: currentSection || "",
+          question,
+          mode: "number",
+          randomChoice: false,
+          options: [],
+          answers,
+          tags: itemTags.slice(),
+          rawLine: content
+        };
+      }
+
+      const answers = splitAnswers(answerRaw).filter(Boolean);
       if (!answers.length) return null;
 
-      return { kind: "item", question, answers };
+      return {
+        section: currentSection || "",
+        question,
+        mode: "normal",
+        randomChoice: false,
+        options: [],
+        answers,
+        tags: itemTags.slice(),
+        rawLine: content
+      };
     }
 
-    function parseItems(text) {
-      const lines = String(text ?? "").split(/\r?\n/);
-      const items = [];
-      let currentSection = "";
+    function parseQuizText(rawText) {
+      const lines = String(rawText ?? "").replace(/\r/g, "").split("\n");
+      const firstMeaningfulIndex = lines.findIndex(v => v.trim() !== "");
+      let globalSettings = defaultGlobalSettings();
+      let startIndex = 0;
 
-      for (const line of lines) {
-        const parsed = parseLine(line);
-        if (!parsed) continue;
-        if (parsed.kind === "section") {
-          currentSection = parsed.text;
-          continue;
+      if (firstMeaningfulIndex >= 0) {
+        const firstLine = lines[firstMeaningfulIndex];
+        const { tags, rest } = extractLeadingTags(firstLine);
+
+        if (tags.length && !/[=＝]/.test(rest)) {
+          globalSettings = parseGlobalSettings(tags, rest);
+          startIndex = firstMeaningfulIndex + 1;
         }
-        items.push({
-          section: currentSection,
-          question: parsed.question,
-          answers: parsed.answers,
-          rawLine: line.trim()
-        });
       }
 
-      return items;
+      let currentSection = "";
+      const items = [];
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const raw = lines[i];
+        if (!raw.trim()) continue;
+
+        const { tags, rest } = extractLeadingTags(raw);
+        const content = rest.trim();
+        if (!content) continue;
+
+        if (!/[=＝]/.test(content)) {
+          if (!tags.length) {
+            currentSection = content;
+          }
+          continue;
+        }
+
+        const item = parseItemLine(content, tags, currentSection, globalSettings);
+        if (item) items.push(item);
+      }
+
+      return { items, globalSettings };
     }
 
-    function itemsToRawText(items) {
+    function reconstructRawTextFromItems(items, globalSettings = defaultGlobalSettings()) {
       const lines = [];
-      let lastSection = null;
+      const tags = [];
+      if (globalSettings.randomOrder) tags.push("[random]");
+      if (globalSettings.responseMode === "choice") {
+        tags.push(globalSettings.randomChoice ? "[random choice]" : "[choice]");
+      } else if (globalSettings.responseMode === "number") {
+        tags.push("[number]");
+      }
+      if (globalSettings.online?.enabled) tags.push("[game start online]");
+      if (tags.length) {
+        lines.push(tags.join(" ") + (globalSettings.online?.raw ? ` ${globalSettings.online.raw}` : ""));
+      }
 
+      let lastSection = null;
       for (const item of items || []) {
         if (item.section && item.section !== lastSection) {
           lines.push(item.section);
           lastSection = item.section;
         }
-        lines.push(`${item.question}=${(item.answers || []).join(",")}`);
+
+        const itemTags = Array.isArray(item.tags) && item.tags.length ? item.tags.map(t => `[${t}]`).join(" ") + " " : "";
+        if (item.mode === "choice") {
+          const options = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
+          lines.push(`${itemTags}${item.question}=${options}`);
+        } else if (item.mode === "number") {
+          lines.push(`${itemTags}${item.question}=${(item.answers || []).join(",")}`);
+        } else {
+          lines.push(`${itemTags}${item.question}=${(item.answers || []).join(",")}`);
+        }
       }
 
       return lines.join("\n");
@@ -905,14 +1116,14 @@
     function canViewComment(comment) {
       if (!comment?.isPrivate) return true;
       if (!state.doc) return false;
-      if (state.accessMode === "owner" || state.accessMode === "key") return true;
+      if (state.accessMode === "owner" || state.accessMode === "open" || state.accessMode === "key") return true;
       return comment.authorToken && comment.authorToken === getCommentToken();
     }
 
     function canManageComment(comment) {
       if (!comment) return false;
       if (!state.doc) return false;
-      if (state.accessMode === "owner") return true;
+      if (state.accessMode === "owner" || state.accessMode === "open" || state.accessMode === "key") return true;
       return comment.authorToken && comment.authorToken === getCommentToken();
     }
 
@@ -993,7 +1204,7 @@
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
-        rawText: itemsToRawText(state.doc?.items || []),
+        rawText: state.doc?.rawText || reconstructRawTextFromItems(state.doc?.items || [], state.doc?.globalSettings || defaultGlobalSettings()),
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
@@ -1031,14 +1242,19 @@
       }
 
       const allIndices = (docData.items || []).map((_, i) => i);
+      const order = Array.isArray(orderIndices)
+        ? orderIndices.slice()
+        : (docData.globalSettings?.randomOrder ? shuffle(allIndices) : allIndices);
+
       state.quiz = {
         phase: "question",
-        order: Array.isArray(orderIndices) ? orderIndices.slice() : shuffle(allIndices),
+        order,
         index: 0,
         typedAnswer: "",
         lastResult: null,
         attempts: {},
-        onlyWrong: !!onlyWrong
+        onlyWrong: !!onlyWrong,
+        selectedChoice: ""
       };
 
       state.screen = "quiz";
@@ -1069,6 +1285,7 @@
       state.quiz.index += 1;
       state.quiz.typedAnswer = "";
       state.quiz.lastResult = null;
+      state.quiz.selectedChoice = "";
       state.quiz.phase = state.quiz.index >= state.quiz.order.length ? "done" : "question";
       render();
     }
@@ -1077,23 +1294,34 @@
       const q = currentQuestion();
       if (!q) return;
 
-      const given = state.quiz.typedAnswer;
+      let given = state.quiz.typedAnswer;
+      if (q.item.mode === "choice") {
+        given = state.quiz.selectedChoice;
+      }
+
       if (!String(given || "").trim()) {
         alert("答えを入れてね");
         return;
       }
 
-      const correct = q.item.answers.map(norm).includes(norm(given));
+      let correct = false;
+      if (q.item.mode === "number") {
+        const cleanGiven = normalizeNumberText(given);
+        correct = (q.item.answers || []).some(ans => normalizeNumberText(ans) === cleanGiven);
+      } else if (q.item.mode === "choice") {
+        const chosen = norm(given);
+        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
+        correct = correctOptions.includes(chosen);
+      } else {
+        const normalizedGiven = norm(given);
+        const normalizedAnswers = (q.item.answers || []).map(norm);
+        correct = normalizedAnswers.includes(normalizedGiven);
+      }
+
       state.quiz.attempts[q.idx] = { given, correct };
       state.quiz.lastResult = { idx: q.idx, given, correct };
       state.quiz.phase = "result";
       render();
-    }
-
-    function lineNumbers(textarea, gutter) {
-      const count = Math.max(1, textarea.value.split(/\r?\n/).length + 1);
-      gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
-      gutter.style.height = `${Math.max(420, textarea.scrollHeight)}px`;
     }
 
     function syncEditorArea(textarea, gutter) {
@@ -1194,13 +1422,64 @@
       render();
     }
 
-    function renderCommentBody(text) {
-      const parts = String(text ?? "").split(/(\[\[SCORE:[^\]]+\]\])/g);
-      return parts.map(part => {
-        const m = part.match(/^\[\[SCORE:([^\]]+)\]\]$/);
-        if (m) return `<span class="scoreToken">${esc(m[1])}</span>`;
-        return esc(part);
-      }).join("");
+    function insertComposerText(textarea, insertText, ctx) {
+      const value = textarea.value;
+      const start = ctx?.start ?? textarea.selectionStart ?? value.length;
+      const end = ctx?.end ?? textarea.selectionEnd ?? value.length;
+      const next = value.slice(0, start) + insertText + value.slice(end);
+      textarea.value = next;
+      state.commentDraft.text = next;
+      const pos = start + insertText.length;
+      textarea.selectionStart = textarea.selectionEnd = pos;
+      textarea.focus();
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    function analyzeComposerTrigger(text, cursor) {
+      const before = String(text ?? "").slice(0, cursor);
+      const lastBreak = Math.max(
+        before.lastIndexOf("\n"),
+        before.lastIndexOf(" "),
+        before.lastIndexOf("\t"),
+        before.lastIndexOf("　")
+      );
+      const segment = before.slice(lastBreak + 1);
+      if (!segment.startsWith("@") && !segment.startsWith("#")) return null;
+      return {
+        trigger: segment[0],
+        start: lastBreak + 1,
+        end: cursor,
+        query: segment.slice(1)
+      };
+    }
+
+    function getComposerSuggestions(ctx) {
+      if (!ctx) return [];
+      if (ctx.trigger === "@" && state.quiz.onlyWrong) return [];
+      if (ctx.trigger === "@") {
+        return [{ label: "点数", insert: "[[SCORE]]" }];
+      }
+      if (ctx.trigger === "#") {
+        const q = String(ctx.query || "").toLowerCase().trim();
+        const items = COMMENT_TAG_SUGGESTIONS
+          .filter(v => !q || v.toLowerCase().includes(q))
+          .map(v => ({ label: v, insert: v }));
+        return items.length ? items : COMMENT_TAG_SUGGESTIONS.map(v => ({ label: v, insert: v }));
+      }
+      return [];
+    }
+
+    function renderCommentBody(comment) {
+      const raw = String(comment?.text ?? "");
+      const hasScore = comment?.scoreCorrect != null && comment?.scoreTotal != null && raw.includes("[[SCORE]]");
+      const badge = hasScore ? `<span class="scoreToken">${esc(`${comment.scoreCorrect}/${comment.scoreTotal}`)}</span>` : "";
+      return raw
+        .split("[[SCORE]]")
+        .map((part, idx, arr) => {
+          const body = escBr(part);
+          return body + (idx < arr.length - 1 ? badge : "");
+        })
+        .join("");
     }
 
     function commentRoleLabel(role) {
@@ -1215,42 +1494,9 @@
       return "commentViewer";
     }
 
-    function insertScoreTokenIntoComment(textarea) {
-      if (!textarea || state.quiz.onlyWrong) return;
-
-      const { label } = currentScoreMeta();
-      const token = `[[SCORE:${label}]]`;
-      const start = textarea.selectionStart ?? textarea.value.length;
-      const end = textarea.selectionEnd ?? textarea.value.length;
-      let value = textarea.value;
-
-      if (start > 0 && value[start - 1] === "@") {
-        value = value.slice(0, start - 1) + token + value.slice(end);
-        const pos = start - 1 + token.length;
-        textarea.value = value;
-        textarea.selectionStart = textarea.selectionEnd = pos;
-      } else {
-        value = value.slice(0, start) + token + value.slice(end);
-        const pos = start + token.length;
-        textarea.value = value;
-        textarea.selectionStart = textarea.selectionEnd = pos;
-      }
-
-      state.commentDraft.text = textarea.value;
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-
     function renderCommentsPanel(comments) {
-      const { label } = currentScoreMeta();
       const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
       const visibleComments = comments.filter(c => canViewComment(c));
-      const canInsertScore = !state.quiz.onlyWrong;
-      const scoreInsertRow = canInsertScore
-        ? `<div class="row ${state.commentDraft?.text?.includes("@") ? "" : "hide"}" id="scoreInsertRow" style="justify-content:flex-start;">
-             <button class="ghost miniAction" id="scoreInsertBtn" type="button">点数</button>
-             <span class="commentPrivateNote">＠ の位置に ${esc(label)} を入れる</span>
-           </div>`
-        : `<div class="commentPrivateNote">間違えた問題だけのやり直しでは点数は出ないよ。</div>`;
 
       const list = visibleComments.length ? visibleComments.map(comment => {
         const role = comment.authorRole || "viewer";
@@ -1270,23 +1516,23 @@
           <div class="commentItem ${roleClass}">
             <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span> <span class="commentBadge">${comment.isPrivate ? "🫥 非公開" : "公開"}</span></div>
             <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
-            <div class="commentBody">${renderCommentBody(comment.text)}</div>
+            <div class="commentBody">${renderCommentBody(comment)}</div>
             <div class="row" style="justify-content:flex-end;">
-              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
+              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}">公開/非公開</button>` : ""}
               ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}">削除</button>` : ""}
             </div>
           </div>
         `;
       }).join("") : `<div class="note">まだコメントはないよ。</div>`;
 
-      const hiddenNote = hiddenCount > 0 ? `<div class="note">🫥 非公開コメントが ${hiddenCount} 件あるよ。</div>` : "";
+      const hiddenNote = hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : "";
 
       return `
         <div class="commentWrap">
           <div class="card commentWrap">
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+              <div class="commentPrivateNote">@で点数、#で候補</div>
             </div>
 
             <div class="commentForm">
@@ -1297,8 +1543,10 @@
 
               <div>
                 <div class="label">コメント</div>
-                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">@ や # を入れると候補が出るよ</textarea>
               </div>
+
+              <div id="commentSuggestionPanel" class="suggestionPanel"></div>
 
               <div class="row" style="justify-content:space-between;align-items:center;">
                 <label class="row" style="gap:8px;cursor:pointer;">
@@ -1307,8 +1555,6 @@
                 </label>
                 <button class="primary" id="postCommentBtn">コメントする</button>
               </div>
-
-              ${scoreInsertRow}
             </div>
           </div>
 
@@ -1317,7 +1563,7 @@
               <div class="label" style="font-size:14px">コメント一覧</div>
               <div class="commentToggleRow">
                 <span class="commentBadge">表示 ${visibleComments.length}</span>
-                ${hiddenNote ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+                ${hiddenNote}
               </div>
             </div>
             <div class="reviewList">
@@ -1332,14 +1578,27 @@
       if (!state.docId || !state.doc) return;
 
       const name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
-      const text = (state.commentDraft?.text || "").trim();
+      let text = (state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
       if (!text) {
         alert("コメントを書いてね");
         return;
       }
 
-      const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
+      const role = state.accessMode === "owner"
+        ? "owner"
+        : (state.accessMode === "key" || state.accessMode === "open" ? "editor" : "viewer");
+
+      let scoreCorrect = null;
+      let scoreTotal = null;
+
+      if (!state.quiz.onlyWrong && text.includes("[[SCORE]]")) {
+        const score = currentScoreMeta();
+        scoreCorrect = score.correctCount;
+        scoreTotal = score.total;
+      } else if (state.quiz.onlyWrong) {
+        text = text.replace(/\[\[SCORE\]\]/g, "");
+      }
 
       const comment = {
         id: uid(),
@@ -1349,7 +1608,9 @@
         text,
         isPrivate,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
+        scoreCorrect,
+        scoreTotal
       };
 
       setCommentName(name);
@@ -1379,6 +1640,56 @@
       await persistComments(next);
       state.showComments = true;
       render();
+    }
+
+    function bindHomeActions() {
+      document.querySelectorAll("[data-open-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-copy-quiz]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.copyQuiz || "";
+          const link = prettyLink(id);
+          try {
+            await navigator.clipboard.writeText(link);
+            alert("リンクをコピーしたよ");
+          } catch {
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-leave-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.leaveQuiz || "";
+          if (!confirm("本当に共同編集から脱退しますか？")) return;
+          removeAccessRecord(id);
+          render();
+        });
+      });
+
+      const createBtn = document.getElementById("createBtn");
+      if (createBtn) {
+        createBtn.addEventListener("click", () => {
+          location.hash = "#/create";
+        });
+      }
+    }
+
+    function commentButtonLabel(comments) {
+      const total = comments.length;
+      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      if (state.showComments) return "コメントを閉じる";
+      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
     }
 
     function renderHome() {
@@ -1435,7 +1746,8 @@
               <h1 style="margin:0;font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-.03em">作成して、公開して、答える。</h1>
               <p style="margin:12px 0 0;color:var(--muted);line-height:1.8;font-size:16px">
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
-                <b>= なしの行</b> は共通見出しになるよ。たとえば「日本について」の下にいくつか問題を並べられる。
+                <b>= なしの行</b> は見出しになるよ。<br>
+                1行目に <b>[random] [choice] [random choice] [number] [game start online]</b> みたいなタグも置ける。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn">作成</button>
@@ -1502,17 +1814,18 @@
               <div class="gridEditor">
                 <div id="gutter" class="gutter"></div>
                 <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
+[random] [choice]
 日本について
 首都=東京
-人口=約1.2億人
-面積=377975km²
+[choice] 2+2=4,!(or＊)5
+[number] 1+1=2
+[game start online] start time:8/15/20/00 think time:30 time bonus:100
 ">${esc(d.rawText)}</textarea>
               </div>
               <div class="help">
-                1行に1つ書くよ。<br>
-                <b>= なしの行</b> は共通見出し。<br>
-                <b>問題=答え</b> で普通の問題。<br>
-                <b>問題=答え1,答え2</b> で複数正解。
+                1行目に全体タグ。<br>
+                個別設定は <b>[choice] A=B,!(または＊)C</b> / <b>[number] 123=123</b>。<br>
+                コメント欄では <b>@</b> で点数、<b>#</b> でタグ候補が出るよ。
               </div>
             </div>
           </div>
@@ -1594,7 +1907,8 @@
         saveBtn.addEventListener("click", async () => {
           const title = d.title.trim();
           const subtitle = d.subtitle.trim();
-          const items = parseItems(d.rawText);
+          const parsed = parseQuizText(d.rawText);
+          const items = parsed.items;
 
           if (!title) return alert("タイトルを入れてね");
           if (!items.length) return alert("問題が1つも読めなかったよ。");
@@ -1614,9 +1928,9 @@
           const payload = {
             title,
             subtitle,
-            items,
-            problems: items,
             rawText: d.rawText,
+            items,
+            globalSettings: parsed.globalSettings,
             keyMode: effectiveKeyMode,
             key: effectiveKey,
             ownerToken,
@@ -1651,6 +1965,7 @@
             state.doc = {
               ...payload,
               items,
+              globalSettings: parsed.globalSettings,
               comments: sortComments(existingComments)
             };
 
@@ -1697,6 +2012,16 @@
       titleInput.focus();
     }
 
+    function renderChoiceButtons(item) {
+      const options = (item.randomChoice ? shuffle(item.options || []) : (item.options || []));
+      return `
+        <div class="label">選択してね</div>
+        <div class="choiceGrid" style="display:grid;gap:10px;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));">
+          ${options.map(opt => `<button type="button" class="ghost choiceBtn" data-choice="${esc(opt.text)}">${esc(opt.text)}</button>`).join("")}
+        </div>
+      `;
+    }
+
     function renderQuestion() {
       clearResultEnterHandler();
       const q = currentQuestion();
@@ -1707,6 +2032,8 @@
       }
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+
+      const canShowTopEdit = true;
 
       root.innerHTML = `
         <div class="page">
@@ -1733,8 +2060,19 @@
             </div>
 
             <div class="card" style="display:grid;gap:10px">
-              <div class="label">答え</div>
-              <input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+              ${
+                q.item.mode === "choice"
+                  ? renderChoiceButtons(q.item)
+                  : q.item.mode === "number"
+                    ? `
+                      <div class="label">数字だけ</div>
+                      <input id="answerInput" class="answer" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="数字を入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    `
+                    : `
+                      <div class="label">答え</div>
+                      <input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    `
+              }
               <div class="actions">
                 <button class="submit" id="submitBtn">✅</button>
               </div>
@@ -1766,15 +2104,33 @@
         alert("Key が違うよ");
       });
 
-      const input = document.getElementById("answerInput");
-      input.focus();
-      input.addEventListener("input", e => state.quiz.typedAnswer = e.target.value);
-      input.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          submitAnswer();
-        }
-      });
+      if (q.item.mode === "choice") {
+        const buttons = [...document.querySelectorAll(".choiceBtn")];
+        buttons.forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.quiz.selectedChoice = btn.dataset.choice || "";
+            buttons.forEach(b => b.classList.toggle("selected", b === btn));
+          });
+        });
+      } else {
+        const input = document.getElementById("answerInput");
+        input.focus();
+        input.addEventListener("input", e => {
+          if (q.item.mode === "number") {
+            const filtered = normalizeNumberText(e.target.value);
+            if (e.target.value !== filtered) e.target.value = filtered;
+            state.quiz.typedAnswer = filtered;
+          } else {
+            state.quiz.typedAnswer = e.target.value;
+          }
+        });
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            submitAnswer();
+          }
+        });
+      }
 
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
@@ -1812,7 +2168,11 @@
               <div class="question" style="font-size:22px">${esc(q.question)}</div>
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${esc(q.answers.join(" / "))}</div>
+              <div class="explain">${
+                q.item.mode === "choice"
+                  ? esc((q.item.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
+                  : esc((q.item.answers || []).join(" / "))
+              }</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
               <div class="explain">${esc(r.given)}</div>
@@ -1850,6 +2210,16 @@
 
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
+    }
+
+    function renderCommentsUI() {
+      const comments = sortComments(state.doc.comments || []);
+      return renderCommentsPanel(comments);
+    }
+
+    function commentButtonLabelForCurrent() {
+      const comments = sortComments(state.doc.comments || []);
+      return commentButtonLabel(comments);
     }
 
     function renderDone() {
@@ -1894,7 +2264,11 @@
                   <div class="reviewItem">
                     ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
                     <div class="reviewQ">${esc(item.question)}</div>
-                    <div class="reviewA">答え: ${esc(item.answers.join(" / "))}</div>
+                    <div class="reviewA">${
+                      item.mode === "choice"
+                        ? esc((item.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
+                        : esc((item.answers || []).join(" / "))
+                    }</div>
                   </div>
                 `).join("")}
               </div>
@@ -1939,13 +2313,35 @@
         const commentText = document.getElementById("commentText");
         const commentPrivate = document.getElementById("commentPrivate");
         const postCommentBtn = document.getElementById("postCommentBtn");
-        const scoreInsertBtn = document.getElementById("scoreInsertBtn");
-        const scoreInsertRow = document.getElementById("scoreInsertRow");
+        const suggestionPanel = document.getElementById("commentSuggestionPanel");
 
-        const updateScoreVisibility = () => {
-          if (!scoreInsertRow) return;
-          const show = !state.quiz.onlyWrong && commentText && commentText.value.includes("@");
-          scoreInsertRow.classList.toggle("hide", !show);
+        const refreshSuggestions = () => {
+          if (!suggestionPanel || !commentText) return;
+          const cursor = commentText.selectionStart ?? commentText.value.length;
+          const ctx = analyzeComposerTrigger(commentText.value, cursor);
+          const suggestions = getComposerSuggestions(ctx);
+
+          if (!ctx || !suggestions.length) {
+            suggestionPanel.innerHTML = "";
+            suggestionPanel.classList.add("hide");
+            return;
+          }
+
+          suggestionPanel.classList.remove("hide");
+          suggestionPanel.innerHTML = `
+            <span class="suggestionLabel">${ctx.trigger === "@" ? "@" : "#"}</span>
+            ${suggestions.map(s => `<button type="button" class="suggestionChip" data-suggest="${esc(s.insert)}">${esc(s.label)}</button>`).join("")}
+          `;
+
+          [...suggestionPanel.querySelectorAll("[data-suggest]")].forEach(btn => {
+            btn.addEventListener("click", () => {
+              insertComposerText(commentText, btn.dataset.suggest || "", ctx);
+              state.commentDraft.text = commentText.value;
+              commentText.style.height = "auto";
+              commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
+              refreshSuggestions();
+            });
+          });
         };
 
         if (commentName) {
@@ -1954,27 +2350,29 @@
             setCommentName(e.target.value.trim() || "匿名");
           });
         }
+
         if (commentText) {
           commentText.addEventListener("input", e => {
             state.commentDraft.text = e.target.value;
             e.target.style.height = "auto";
             e.target.style.height = `${Math.max(120, e.target.scrollHeight)}px`;
-            updateScoreVisibility();
+            refreshSuggestions();
           });
-          commentText.addEventListener("keyup", updateScoreVisibility);
+          commentText.addEventListener("keyup", refreshSuggestions);
+          commentText.addEventListener("click", refreshSuggestions);
+          commentText.addEventListener("focus", refreshSuggestions);
           commentText.style.height = "auto";
           commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
-          updateScoreVisibility();
+          refreshSuggestions();
         }
+
         if (commentPrivate) {
           commentPrivate.addEventListener("change", e => {
             state.commentDraft.isPrivate = !!e.target.checked;
           });
         }
+
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
-        if (scoreInsertBtn && commentText) {
-          scoreInsertBtn.addEventListener("click", () => insertScoreTokenIntoComment(commentText));
-        }
 
         document.querySelectorAll("[data-toggle-comment]").forEach(btn => {
           btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || ""));
@@ -1983,13 +2381,6 @@
           btn.addEventListener("click", () => deleteComment(btn.dataset.deleteComment || ""));
         });
       }
-    }
-
-    function commentButtonLabel(comments) {
-      const total = comments.length;
-      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      if (state.showComments) return "コメントを閉じる";
-      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
     }
 
     function renderLoading() {
@@ -2036,24 +2427,20 @@
         }
 
         const data = snap.data() || {};
-        const items = Array.isArray(data.items)
-          ? data.items
-          : Array.isArray(data.problems)
-            ? data.problems.map(p => ({
-                section: p.section || "",
-                question: p.question,
-                answers: p.answers || [],
-                rawLine: p.rawLine || ""
-              }))
-            : parseItems(data.rawText || "");
+        const parsed = data.rawText
+          ? parseQuizText(data.rawText)
+          : {
+              items: Array.isArray(data.items) ? data.items : [],
+              globalSettings: data.globalSettings || defaultGlobalSettings()
+            };
 
         state.docId = id;
         state.doc = {
           title: data.title || "問題",
           subtitle: data.subtitle || "",
-          items,
-          problems: items,
-          rawText: data.rawText || "",
+          rawText: data.rawText || reconstructRawTextFromItems(parsed.items || [], parsed.globalSettings || defaultGlobalSettings()),
+          items: parsed.items || [],
+          globalSettings: data.globalSettings || parsed.globalSettings || defaultGlobalSettings(),
           keyMode: data.keyMode || "key",
           key: data.key || "",
           ownerToken: data.ownerToken || "",
@@ -2148,23 +2535,19 @@
           }
 
           const data = snap.data() || {};
-          const items = Array.isArray(data.items)
-            ? data.items
-            : Array.isArray(data.problems)
-              ? data.problems.map(p => ({
-                  section: p.section || "",
-                  question: p.question,
-                  answers: p.answers || [],
-                  rawLine: p.rawLine || ""
-                }))
-              : parseItems(data.rawText || "");
+          const parsed = data.rawText
+            ? parseQuizText(data.rawText)
+            : {
+                items: Array.isArray(data.items) ? data.items : [],
+                globalSettings: data.globalSettings || defaultGlobalSettings()
+              };
 
           startQuiz({
             title: data.title || "問題",
             subtitle: data.subtitle || "",
-            items,
-            problems: items,
-            rawText: data.rawText || "",
+            rawText: data.rawText || reconstructRawTextFromItems(parsed.items || [], parsed.globalSettings || defaultGlobalSettings()),
+            items: parsed.items || [],
+            globalSettings: data.globalSettings || parsed.globalSettings || defaultGlobalSettings(),
             keyMode: data.keyMode || "key",
             key: data.key || "",
             ownerToken: data.ownerToken || "",
