@@ -1,59 +1,76 @@
-saveBtn.addEventListener("click", async () => {
-  const title = d.title.trim();
-  const subtitle = d.subtitle.trim();
-  const problems = parseProblems(d.rawText);
-
-  if (!title) return alert("タイトルを入れてね");
-  if (!problems.length) return alert("問題が1つも読めなかったよ。");
-
-  const newId = slugify(title);
-  const ownerToken = getCookie(OWNER_COOKIE) || uid();
-  setCookie(OWNER_COOKIE, ownerToken);
-
-  const payload = {
-    title,
-    subtitle,
-    problems,
-    rawText: d.rawText,
-    keyMode: d.keyMode,
-    key: d.keyMode === "open" ? "" : d.key,
-    ownerToken,
-    slug: newId,
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  };
-
-  saveBtn.disabled = true;
-  saveBtn.textContent = "保存中...";
-
-  try {
-    console.log("before setDoc", newId);
-    alert("① setDocの前");
-
-    await Promise.race([
-      setDoc(doc(db, COL, newId), payload, { merge: true }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("setDoc timeout")), 15000)
-      )
-    ]);
-
-    console.log("after setDoc");
-    alert("② setDocの後");
-
-    state.docId = newId;
-    state.doc = { ...payload, problems };
-    history.replaceState({}, "", `/q/${encodeURIComponent(newId)}`);
-
-    const link = prettyLink(newId);
-    navigator.clipboard?.writeText(link).catch(() => {});
-    alert(`保存したよ！\n\n${link}`);
-
-    startQuiz(state.doc, newId);
-  } catch (err) {
-    console.error("save failed:", err);
-    alert(`保存で失敗したよ: ${err?.message || err}`);
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = "保存";
+function renderResult() {
+  const r = state.quiz.lastResult;
+  if (!r) {
+    state.quiz.phase = "question";
+    render();
+    return;
   }
-});
+
+  const q = state.doc.items[r.idx];
+  document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+
+  root.innerHTML = `
+    <div class="page">
+      <div class="topbar">
+        <div>
+          <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+          <div class="sub">${esc(state.doc.subtitle || "")}</div>
+        </div>
+        <div class="row">
+          ${topButtonHtml()}
+          <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+        </div>
+      </div>
+
+      <div class="quiz">
+        <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
+
+        <div class="card">
+          ${q.section ? `<div class="sectionText">${esc(q.section)}</div><div style="height:10px"></div>` : ""}
+          <div class="label">問題</div>
+          <div class="question" style="font-size:22px">${esc(q.question)}</div>
+          <div style="height:12px"></div>
+          <div class="label">答え</div>
+          <div class="explain">${
+            q.mode === "choice"
+              ? esc((q.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
+              : esc((q.answers || []).join(" / "))
+          }</div>
+          <div style="height:12px"></div>
+          <div class="label">あなたの答え</div>
+          <div class="explain">${esc(r.given)}</div>
+        </div>
+
+        <div class="actions">
+          <button class="next" id="nextBtn">次へ</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("topBtn").addEventListener("click", () => {
+    location.hash = "";
+  });
+
+  document.getElementById("editBtn").addEventListener("click", () => {
+    if (canEdit()) return openEditFromDoc();
+    const entered = prompt("Key を入力して編集", "");
+    if (entered === null) return;
+    if (state.doc.keyMode === "open") return openEditFromDoc();
+    if ((entered || "").trim() === (state.doc.key || "")) {
+      if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+      rememberAccess(state.docId, (state.doc.key || ""), {
+        title: state.doc.title || "",
+        subtitle: state.doc.subtitle || "",
+        createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+        updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+      });
+      state.accessMode = "key";
+      return openEditFromDoc();
+    }
+    alert("Key が違うよ");
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+  enableResultEnterHandler();
+}
