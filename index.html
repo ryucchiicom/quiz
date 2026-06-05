@@ -635,6 +635,11 @@
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
+    function suffix4() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "").slice(0, 4);
+      return Math.random().toString(16).slice(2, 6).padEnd(4, "0");
+    }
+
     function slugify(text) {
       return (text || "quiz")
         .trim()
@@ -1510,7 +1515,7 @@
       render();
     }
 
-    function commentButtonText(comments) {
+    function commentsToggleLabel(comments) {
       const total = comments.length;
       const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
       if (state.showComments) return "コメントを閉じる";
@@ -1518,17 +1523,32 @@
     }
 
     function topButtonHtml() {
-      return `<button class="ghost" id="topBtn">トップ</button>`;
+      return `<button class="ghost" id="topBtn" type="button">トップ</button>`;
     }
 
     function editorActionHtml() {
       const buttons = [];
       if (state.doc) {
-        if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn">削除</button>`);
-        else if (state.accessMode === "key") buttons.push(`<button class="danger" id="leaveBtn">脱退</button>`);
+        if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn" type="button">削除</button>`);
+        else if (state.accessMode === "key") buttons.push(`<button class="danger" id="leaveBtn" type="button">脱退</button>`);
       }
-      buttons.push(`<button class="primary" id="saveBtn">保存</button>`);
+      buttons.push(`<button class="primary" id="saveBtn" type="button">保存</button>`);
       return buttons.join("");
+    }
+
+    async function ensureUniqueQuizId(baseId, currentId = "") {
+      let candidate = baseId;
+      while (true) {
+        const snap = await getDoc(doc(db, COLLECTION, candidate));
+        if (!snap.exists() || candidate === currentId) return candidate;
+
+        const addSuffix = confirm(`${candidate} はもうあるよ。\n後ろに -uuid(4桁) を追加しますか？`);
+        if (!addSuffix) {
+          throw new Error("SAVE_CANCELLED");
+        }
+
+        candidate = `${baseId}-${suffix4()}`;
+      }
     }
 
     function bindHomeActions() {
@@ -1591,9 +1611,9 @@
             <div class="metaLine">最終編集: ${esc(formatMinute(item.updatedAt))}</div>
           </div>
           <div class="listActions">
-            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}">開く</button>
-            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}">編集</button>
-            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}">コピー</button>
+            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}" type="button">開く</button>
+            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}" type="button">編集</button>
+            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}" type="button">コピー</button>
           </div>
         </div>
       `).join("") : `<div class="note">まだないよ。作成ボタンからどうぞ。</div>`;
@@ -1607,10 +1627,10 @@
             <div class="metaLine">最終編集: ${esc(formatMinute(item.updatedAt))}</div>
           </div>
           <div class="listActions">
-            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}">開く</button>
-            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}">編集</button>
-            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}">コピー</button>
-            <button class="ghost miniAction" data-leave-quiz="${esc(item.id)}">脱退</button>
+            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}" type="button">開く</button>
+            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}" type="button">編集</button>
+            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}" type="button">コピー</button>
+            <button class="ghost miniAction" data-leave-quiz="${esc(item.id)}" type="button">脱退</button>
           </div>
         </div>
       `).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`;
@@ -1633,7 +1653,7 @@
                 1行目のタグで <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。
               </p>
               <div style="height:14px"></div>
-              <button class="bigBtn" id="createBtn">作成</button>
+              <button class="bigBtn" id="createBtn" type="button">作成</button>
               <div style="height:10px"></div>
               <div class="note">cookie で作成者を覚えるよ。Key が open なら誰でも編集できる。</div>
             </div>
@@ -1677,7 +1697,7 @@
                 <div class="label">タイトル</div>
                 <input id="titleInput" class="input" type="text" placeholder="タイトル" value="${esc(d.title)}">
               </div>
-              <button class="ghost" id="keyBtn" style="height:48px;align-self:end">Key</button>
+              <button class="ghost" id="keyBtn" style="height:48px;align-self:end" type="button">Key</button>
             </div>
 
             <div>
@@ -1799,8 +1819,19 @@
           if (!title) return alert("タイトルを入れてね");
           if (!items.length) return alert("問題が1つも読めなかったよ。");
 
-          const newId = slugify(title);
+          const baseId = slugify(title);
           const oldId = state.docId || "";
+          let newId;
+          try {
+            newId = await ensureUniqueQuizId(baseId, oldId);
+          } catch (e) {
+            if (String(e?.message || e) === "SAVE_CANCELLED") {
+              alert("保存をやめたよ");
+              return;
+            }
+            throw e;
+          }
+
           const isExisting = !!state.doc;
           const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
           if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
@@ -1832,19 +1863,10 @@
           try {
             await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
 
-            const keyChanged = !!state.doc && (
-              (state.doc.keyMode || "key") !== effectiveKeyMode ||
-              (effectiveKeyMode !== "open" && (state.doc.key || "") !== effectiveKey)
-            );
-
             if (oldId && oldId !== newId) {
               try { await deleteDoc(doc(db, COLLECTION, oldId)); } catch (_) {}
               removeMyMeta(oldId);
               removeAccessRecord(oldId);
-            }
-
-            if (keyChanged && oldId === newId) {
-              removeAccessRecord(newId);
             }
 
             state.docId = newId;
@@ -1919,7 +1941,7 @@
             </div>
             <div class="row">
               ${topButtonHtml()}
-              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
 
@@ -1942,7 +1964,7 @@
                   : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`
               }
               <div class="actions">
-                <button class="submit" id="submitBtn">✅</button>
+                <button class="submit" id="submitBtn" type="button">✅</button>
               </div>
             </div>
           </div>
@@ -2033,7 +2055,7 @@
             </div>
             <div class="row">
               ${topButtonHtml()}
-              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
 
@@ -2053,7 +2075,7 @@
             </div>
 
             <div class="actions">
-              <button class="next" id="nextBtn">次へ</button>
+              <button class="next" id="nextBtn" type="button">次へ</button>
             </div>
           </div>
         </div>
@@ -2086,6 +2108,95 @@
       enableResultEnterHandler();
     }
 
+    function commentsButtonLabel(comments) {
+      const total = comments.length;
+      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      if (state.showComments) return "コメントを閉じる";
+      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
+    }
+
+    function renderCommentsPanel(comments) {
+      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      const visibleComments = comments.filter(c => canViewComment(c));
+
+      const list = visibleComments.length ? visibleComments.map(comment => {
+        const role = comment.authorRole || "viewer";
+        const roleLabel = commentRoleLabel(role);
+        const roleClass = commentRoleClass(role);
+        const canManage = canManageComment(comment);
+
+        if (!canViewComment(comment)) {
+          return `
+            <div class="commentItem">
+              <div class="commentMask">🫥 非公開コメント</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="commentItem ${roleClass}">
+            <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span> <span class="commentBadge">${comment.isPrivate ? "🫥 非公開" : "公開"}</span></div>
+            <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
+            <div class="commentBody">${renderCommentBody(comment)}</div>
+            <div class="row" style="justify-content:flex-end;">
+              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}" type="button">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
+              ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}" type="button">削除</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("") : `<div class="note">まだコメントはないよ。</div>`;
+
+      const scoreBox = state.quiz.onlyWrong
+        ? `<div class="note">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
+        : `<div id="scoreSuggestBox" class="suggestBox hide"></div>`;
+
+      return `
+        <div class="commentWrap">
+          <div class="card commentWrap">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメントを書く</div>
+              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+            </div>
+
+            <div class="commentForm">
+              <div>
+                <div class="label">名前（任意）</div>
+                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
+              </div>
+
+              <div>
+                <div class="label">コメント</div>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+              </div>
+
+              ${scoreBox}
+
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <label class="row" style="gap:8px;cursor:pointer;">
+                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
+                  <span>非公開にする</span>
+                </label>
+                <button class="primary" id="postCommentBtn" type="button">コメントする</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメント一覧</div>
+              <div class="commentToggleRow">
+                <span class="commentBadge">表示 ${visibleComments.length}</span>
+                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+              </div>
+            </div>
+            <div class="reviewList">
+              ${list}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderDone() {
       clearResultEnterHandler();
       const { correctCount, total } = currentScoreMeta();
@@ -2103,7 +2214,7 @@
             </div>
             <div class="row">
               ${topButtonHtml()}
-              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
 
@@ -2114,9 +2225,9 @@
             </div>
 
             <div class="actions" style="justify-content:flex-start">
-              <button class="primary" id="restartBtn">もう一度！</button>
-              <button class="ghost" id="commentsBtn">${esc(commentButtonText(comments))}</button>
-              ${wrongCount > 0 && !state.quiz.onlyWrong ? `<button class="ghost" id="wrongOnlyBtn">間違えた問題だけやり直す</button>` : ``}
+              <button class="primary" id="restartBtn" type="button">もう一度！</button>
+              <button class="ghost" id="commentsBtn" type="button">${esc(commentsButtonLabel(comments))}</button>
+              ${wrongCount > 0 && !state.quiz.onlyWrong ? `<button class="ghost" id="wrongOnlyBtn" type="button">間違えた問題だけやり直す</button>` : ``}
             </div>
 
             ${state.showComments ? renderCommentsPanel(comments) : ""}
