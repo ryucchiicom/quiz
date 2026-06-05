@@ -1,76 +1,2583 @@
-function renderResult() {
-  const r = state.quiz.lastResult;
-  if (!r) {
-    state.quiz.phase = "question";
-    render();
-    return;
-  }
-
-  const q = state.doc.items[r.idx];
-  document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
-
-  root.innerHTML = `
-    <div class="page">
-      <div class="topbar">
-        <div>
-          <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-          <div class="sub">${esc(state.doc.subtitle || "")}</div>
-        </div>
-        <div class="row">
-          ${topButtonHtml()}
-          <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
-        </div>
-      </div>
-
-      <div class="quiz">
-        <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
-
-        <div class="card">
-          ${q.section ? `<div class="sectionText">${esc(q.section)}</div><div style="height:10px"></div>` : ""}
-          <div class="label">問題</div>
-          <div class="question" style="font-size:22px">${esc(q.question)}</div>
-          <div style="height:12px"></div>
-          <div class="label">答え</div>
-          <div class="explain">${
-            q.mode === "choice"
-              ? esc((q.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
-              : esc((q.answers || []).join(" / "))
-          }</div>
-          <div style="height:12px"></div>
-          <div class="label">あなたの答え</div>
-          <div class="explain">${esc(r.given)}</div>
-        </div>
-
-        <div class="actions">
-          <button class="next" id="nextBtn">次へ</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById("topBtn").addEventListener("click", () => {
-    location.hash = "";
-  });
-
-  document.getElementById("editBtn").addEventListener("click", () => {
-    if (canEdit()) return openEditFromDoc();
-    const entered = prompt("Key を入力して編集", "");
-    if (entered === null) return;
-    if (state.doc.keyMode === "open") return openEditFromDoc();
-    if ((entered || "").trim() === (state.doc.key || "")) {
-      if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-      rememberAccess(state.docId, (state.doc.key || ""), {
-        title: state.doc.title || "",
-        subtitle: state.doc.subtitle || "",
-        createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
-        updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
-      });
-      state.accessMode = "key";
-      return openEditFromDoc();
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>問題作成サイト</title>
+  <style>
+    :root{
+      --bg1:#f8faff;
+      --bg2:#eef2f8;
+      --panel:#ffffff;
+      --line:#d8dbe5;
+      --text:#1f2430;
+      --muted:#6b7280;
+      --accent:#2f6fed;
+      --accent2:#1f5ad1;
+      --good:#118a3a;
+      --bad:#d33c3c;
+      --radius:18px;
+      --shadow:0 12px 30px rgba(20,25,40,.08);
+      --ownerBorder:#2f6fed;
+      --ownerBg:#eef4ff;
+      --editorBorder:#3abff3;
+      --editorBg:#eefaff;
     }
-    alert("Key が違うよ");
-  });
 
-  document.getElementById("nextBtn").addEventListener("click", nextQuestion);
-  enableResultEnterHandler();
-}
+    body.dark{
+      --bg1:#0b1120;
+      --bg2:#111827;
+      --panel:#111827;
+      --line:#243043;
+      --text:#e7ecf7;
+      --muted:#9aa4b2;
+      --accent:#5b8cff;
+      --accent2:#7aa2ff;
+      --good:#39c66d;
+      --bad:#ff7676;
+      --shadow:0 12px 30px rgba(0,0,0,.26);
+      --ownerBorder:#5b8cff;
+      --ownerBg:rgba(91,140,255,.13);
+      --editorBorder:#58b8ff;
+      --editorBg:rgba(58,168,255,.13);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+      background:linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    button,input,textarea{font:inherit}
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      cursor:pointer;
+    }
+
+    a{color:inherit}
+
+    .page{
+      max-width:980px;
+      margin:0 auto;
+      padding:16px;
+      min-height:100vh;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      position:sticky;
+      top:0;
+      padding:8px 0 12px;
+      backdrop-filter:blur(8px);
+      z-index:5;
+    }
+
+    .title{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.1;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+
+    .hero{
+      max-width:860px;
+      margin:36px auto 0;
+      display:grid;
+      gap:16px;
+    }
+
+    .bigBtn,.primary{
+      background:var(--accent);
+      color:#fff;
+      font-weight:800;
+    }
+
+    .ghost{
+      background:#eef3ff;
+      color:#244a9c;
+      border:1px solid #d7e2ff;
+      font-weight:700;
+    }
+
+    body.dark .ghost{
+      background:#182133;
+      color:#d7e5ff;
+      border-color:#2d3a4f;
+    }
+
+    .danger{
+      background:#ffeded;
+      color:#a72b2b;
+      border:1px solid #ffc7c7;
+      font-weight:800;
+    }
+
+    body.dark .danger{
+      background:#2a1620;
+      color:#ffaaaa;
+      border-color:#5b2a39;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px 15px;
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
+    }
+
+    .input:focus{
+      border-color:#9ab8ff;
+      box-shadow:0 0 0 4px rgba(47,111,237,.08);
+    }
+
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .gridEditor{
+      display:grid;
+      grid-template-columns:64px 1fr;
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:420px;
+      background:var(--panel);
+      align-items:stretch;
+    }
+
+    .gutter{
+      background:rgba(127,127,127,.07);
+      border-right:1px solid var(--line);
+      padding:14px 10px 14px 0;
+      text-align:right;
+      color:#8a93a8;
+      font:600 14px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      user-select:none;
+      overflow:hidden;
+      align-self:stretch;
+    }
+
+    .textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      resize:none;
+      min-height:420px;
+      padding:14px;
+      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      overflow:hidden;
+      tab-size:2;
+      background:var(--panel);
+      color:var(--text);
+    }
+
+    .help,.note{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .quiz{
+      max-width:860px;
+      margin:20px auto 0;
+      display:grid;
+      gap:14px;
+    }
+
+    .progress{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .sectionText{
+      font-size:18px;
+      font-weight:900;
+      line-height:1.35;
+      color:#334155;
+      word-break:break-word;
+    }
+
+    body.dark .sectionText{
+      color:#d7def0;
+    }
+
+    .question{
+      font-size:clamp(22px,4vw,32px);
+      font-weight:900;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
+    .answer{
+      width:100%;
+      font-size:18px;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    .submit{
+      background:var(--accent);
+      color:#fff;
+      font-weight:900;
+      padding:14px 20px;
+      border-radius:16px;
+      min-width:116px;
+    }
+
+    .next{
+      background:#1c9c59;
+      color:#fff;
+      font-weight:900;
+      padding:14px 20px;
+      border-radius:16px;
+      min-width:116px;
+    }
+
+    .good{
+      border:1px solid rgba(47,111,237,.22);
+      background:#eef4ff;
+      color:var(--accent);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
+    }
+
+    body.dark .good{
+      border-color:rgba(91,140,255,.35);
+      background:#13264a;
+      color:#9ebdff;
+    }
+
+    .bad{
+      border:1px solid rgba(211,60,60,.22);
+      background:#fff3f3;
+      color:var(--bad);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
+    }
+
+    .explain{
+      background:#f8faff;
+      border:1px solid #dbe4fb;
+      padding:14px 16px;
+      border-radius:16px;
+      line-height:1.8;
+      word-break:break-word;
+      color:#2b3241;
+    }
+
+    body.dark .explain{
+      background:#182133;
+      border-color:#2d3a4f;
+      color:#e7ecf7;
+    }
+
+    .summary{
+      max-width:860px;
+      margin:20px auto 0;
+      display:grid;
+      gap:14px;
+    }
+
+    .score{
+      font-size:28px;
+      font-weight:1000;
+      line-height:1.2;
+    }
+
+    .reviewList{
+      display:grid;
+      gap:10px;
+    }
+
+    .reviewItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--panel);
+      display:grid;
+      gap:6px;
+    }
+
+    .reviewSection{
+      font-size:15px;
+      font-weight:900;
+      color:#334155;
+      line-height:1.4;
+    }
+
+    body.dark .reviewSection{
+      color:#d7def0;
+    }
+
+    .reviewQ{
+      font-weight:900;
+      font-size:16px;
+      word-break:break-word;
+    }
+
+    .reviewA{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .listGrid{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .listItem{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      padding:14px 15px;
+    }
+
+    .listMeta{
+      min-width:0;
+      display:grid;
+      gap:4px;
+      flex:1;
+    }
+
+    .listActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .miniAction{
+      padding:10px 12px;
+      font-size:13px;
+      border-radius:12px;
+      white-space:nowrap;
+    }
+
+    .metaLine{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .commentWrap{
+      display:grid;
+      gap:12px;
+    }
+
+    .commentForm{
+      display:grid;
+      gap:10px;
+    }
+
+    .commentHeader{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .commentToggleRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .commentBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(127,127,127,.08);
+      color:var(--text);
+    }
+
+    .commentPrivateNote{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .commentMask{
+      font-weight:900;
+      font-size:18px;
+      line-height:1.4;
+    }
+
+    .commentBody{
+      white-space:pre-wrap;
+      line-height:1.8;
+      word-break:break-word;
+      color:var(--text);
+    }
+
+    .scoreToken{
+      color:#14994a;
+      font-weight:900;
+    }
+
+    body.dark .scoreToken{
+      color:#66e08d;
+    }
+
+    .commentItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--panel);
+      display:grid;
+      gap:6px;
+    }
+
+    .commentOwner{
+      border-color:var(--ownerBorder);
+      background:var(--ownerBg);
+    }
+
+    .commentEditor{
+      border-color:var(--editorBorder);
+      background:var(--editorBg);
+    }
+
+    .commentViewer{
+      border-color:var(--line);
+      background:var(--panel);
+    }
+
+    .suggestionPanel{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    .suggestionChip{
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      background:rgba(127,127,127,.06);
+      color:var(--text);
+    }
+
+    .suggestionLabel{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      margin-right:2px;
+    }
+
+    .hide{display:none !important;}
+
+    @media (max-width:640px){
+      .page{padding:14px}
+      .title{font-size:22px}
+      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
+      .question{font-size:22px}
+      .answer{font-size:16px}
+      .bigBtn{width:100%}
+      .actions{justify-content:stretch}
+      .actions button{flex:1}
+      .topbar{align-items:flex-start}
+      .listItem{align-items:flex-start;flex-direction:column}
+      .listActions{justify-content:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
+      authDomain: "quiz-f46d6.firebaseapp.com",
+      projectId: "quiz-f46d6",
+      storageBucket: "quiz-f46d6.firebasestorage.app",
+      messagingSenderId: "75573053604",
+      appId: "1:75573053604:web:6b20006ca68e685e18fe31",
+      measurementId: "G-KQVMD2YYDP"
+    };
+
+    const appFirebase = initializeApp(firebaseConfig);
+    const db = getFirestore(appFirebase);
+
+    const root = document.getElementById("app");
+    if (!root) throw new Error('Missing <div id="app"></div>');
+
+    const COLLECTION = "quizzes";
+    const OWNER_COOKIE = "qb_owner_token";
+    const MY_KEY = "qb_my_quizzes";
+    const ACCESS_KEY = "qb_access_quizzes";
+    const COMMENT_TOKEN_KEY = "qb_comment_token";
+    const COMMENT_NAME_KEY = "qb_comment_name";
+
+    const COMMENT_TAG_SUGGESTIONS = [
+      "[random]",
+      "[choice]",
+      "[random choice]",
+      "[number]",
+      "[game start online]"
+    ];
+
+    const state = {
+      screen: "loading",
+      docId: "",
+      doc: null,
+      draft: null,
+      accessMode: "none", // none | owner | open | key
+      showComments: false,
+      commentDraft: {
+        name: "",
+        text: "",
+        isPrivate: false
+      },
+      quiz: {
+        phase: "question",
+        order: [],
+        index: 0,
+        typedAnswer: "",
+        lastResult: null,
+        attempts: {},
+        onlyWrong: false,
+        selectedChoice: ""
+      }
+    };
+
+    let resultEnterHandler = null;
+    const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+
+    function uid() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function slugify(text) {
+      return (text || "quiz")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\p{L}\p{N}\-]+/gu, "")
+        .replace(/\-+/g, "-")
+        .replace(/^-+|-+$/g, "") || "quiz";
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escBr(s) {
+      return esc(s).replace(/\n/g, "<br>");
+    }
+
+    function norm(s) {
+      return String(s ?? "")
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+    }
+
+    function normalizeNumberText(s) {
+      return String(s ?? "").replace(/[^\d-]/g, "");
+    }
+
+    function splitAnswers(text) {
+      return String(text ?? "")
+        .split(/[、,]/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function extractLeadingTags(line) {
+      let rest = String(line ?? "").trimStart();
+      const tags = [];
+      while (rest.startsWith("[")) {
+        const end = rest.indexOf("]");
+        if (end < 0) break;
+        const tag = rest.slice(1, end).trim();
+        if (!tag) break;
+        tags.push(tag);
+        rest = rest.slice(end + 1).trimStart();
+      }
+      return { tags, rest };
+    }
+
+    function cleanQuestionText(text) {
+      return String(text ?? "")
+        .replace(/\[(?:Q|\?|A|!|\*|correct)\]/gi, "")
+        .trim();
+    }
+
+    function cleanChoiceOptionText(text) {
+      return String(text ?? "")
+        .replace(/\[(?:Q|\?|A|!|\*|correct)\]/gi, "")
+        .replace(/^\s*(?:\[!\]|\[A\]|\[correct\]|!|\*|＊)\s*/i, "")
+        .replace(/\s*(?:\[!\]|\[A\]|\[correct\]|!|\*|＊)\s*$/i, "")
+        .trim();
+    }
+
+    function parseChoiceOptions(answerRaw) {
+      const parts = String(answerRaw ?? "")
+        .split(",")
+        .map(v => v.trim())
+        .filter(Boolean);
+
+      const options = parts.map(part => {
+        const hasCorrectMark = /(^|[\s\[])(?:\[!\]|\[A\]|\[correct\]|!|\*|＊)/i.test(part) || part.includes("[!]") || part.includes("[A]");
+        let text = part.includes("=") ? part.split("=").pop().trim() : part.trim();
+        text = cleanChoiceOptionText(text);
+        return { text, correct: hasCorrectMark };
+      }).filter(v => v.text);
+
+      if (options.length && !options.some(v => v.correct)) {
+        options[0].correct = true;
+      }
+
+      return options;
+    }
+
+    function defaultGlobalSettings() {
+      return {
+        randomOrder: false,
+        responseMode: "normal", // normal | choice | number
+        randomChoice: false,
+        online: {
+          enabled: false,
+          raw: ""
+        }
+      };
+    }
+
+    function parseGlobalSettings(tags, rawConfig = "") {
+      const settings = defaultGlobalSettings();
+      for (const rawTag of tags) {
+        const tag = String(rawTag).trim().toLowerCase();
+        if (tag === "random") {
+          settings.randomOrder = true;
+        } else if (tag === "choice") {
+          settings.responseMode = "choice";
+          settings.randomChoice = false;
+        } else if (tag === "random choice") {
+          settings.responseMode = "choice";
+          settings.randomChoice = true;
+        } else if (tag === "number") {
+          settings.responseMode = "number";
+          settings.randomChoice = false;
+        } else if (tag === "game start online") {
+          settings.online.enabled = true;
+        }
+      }
+      settings.online.raw = String(rawConfig || "").trim();
+      return settings;
+    }
+
+    function resolveItemSettings(itemTags, globalSettings) {
+      let mode = globalSettings.responseMode || "normal";
+      let randomChoice = !!globalSettings.randomChoice;
+
+      for (const rawTag of itemTags) {
+        const tag = String(rawTag).trim().toLowerCase();
+        if (tag === "choice") {
+          mode = "choice";
+          randomChoice = false;
+        } else if (tag === "random choice") {
+          mode = "choice";
+          randomChoice = true;
+        } else if (tag === "number") {
+          mode = "number";
+        }
+      }
+
+      return { mode, randomChoice };
+    }
+
+    function parseItemLine(content, itemTags, currentSection, globalSettings) {
+      const eqIndex = content.search(/[=＝]/);
+      if (eqIndex < 0) return null;
+
+      const question = cleanQuestionText(content.slice(0, eqIndex).trim());
+      const answerRaw = content.slice(eqIndex + 1).trim();
+      if (!question) return null;
+
+      const { mode, randomChoice } = resolveItemSettings(itemTags, globalSettings);
+
+      if (mode === "choice") {
+        const options = parseChoiceOptions(answerRaw);
+        if (!options.length) return null;
+
+        return {
+          section: currentSection || "",
+          question,
+          mode: "choice",
+          randomChoice,
+          options,
+          answers: options.map(o => o.text),
+          tags: itemTags.slice(),
+          rawLine: content
+        };
+      }
+
+      if (mode === "number") {
+        const answers = splitAnswers(answerRaw).map(normalizeNumberText).filter(Boolean);
+        if (!answers.length) return null;
+
+        return {
+          section: currentSection || "",
+          question,
+          mode: "number",
+          randomChoice: false,
+          options: [],
+          answers,
+          tags: itemTags.slice(),
+          rawLine: content
+        };
+      }
+
+      const answers = splitAnswers(answerRaw).filter(Boolean);
+      if (!answers.length) return null;
+
+      return {
+        section: currentSection || "",
+        question,
+        mode: "normal",
+        randomChoice: false,
+        options: [],
+        answers,
+        tags: itemTags.slice(),
+        rawLine: content
+      };
+    }
+
+    function parseQuizText(rawText) {
+      const lines = String(rawText ?? "").replace(/\r/g, "").split("\n");
+      const firstMeaningfulIndex = lines.findIndex(v => v.trim() !== "");
+      let globalSettings = defaultGlobalSettings();
+      let startIndex = 0;
+
+      if (firstMeaningfulIndex >= 0) {
+        const firstLine = lines[firstMeaningfulIndex];
+        const { tags, rest } = extractLeadingTags(firstLine);
+
+        if (tags.length && !/[=＝]/.test(rest)) {
+          globalSettings = parseGlobalSettings(tags, rest);
+          startIndex = firstMeaningfulIndex + 1;
+        }
+      }
+
+      let currentSection = "";
+      const items = [];
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const raw = lines[i];
+        if (!raw.trim()) continue;
+
+        const { tags, rest } = extractLeadingTags(raw);
+        const content = rest.trim();
+        if (!content) continue;
+
+        if (!/[=＝]/.test(content)) {
+          if (!tags.length) {
+            currentSection = content;
+          }
+          continue;
+        }
+
+        const item = parseItemLine(content, tags, currentSection, globalSettings);
+        if (item) items.push(item);
+      }
+
+      return { items, globalSettings };
+    }
+
+    function reconstructRawTextFromItems(items, globalSettings = defaultGlobalSettings()) {
+      const lines = [];
+      const tags = [];
+      if (globalSettings.randomOrder) tags.push("[random]");
+      if (globalSettings.responseMode === "choice") {
+        tags.push(globalSettings.randomChoice ? "[random choice]" : "[choice]");
+      } else if (globalSettings.responseMode === "number") {
+        tags.push("[number]");
+      }
+      if (globalSettings.online?.enabled) tags.push("[game start online]");
+      if (tags.length) {
+        lines.push(tags.join(" ") + (globalSettings.online?.raw ? ` ${globalSettings.online.raw}` : ""));
+      }
+
+      let lastSection = null;
+      for (const item of items || []) {
+        if (item.section && item.section !== lastSection) {
+          lines.push(item.section);
+          lastSection = item.section;
+        }
+
+        const itemTags = Array.isArray(item.tags) && item.tags.length ? item.tags.map(t => `[${t}]`).join(" ") + " " : "";
+        if (item.mode === "choice") {
+          const options = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
+          lines.push(`${itemTags}${item.question}=${options}`);
+        } else if (item.mode === "number") {
+          lines.push(`${itemTags}${item.question}=${(item.answers || []).join(",")}`);
+        } else {
+          lines.push(`${itemTags}${item.question}=${(item.answers || []).join(",")}`);
+        }
+      }
+
+      return lines.join("\n");
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function setCookie(name, value, days = 3650) {
+      document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+      const parts = document.cookie ? document.cookie.split("; ") : [];
+      for (const part of parts) {
+        const idx = part.indexOf("=");
+        const key = idx >= 0 ? part.slice(0, idx) : part;
+        if (key === name) return decodeURIComponent(idx >= 0 ? part.slice(idx + 1) : "");
+      }
+      return "";
+    }
+
+    function safeLocalGet(key) {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
+
+    function safeLocalSet(key, value) {
+      try { localStorage.setItem(key, value); } catch {}
+    }
+
+    function loadMyList() {
+      try {
+        const raw = safeLocalGet(MY_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveMyList(list) {
+      safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50)));
+    }
+
+    function loadAccessList() {
+      try {
+        const raw = safeLocalGet(ACCESS_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveAccessList(list) {
+      safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50)));
+    }
+
+    function findAccessRecord(id) {
+      return loadAccessList().find(v => v.id === id) || null;
+    }
+
+    function rememberAccess(id, key, meta = {}) {
+      if (!id || !key) return;
+      const list = loadAccessList();
+      const next = {
+        id,
+        key,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
+
+      const idx = list.findIndex(v => v.id === id);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
+
+      list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      saveAccessList(list);
+    }
+
+    function removeAccessRecord(id) {
+      const next = loadAccessList().filter(v => v.id !== id);
+      saveAccessList(next);
+    }
+
+    function upsertMyMeta(meta) {
+      const list = loadMyList();
+      const id = String(meta?.id || "");
+      if (!id) return;
+
+      const next = {
+        id,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
+
+      const idx = list.findIndex(v => v.id === id);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
+
+      list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      saveMyList(list);
+    }
+
+    function removeMyMeta(id) {
+      const next = loadMyList().filter(v => v.id !== id);
+      saveMyList(next);
+    }
+
+    function normalizeTs(value) {
+      if (typeof value === "number") return value;
+      if (!value) return null;
+      if (typeof value.toDate === "function") {
+        const d = value.toDate();
+        return d instanceof Date ? d.getTime() : null;
+      }
+      if (typeof value.seconds === "number") {
+        return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
+      }
+      return null;
+    }
+
+    function formatMinute(value) {
+      const ts = normalizeTs(value);
+      if (!ts) return "—";
+      const d = new Date(ts);
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function applySystemTheme() {
+      document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
+    }
+
+    function clearResultEnterHandler() {
+      if (resultEnterHandler) {
+        window.removeEventListener("keydown", resultEnterHandler);
+        resultEnterHandler = null;
+      }
+    }
+
+    function enableResultEnterHandler() {
+      clearResultEnterHandler();
+      const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
+      if (!isDesktop) return;
+
+      resultEnterHandler = (e) => {
+        if (e.key !== "Enter") return;
+        const active = document.activeElement;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+        e.preventDefault();
+        nextQuestion();
+      };
+
+      window.addEventListener("keydown", resultEnterHandler);
+    }
+
+    function basePath() {
+      const p = location.pathname;
+      if (p.endsWith("/")) return p;
+      const i = p.lastIndexOf("/");
+      return i >= 0 ? p.slice(0, i + 1) : "/";
+    }
+
+    function prettyLink(id) {
+      return `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
+    }
+
+    function route() {
+      const raw = location.hash.replace(/^#/, "");
+      const parts = raw.split("/").filter(Boolean);
+      if (!parts.length) return { name: "home" };
+      if (parts[0] === "create") return { name: "create" };
+      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: decodeURIComponent(parts[1]) };
+      return { name: "quiz", id: decodeURIComponent(parts[0]) };
+    }
+
+    function getCommentToken() {
+      let token = safeLocalGet(COMMENT_TOKEN_KEY);
+      if (!token) {
+        token = uid();
+        safeLocalSet(COMMENT_TOKEN_KEY, token);
+      }
+      return token;
+    }
+
+    function getCommentName() {
+      const n = safeLocalGet(COMMENT_NAME_KEY);
+      if (!n) {
+        safeLocalSet(COMMENT_NAME_KEY, "匿名");
+        return "匿名";
+      }
+      return n;
+    }
+
+    function setCommentName(name) {
+      safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
+    }
+
+    function sortComments(comments) {
+      return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+    }
+
+    function canViewComment(comment) {
+      if (!comment?.isPrivate) return true;
+      if (!state.doc) return false;
+      if (state.accessMode === "owner" || state.accessMode === "open" || state.accessMode === "key") return true;
+      return comment.authorToken && comment.authorToken === getCommentToken();
+    }
+
+    function canManageComment(comment) {
+      if (!comment) return false;
+      if (!state.doc) return false;
+      if (state.accessMode === "owner" || state.accessMode === "open" || state.accessMode === "key") return true;
+      return comment.authorToken && comment.authorToken === getCommentToken();
+    }
+
+    function refreshCommentDraftDefaults() {
+      if (!state.commentDraft) {
+        state.commentDraft = {
+          name: getCommentName(),
+          text: "",
+          isPrivate: false
+        };
+        return;
+      }
+      if (!state.commentDraft.name) state.commentDraft.name = getCommentName();
+    }
+
+    function setAccessModeForDoc(docData, id) {
+      if (docData.keyMode === "open") {
+        state.accessMode = isOwner() ? "owner" : "open";
+        return;
+      }
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
+      const rec = findAccessRecord(id);
+      if (rec && docData.key && rec.key === docData.key) {
+        state.accessMode = "key";
+        return;
+      }
+      state.accessMode = "none";
+    }
+
+    function isOwner() {
+      return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
+    }
+
+    function canEdit() {
+      if (!state.doc) return false;
+      if (state.doc.keyMode === "open") return true;
+      return state.accessMode === "owner" || state.accessMode === "key";
+    }
+
+    function currentQuestion() {
+      if (!state.doc?.items?.length) return null;
+      const idx = state.quiz.order[state.quiz.index];
+      if (idx === undefined) return null;
+      return { idx, item: state.doc.items[idx] };
+    }
+
+    function currentScoreMeta() {
+      const total = state.quiz.order.length || (state.doc?.items?.length || 0);
+      const correctCount = Object.values(state.quiz.attempts || {}).filter(v => v.correct).length;
+      return { correctCount, total, label: `${correctCount}/${total}` };
+    }
+
+    function blankDraft() {
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+    }
+
+    function topButtonHtml() {
+      return `<button class="ghost" id="topBtn">トップ</button>`;
+    }
+
+    function editorActionHtml() {
+      const buttons = [];
+      if (state.doc) {
+        if (state.accessMode === "owner") {
+          buttons.push(`<button class="danger" id="deleteBtn">削除</button>`);
+        } else if (state.accessMode === "key") {
+          buttons.push(`<button class="danger" id="leaveBtn">脱退</button>`);
+        }
+      }
+      buttons.push(`<button class="primary" id="saveBtn">保存</button>`);
+      return buttons.join("");
+    }
+
+    function openEditFromDoc() {
+      state.draft = {
+        title: state.doc?.title || "",
+        subtitle: state.doc?.subtitle || "",
+        rawText: state.doc?.rawText || reconstructRawTextFromItems(state.doc?.items || [], state.doc?.globalSettings || defaultGlobalSettings()),
+        keyMode: state.doc?.keyMode || "key",
+        key: state.doc?.key || ""
+      };
+      state.screen = "editor";
+      render();
+    }
+
+    function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
+      state.doc = {
+        ...docData,
+        comments: sortComments(docData.comments || [])
+      };
+      state.docId = id;
+      setAccessModeForDoc(state.doc, id);
+      state.showComments = false;
+      refreshCommentDraftDefaults();
+
+      if (state.accessMode === "key") {
+        rememberAccess(id, docData.key, {
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id,
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
+      const allIndices = (docData.items || []).map((_, i) => i);
+      const order = Array.isArray(orderIndices)
+        ? orderIndices.slice()
+        : (docData.globalSettings?.randomOrder ? shuffle(allIndices) : allIndices);
+
+      state.quiz = {
+        phase: "question",
+        order,
+        index: 0,
+        typedAnswer: "",
+        lastResult: null,
+        attempts: {},
+        onlyWrong: !!onlyWrong,
+        selectedChoice: ""
+      };
+
+      state.screen = "quiz";
+      document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
+      render();
+    }
+
+    function restartQuiz() {
+      if (!state.doc) return;
+      if (state.quiz.onlyWrong) {
+        startQuiz(state.doc, state.docId, state.quiz.order, true);
+      } else {
+        startQuiz(state.doc, state.docId, null, false);
+      }
+    }
+
+    function startWrongOnlyQuiz() {
+      if (!state.doc) return;
+      const wrong = state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct);
+      if (!wrong.length) {
+        alert("間違えた問題がないよ");
+        return;
+      }
+      startQuiz(state.doc, state.docId, wrong, true);
+    }
+
+    function nextQuestion() {
+      state.quiz.index += 1;
+      state.quiz.typedAnswer = "";
+      state.quiz.lastResult = null;
+      state.quiz.selectedChoice = "";
+      state.quiz.phase = state.quiz.index >= state.quiz.order.length ? "done" : "question";
+      render();
+    }
+
+    function submitAnswer() {
+      const q = currentQuestion();
+      if (!q) return;
+
+      let given = state.quiz.typedAnswer;
+      if (q.item.mode === "choice") {
+        given = state.quiz.selectedChoice;
+      }
+
+      if (!String(given || "").trim()) {
+        alert("答えを入れてね");
+        return;
+      }
+
+      let correct = false;
+      if (q.item.mode === "number") {
+        const cleanGiven = normalizeNumberText(given);
+        correct = (q.item.answers || []).some(ans => normalizeNumberText(ans) === cleanGiven);
+      } else if (q.item.mode === "choice") {
+        const chosen = norm(given);
+        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
+        correct = correctOptions.includes(chosen);
+      } else {
+        const normalizedGiven = norm(given);
+        const normalizedAnswers = (q.item.answers || []).map(norm);
+        correct = normalizedAnswers.includes(normalizedGiven);
+      }
+
+      state.quiz.attempts[q.idx] = { given, correct };
+      state.quiz.lastResult = { idx: q.idx, given, correct };
+      state.quiz.phase = "result";
+      render();
+    }
+
+    function syncEditorArea(textarea, gutter) {
+      const minHeight = 420;
+      textarea.style.height = "auto";
+      const next = Math.max(minHeight, textarea.scrollHeight);
+      textarea.style.height = `${next}px`;
+      gutter.style.height = `${next}px`;
+
+      const count = Math.max(1, textarea.value.split(/\r?\n/).length + 1);
+      gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
+    }
+
+    async function persistComments(nextComments) {
+      if (!state.docId) return;
+      const sorted = sortComments(nextComments);
+      const updatedAt = Date.now();
+
+      await setDoc(doc(db, COLLECTION, state.docId), {
+        comments: sorted,
+        updatedAt
+      }, { merge: true });
+
+      state.doc.comments = sorted;
+      state.doc.updatedAt = updatedAt;
+
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id: state.docId,
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
+      }
+
+      if (state.accessMode === "key") {
+        rememberAccess(state.docId, state.doc.key || "", {
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
+      }
+
+      render();
+    }
+
+    function openDeleteConfirmThenDelete() {
+      if (!state.docId) return;
+
+      const title = state.doc?.title || state.draft?.title || "";
+      const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
+      if (typed === null) return;
+      if (typed.trim() !== title.trim()) {
+        alert("タイトルが違うから削除をやめたよ");
+        return;
+      }
+
+      if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+
+      const btn = document.getElementById("deleteBtn");
+      if (btn) btn.disabled = true;
+
+      (async () => {
+        try {
+          await deleteDoc(doc(db, COLLECTION, state.docId));
+          removeMyMeta(state.docId);
+          removeAccessRecord(state.docId);
+          state.docId = "";
+          state.doc = null;
+          state.draft = null;
+          state.accessMode = "none";
+          state.showComments = false;
+          location.hash = "";
+          alert("削除したよ");
+          render();
+        } catch (err) {
+          console.error("delete failed:", err);
+          alert(`削除で失敗したよ: ${err?.message || err}`);
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      })();
+    }
+
+    function openLeaveConfirmThenLeave() {
+      if (!state.docId) return;
+      if (!confirm("本当に共同編集から脱退しますか？")) return;
+      removeAccessRecord(state.docId);
+      state.accessMode = "none";
+      alert("脱退したよ");
+      render();
+    }
+
+    function openCommentToggle() {
+      state.showComments = !state.showComments;
+      render();
+    }
+
+    function insertComposerText(textarea, insertText, ctx) {
+      const value = textarea.value;
+      const start = ctx?.start ?? textarea.selectionStart ?? value.length;
+      const end = ctx?.end ?? textarea.selectionEnd ?? value.length;
+      const next = value.slice(0, start) + insertText + value.slice(end);
+      textarea.value = next;
+      state.commentDraft.text = next;
+      const pos = start + insertText.length;
+      textarea.selectionStart = textarea.selectionEnd = pos;
+      textarea.focus();
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    function analyzeComposerTrigger(text, cursor) {
+      const before = String(text ?? "").slice(0, cursor);
+      const lastBreak = Math.max(
+        before.lastIndexOf("\n"),
+        before.lastIndexOf(" "),
+        before.lastIndexOf("\t"),
+        before.lastIndexOf("　")
+      );
+      const segment = before.slice(lastBreak + 1);
+      if (!segment.startsWith("@") && !segment.startsWith("#")) return null;
+      return {
+        trigger: segment[0],
+        start: lastBreak + 1,
+        end: cursor,
+        query: segment.slice(1)
+      };
+    }
+
+    function getComposerSuggestions(ctx) {
+      if (!ctx) return [];
+      if (ctx.trigger === "@" && state.quiz.onlyWrong) return [];
+      if (ctx.trigger === "@") {
+        return [{ label: "点数", insert: "[[SCORE]]" }];
+      }
+      if (ctx.trigger === "#") {
+        const q = String(ctx.query || "").toLowerCase().trim();
+        const items = COMMENT_TAG_SUGGESTIONS
+          .filter(v => !q || v.toLowerCase().includes(q))
+          .map(v => ({ label: v, insert: v }));
+        return items.length ? items : COMMENT_TAG_SUGGESTIONS.map(v => ({ label: v, insert: v }));
+      }
+      return [];
+    }
+
+    function renderCommentBody(comment) {
+      const raw = String(comment?.text ?? "");
+      const hasScore = comment?.scoreCorrect != null && comment?.scoreTotal != null && raw.includes("[[SCORE]]");
+      const badge = hasScore ? `<span class="scoreToken">${esc(`${comment.scoreCorrect}/${comment.scoreTotal}`)}</span>` : "";
+      return raw
+        .split("[[SCORE]]")
+        .map((part, idx, arr) => {
+          const body = escBr(part);
+          return body + (idx < arr.length - 1 ? badge : "");
+        })
+        .join("");
+    }
+
+    function commentRoleLabel(role) {
+      if (role === "owner") return "主催者";
+      if (role === "editor") return "共同編集者";
+      return "コメント";
+    }
+
+    function commentRoleClass(role) {
+      if (role === "owner") return "commentOwner";
+      if (role === "editor") return "commentEditor";
+      return "commentViewer";
+    }
+
+    function renderCommentsPanel(comments) {
+      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      const visibleComments = comments.filter(c => canViewComment(c));
+
+      const list = visibleComments.length ? visibleComments.map(comment => {
+        const role = comment.authorRole || "viewer";
+        const roleLabel = commentRoleLabel(role);
+        const roleClass = commentRoleClass(role);
+        const canManage = canManageComment(comment);
+
+        if (!canViewComment(comment)) {
+          return `
+            <div class="commentItem">
+              <div class="commentMask">🫥 非公開コメント</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="commentItem ${roleClass}">
+            <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span> <span class="commentBadge">${comment.isPrivate ? "🫥 非公開" : "公開"}</span></div>
+            <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
+            <div class="commentBody">${renderCommentBody(comment)}</div>
+            <div class="row" style="justify-content:flex-end;">
+              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}">公開/非公開</button>` : ""}
+              ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}">削除</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("") : `<div class="note">まだコメントはないよ。</div>`;
+
+      const hiddenNote = hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : "";
+
+      return `
+        <div class="commentWrap">
+          <div class="card commentWrap">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメントを書く</div>
+              <div class="commentPrivateNote">@で点数、#で候補</div>
+            </div>
+
+            <div class="commentForm">
+              <div>
+                <div class="label">名前（任意）</div>
+                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
+              </div>
+
+              <div>
+                <div class="label">コメント</div>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">@ や # を入れると候補が出るよ</textarea>
+              </div>
+
+              <div id="commentSuggestionPanel" class="suggestionPanel"></div>
+
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <label class="row" style="gap:8px;cursor:pointer;">
+                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
+                  <span>非公開にする</span>
+                </label>
+                <button class="primary" id="postCommentBtn">コメントする</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメント一覧</div>
+              <div class="commentToggleRow">
+                <span class="commentBadge">表示 ${visibleComments.length}</span>
+                ${hiddenNote}
+              </div>
+            </div>
+            <div class="reviewList">
+              ${list}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function addComment() {
+      if (!state.docId || !state.doc) return;
+
+      const name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
+      let text = (state.commentDraft?.text || "").trim();
+      const isPrivate = !!state.commentDraft?.isPrivate;
+      if (!text) {
+        alert("コメントを書いてね");
+        return;
+      }
+
+      const role = state.accessMode === "owner"
+        ? "owner"
+        : (state.accessMode === "key" || state.accessMode === "open" ? "editor" : "viewer");
+
+      let scoreCorrect = null;
+      let scoreTotal = null;
+
+      if (!state.quiz.onlyWrong && text.includes("[[SCORE]]")) {
+        const score = currentScoreMeta();
+        scoreCorrect = score.correctCount;
+        scoreTotal = score.total;
+      } else if (state.quiz.onlyWrong) {
+        text = text.replace(/\[\[SCORE\]\]/g, "");
+      }
+
+      const comment = {
+        id: uid(),
+        authorToken: getCommentToken(),
+        authorName: name,
+        authorRole: role,
+        text,
+        isPrivate,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        scoreCorrect,
+        scoreTotal
+      };
+
+      setCommentName(name);
+
+      const next = sortComments([...(state.doc.comments || []), comment]);
+      await persistComments(next);
+
+      state.commentDraft.text = "";
+      state.commentDraft.isPrivate = false;
+      state.commentDraft.name = name;
+      state.showComments = true;
+      render();
+    }
+
+    async function toggleCommentVisibility(commentId) {
+      if (!state.doc?.comments?.length) return;
+      const next = state.doc.comments.map(c => c.id === commentId ? { ...c, isPrivate: !c.isPrivate, updatedAt: Date.now() } : c);
+      await persistComments(next);
+      state.showComments = true;
+      render();
+    }
+
+    async function deleteComment(commentId) {
+      if (!state.doc?.comments?.length) return;
+      if (!confirm("このコメントを削除する？")) return;
+      const next = state.doc.comments.filter(c => c.id !== commentId);
+      await persistComments(next);
+      state.showComments = true;
+      render();
+    }
+
+    function bindHomeActions() {
+      document.querySelectorAll("[data-open-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-copy-quiz]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.copyQuiz || "";
+          const link = prettyLink(id);
+          try {
+            await navigator.clipboard.writeText(link);
+            alert("リンクをコピーしたよ");
+          } catch {
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-leave-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.leaveQuiz || "";
+          if (!confirm("本当に共同編集から脱退しますか？")) return;
+          removeAccessRecord(id);
+          render();
+        });
+      });
+
+      const createBtn = document.getElementById("createBtn");
+      if (createBtn) {
+        createBtn.addEventListener("click", () => {
+          location.hash = "#/create";
+        });
+      }
+    }
+
+    function commentButtonLabel(comments) {
+      const total = comments.length;
+      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      if (state.showComments) return "コメントを閉じる";
+      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
+    }
+
+    function renderHome() {
+      clearResultEnterHandler();
+      document.title = "問題作成サイト";
+
+      const myQuizzes = loadMyList();
+      const accessQuizzes = loadAccessList().filter(item => !myQuizzes.some(m => m.id === item.id));
+
+      const myListHtml = myQuizzes.length ? myQuizzes.map(item => `
+        <div class="listItem">
+          <div class="listMeta">
+            <div class="reviewQ">${esc(item.title || "無題")}</div>
+            <div class="reviewA">${esc(item.subtitle || "")}</div>
+            <div class="metaLine">作成: ${esc(formatMinute(item.createdAt))}</div>
+            <div class="metaLine">最終編集: ${esc(formatMinute(item.updatedAt))}</div>
+          </div>
+          <div class="listActions">
+            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}">開く</button>
+            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}">編集</button>
+            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}">コピー</button>
+          </div>
+        </div>
+      `).join("") : `<div class="note">まだないよ。作成ボタンからどうぞ。</div>`;
+
+      const accessListHtml = accessQuizzes.length ? accessQuizzes.map(item => `
+        <div class="listItem">
+          <div class="listMeta">
+            <div class="reviewQ">${esc(item.title || "無題")}</div>
+            <div class="reviewA">${esc(item.subtitle || "")}</div>
+            <div class="metaLine">作成: ${esc(formatMinute(item.createdAt))}</div>
+            <div class="metaLine">最終編集: ${esc(formatMinute(item.updatedAt))}</div>
+          </div>
+          <div class="listActions">
+            <button class="ghost miniAction" data-open-quiz="${esc(item.id)}">開く</button>
+            <button class="ghost miniAction" data-edit-quiz="${esc(item.id)}">編集</button>
+            <button class="ghost miniAction" data-copy-quiz="${esc(item.id)}">コピー</button>
+            <button class="ghost miniAction" data-leave-quiz="${esc(item.id)}">脱退</button>
+          </div>
+        </div>
+      `).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`;
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div>
+              <h1 class="title">問題作成サイト</h1>
+              <div class="sub">作って、そのまま遊べる</div>
+            </div>
+          </div>
+
+          <div class="hero">
+            <div class="card">
+              <h1 style="margin:0;font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-.03em">作成して、公開して、答える。</h1>
+              <p style="margin:12px 0 0;color:var(--muted);line-height:1.8;font-size:16px">
+                1行ごとに <b>問題=答え</b> を入れるだけ。<br>
+                <b>= なしの行</b> は見出しになるよ。<br>
+                1行目に <b>[random] [choice] [random choice] [number] [game start online]</b> みたいなタグも置ける。
+              </p>
+              <div style="height:14px"></div>
+              <button class="bigBtn" id="createBtn">作成</button>
+              <div style="height:10px"></div>
+              <div class="note">cookie で作成者を覚えるよ。Key が open なら誰でも編集できる。</div>
+            </div>
+
+            <div class="card">
+              <div class="label" style="font-size:14px">マイクイズ</div>
+              <div class="listGrid">${myListHtml}</div>
+            </div>
+
+            <div class="card">
+              <div class="label" style="font-size:14px">共同編集</div>
+              <div class="listGrid">${accessListHtml}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      bindHomeActions();
+    }
+
+    function renderEditor() {
+      clearResultEnterHandler();
+      const d = state.draft || blankDraft();
+      document.title = "作成 / 編集 | 問題作成サイト";
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div>
+              <h1 class="title">作成 / 編集</h1>
+              <div class="sub">タイトルの右に Key ボタン</div>
+            </div>
+            <div class="row">
+              ${topButtonHtml()}
+            </div>
+          </div>
+
+          <div class="card" style="display:grid;gap:14px">
+            <div class="row">
+              <div style="flex:1;min-width:220px">
+                <div class="label">タイトル</div>
+                <input id="titleInput" class="input" type="text" placeholder="タイトル" value="${esc(d.title)}">
+              </div>
+              <button class="ghost" id="keyBtn" style="height:48px;align-self:end">Key</button>
+            </div>
+
+            <div>
+              <div class="label">サブタイトル</div>
+              <input id="subInput" class="input" type="text" placeholder="サブタイトル" value="${esc(d.subtitle)}">
+            </div>
+
+            <div class="row" style="justify-content:space-between;align-items:center;">
+              <div id="editorInfo" class="note"></div>
+              <div class="row" style="justify-content:flex-end;">
+                ${editorActionHtml()}
+              </div>
+            </div>
+
+            <div>
+              <div class="label">問題欄</div>
+              <div class="gridEditor">
+                <div id="gutter" class="gutter"></div>
+                <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
+[random] [choice]
+日本について
+首都=東京
+[choice] 2+2=4,!(or＊)5
+[number] 1+1=2
+[game start online] start time:8/15/20/00 think time:30 time bonus:100
+">${esc(d.rawText)}</textarea>
+              </div>
+              <div class="help">
+                1行目に全体タグ。<br>
+                個別設定は <b>[choice] A=B,!(または＊)C</b> / <b>[number] 123=123</b>。<br>
+                コメント欄では <b>@</b> で点数、<b>#</b> でタグ候補が出るよ。
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const titleInput = document.getElementById("titleInput");
+      const subInput = document.getElementById("subInput");
+      const problemText = document.getElementById("problemText");
+      const gutter = document.getElementById("gutter");
+      const keyBtn = document.getElementById("keyBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+      const leaveBtn = document.getElementById("leaveBtn");
+      const topBtn = document.getElementById("topBtn");
+      const editorInfo = document.getElementById("editorInfo");
+
+      function refreshKeyStatus() {
+        if (!state.doc) {
+          editorInfo.textContent = d.keyMode === "open"
+            ? "Key: open（誰でも編集）"
+            : (d.key ? "Key: 設定済み" : "Key: 未設定");
+          keyBtn.disabled = false;
+          keyBtn.textContent = "Key";
+          return;
+        }
+
+        if (isOwner()) {
+          editorInfo.textContent = d.keyMode === "open"
+            ? "Key: open（誰でも編集）"
+            : (d.key ? "Key: 設定済み" : "Key: 未設定");
+          keyBtn.disabled = false;
+          keyBtn.textContent = "Key";
+          keyBtn.title = "";
+        } else {
+          editorInfo.textContent = state.doc.keyMode === "open"
+            ? "公開編集モード"
+            : "Keyは主催者のみ変更できます";
+          keyBtn.disabled = true;
+          keyBtn.textContent = "Key";
+          keyBtn.title = "Keyは主催者のみ変更できます";
+        }
+      }
+
+      titleInput.addEventListener("input", e => d.title = e.target.value);
+      subInput.addEventListener("input", e => d.subtitle = e.target.value);
+      problemText.addEventListener("input", e => {
+        d.rawText = e.target.value;
+        syncEditorArea(problemText, gutter);
+      });
+
+      keyBtn.addEventListener("click", () => {
+        if (state.doc && !isOwner()) return;
+
+        const cur = d.keyMode === "open" ? "open" : (d.key || "");
+        const next = prompt("Key を入力。open で誰でも編集。", cur);
+        if (next === null) return;
+        const v = next.trim();
+        if (!v) {
+          d.keyMode = "key";
+          d.key = "";
+        } else if (v.toLowerCase() === "open") {
+          d.keyMode = "open";
+          d.key = "";
+        } else {
+          d.keyMode = "key";
+          d.key = v;
+        }
+        refreshKeyStatus();
+      });
+
+      if (topBtn) {
+        topBtn.addEventListener("click", () => {
+          location.hash = "";
+        });
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener("click", async () => {
+          const title = d.title.trim();
+          const subtitle = d.subtitle.trim();
+          const parsed = parseQuizText(d.rawText);
+          const items = parsed.items;
+
+          if (!title) return alert("タイトルを入れてね");
+          if (!items.length) return alert("問題が1つも読めなかったよ。");
+
+          const newId = slugify(title);
+          const oldId = state.docId || "";
+          const isExisting = !!state.doc;
+          const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
+          if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
+
+          const canChangeKey = !state.doc || isOwner();
+          const effectiveKeyMode = canChangeKey ? d.keyMode : (state.doc?.keyMode || "key");
+          const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
+          const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
+          const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
+
+          const payload = {
+            title,
+            subtitle,
+            rawText: d.rawText,
+            items,
+            globalSettings: parsed.globalSettings,
+            keyMode: effectiveKeyMode,
+            key: effectiveKey,
+            ownerToken,
+            slug: newId,
+            createdAt: existingCreatedAt,
+            updatedAt: Date.now(),
+            comments: existingComments
+          };
+
+          saveBtn.disabled = true;
+          saveBtn.textContent = "保存中...";
+
+          try {
+            await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
+
+            const keyChanged = !!state.doc && (
+              (state.doc.keyMode || "key") !== effectiveKeyMode ||
+              (effectiveKeyMode !== "open" && (state.doc.key || "") !== effectiveKey)
+            );
+
+            if (oldId && oldId !== newId) {
+              try { await deleteDoc(doc(db, COLLECTION, oldId)); } catch (_) {}
+              removeMyMeta(oldId);
+              removeAccessRecord(oldId);
+            }
+
+            if (keyChanged && oldId === newId) {
+              removeAccessRecord(newId);
+            }
+
+            state.docId = newId;
+            state.doc = {
+              ...payload,
+              items,
+              globalSettings: parsed.globalSettings,
+              comments: sortComments(existingComments)
+            };
+
+            if (isOwner() || !isExisting) {
+              upsertMyMeta({
+                id: newId,
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
+
+            if (state.accessMode === "key") {
+              rememberAccess(newId, effectiveKey, {
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
+
+            location.hash = `#/${encodeURIComponent(newId)}`;
+            const link = prettyLink(newId);
+            navigator.clipboard?.writeText(link).catch(() => {});
+            alert(`保存したよ！\n\n${link}`);
+
+            startQuiz(state.doc, newId);
+          } catch (err) {
+            console.error("save failed:", err);
+            alert(`保存で失敗したよ: ${err?.message || err}`);
+          } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "保存";
+          }
+        });
+      }
+
+      if (deleteBtn) deleteBtn.addEventListener("click", openDeleteConfirmThenDelete);
+      if (leaveBtn) leaveBtn.addEventListener("click", openLeaveConfirmThenLeave);
+
+      syncEditorArea(problemText, gutter);
+      refreshKeyStatus();
+      titleInput.focus();
+    }
+
+    function renderChoiceButtons(item) {
+      const options = (item.randomChoice ? shuffle(item.options || []) : (item.options || []));
+      return `
+        <div class="label">選択してね</div>
+        <div class="choiceGrid" style="display:grid;gap:10px;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));">
+          ${options.map(opt => `<button type="button" class="ghost choiceBtn" data-choice="${esc(opt.text)}">${esc(opt.text)}</button>`).join("")}
+        </div>
+      `;
+    }
+
+    function renderQuestion() {
+      clearResultEnterHandler();
+      const q = currentQuestion();
+      if (!q) {
+        state.quiz.phase = "done";
+        render();
+        return;
+      }
+
+      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+
+      const canShowTopEdit = true;
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div>
+              <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+              <div class="sub">${esc(state.doc.subtitle || "")}</div>
+            </div>
+            <div class="row">
+              ${topButtonHtml()}
+              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
+          </div>
+
+          <div class="quiz">
+            <div class="card">
+              <div class="progress">
+                <div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div>
+                <div>${state.doc.items.length}問中</div>
+              </div>
+              <div style="height:12px"></div>
+              ${q.item.section ? `<div class="sectionText">${esc(q.item.section)}</div><div style="height:10px"></div>` : ""}
+              <div class="question">${esc(q.item.question)}</div>
+            </div>
+
+            <div class="card" style="display:grid;gap:10px">
+              ${
+                q.item.mode === "choice"
+                  ? renderChoiceButtons(q.item)
+                  : q.item.mode === "number"
+                    ? `
+                      <div class="label">数字だけ</div>
+                      <input id="answerInput" class="answer" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="数字を入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    `
+                    : `
+                      <div class="label">答え</div>
+                      <input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+                    `
+              }
+              <div class="actions">
+                <button class="submit" id="submitBtn">✅</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
+      });
+
+      document.getElementById("editBtn").addEventListener("click", () => {
+        if (canEdit()) return openEditFromDoc();
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) return;
+        if (state.doc.keyMode === "open") return openEditFromDoc();
+        if ((entered || "").trim() === (state.doc.key || "")) {
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
+          return openEditFromDoc();
+        }
+        alert("Key が違うよ");
+      });
+
+      if (q.item.mode === "choice") {
+        const buttons = [...document.querySelectorAll(".choiceBtn")];
+        buttons.forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.quiz.selectedChoice = btn.dataset.choice || "";
+            buttons.forEach(b => b.classList.toggle("selected", b === btn));
+          });
+        });
+      } else {
+        const input = document.getElementById("answerInput");
+        input.focus();
+        input.addEventListener("input", e => {
+          if (q.item.mode === "number") {
+            const filtered = normalizeNumberText(e.target.value);
+            if (e.target.value !== filtered) e.target.value = filtered;
+            state.quiz.typedAnswer = filtered;
+          } else {
+            state.quiz.typedAnswer = e.target.value;
+          }
+        });
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            submitAnswer();
+          }
+        });
+      }
+
+      document.getElementById("submitBtn").addEventListener("click", submitAnswer);
+    }
+
+    function renderResult() {
+      const r = state.quiz.lastResult;
+      if (!r) {
+        state.quiz.phase = "question";
+        render();
+        return;
+      }
+
+      const q = state.doc.items[r.idx];
+      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div>
+              <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+              <div class="sub">${esc(state.doc.subtitle || "")}</div>
+            </div>
+            <div class="row">
+              ${topButtonHtml()}
+              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
+          </div>
+
+          <div class="quiz">
+            <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
+
+            <div class="card">
+              ${q.section ? `<div class="sectionText">${esc(q.section)}</div><div style="height:10px"></div>` : ""}
+              <div class="label">問題</div>
+              <div class="question" style="font-size:22px">${esc(q.question)}</div>
+              <div style="height:12px"></div>
+              <div class="label">答え</div>
+              <div class="explain">${
+                q.item.mode === "choice"
+                  ? esc((q.item.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
+                  : esc((q.item.answers || []).join(" / "))
+              }</div>
+              <div style="height:12px"></div>
+              <div class="label">あなたの答え</div>
+              <div class="explain">${esc(r.given)}</div>
+            </div>
+
+            <div class="actions">
+              <button class="next" id="nextBtn">次へ</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
+      });
+
+      document.getElementById("editBtn").addEventListener("click", () => {
+        if (canEdit()) return openEditFromDoc();
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) return;
+        if (state.doc.keyMode === "open") return openEditFromDoc();
+        if ((entered || "").trim() === (state.doc.key || "")) {
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
+          return openEditFromDoc();
+        }
+        alert("Key が違うよ");
+      });
+
+      document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+      enableResultEnterHandler();
+    }
+
+    function renderCommentsUI() {
+      const comments = sortComments(state.doc.comments || []);
+      return renderCommentsPanel(comments);
+    }
+
+    function commentButtonLabelForCurrent() {
+      const comments = sortComments(state.doc.comments || []);
+      return commentButtonLabel(comments);
+    }
+
+    function renderDone() {
+      clearResultEnterHandler();
+      const { correctCount, total } = currentScoreMeta();
+      const wrongCount = state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct).length;
+      const comments = sortComments(state.doc.comments || []);
+
+      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div>
+              <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+              <div class="sub">${esc(state.doc.subtitle || "")}</div>
+            </div>
+            <div class="row">
+              ${topButtonHtml()}
+              <button class="ghost" id="editBtn">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
+          </div>
+
+          <div class="summary">
+            <div class="card">
+              <div class="score">${correctCount} / ${total} 問正解</div>
+              ${state.quiz.onlyWrong ? `<div class="note" style="margin-top:10px">間違えた問題だけのやり直しだよ。</div>` : `<div class="note" style="margin-top:10px">もう一回やり直せるよ。</div>`}
+            </div>
+
+            <div class="actions" style="justify-content:flex-start">
+              <button class="primary" id="restartBtn">もう一度！</button>
+              <button class="ghost" id="commentsBtn">${esc(commentButtonLabel(comments))}</button>
+              ${wrongCount > 0 && !state.quiz.onlyWrong ? `<button class="ghost" id="wrongOnlyBtn">間違えた問題だけやり直す</button>` : ``}
+            </div>
+
+            ${state.showComments ? renderCommentsPanel(comments) : ""}
+
+            <div class="card">
+              <div class="label">全問題と答え</div>
+              <div class="reviewList">
+                ${state.doc.items.map(item => `
+                  <div class="reviewItem">
+                    ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
+                    <div class="reviewQ">${esc(item.question)}</div>
+                    <div class="reviewA">${
+                      item.mode === "choice"
+                        ? esc((item.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
+                        : esc((item.answers || []).join(" / "))
+                    }</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("topBtn").addEventListener("click", () => {
+        location.hash = "";
+      });
+
+      document.getElementById("editBtn").addEventListener("click", () => {
+        if (canEdit()) return openEditFromDoc();
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) return;
+        if (state.doc.keyMode === "open") return openEditFromDoc();
+        if ((entered || "").trim() === (state.doc.key || "")) {
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
+          return openEditFromDoc();
+        }
+        alert("Key が違うよ");
+      });
+
+      document.getElementById("restartBtn").addEventListener("click", restartQuiz);
+
+      const commentsBtn = document.getElementById("commentsBtn");
+      if (commentsBtn) commentsBtn.addEventListener("click", openCommentToggle);
+
+      const wrongOnlyBtn = document.getElementById("wrongOnlyBtn");
+      if (wrongOnlyBtn) wrongOnlyBtn.addEventListener("click", startWrongOnlyQuiz);
+
+      if (state.showComments) {
+        const commentName = document.getElementById("commentName");
+        const commentText = document.getElementById("commentText");
+        const commentPrivate = document.getElementById("commentPrivate");
+        const postCommentBtn = document.getElementById("postCommentBtn");
+        const suggestionPanel = document.getElementById("commentSuggestionPanel");
+
+        const refreshSuggestions = () => {
+          if (!suggestionPanel || !commentText) return;
+          const cursor = commentText.selectionStart ?? commentText.value.length;
+          const ctx = analyzeComposerTrigger(commentText.value, cursor);
+          const suggestions = getComposerSuggestions(ctx);
+
+          if (!ctx || !suggestions.length) {
+            suggestionPanel.innerHTML = "";
+            suggestionPanel.classList.add("hide");
+            return;
+          }
+
+          suggestionPanel.classList.remove("hide");
+          suggestionPanel.innerHTML = `
+            <span class="suggestionLabel">${ctx.trigger === "@" ? "@" : "#"}</span>
+            ${suggestions.map(s => `<button type="button" class="suggestionChip" data-suggest="${esc(s.insert)}">${esc(s.label)}</button>`).join("")}
+          `;
+
+          [...suggestionPanel.querySelectorAll("[data-suggest]")].forEach(btn => {
+            btn.addEventListener("click", () => {
+              insertComposerText(commentText, btn.dataset.suggest || "", ctx);
+              state.commentDraft.text = commentText.value;
+              commentText.style.height = "auto";
+              commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
+              refreshSuggestions();
+            });
+          });
+        };
+
+        if (commentName) {
+          commentName.addEventListener("input", e => {
+            state.commentDraft.name = e.target.value;
+            setCommentName(e.target.value.trim() || "匿名");
+          });
+        }
+
+        if (commentText) {
+          commentText.addEventListener("input", e => {
+            state.commentDraft.text = e.target.value;
+            e.target.style.height = "auto";
+            e.target.style.height = `${Math.max(120, e.target.scrollHeight)}px`;
+            refreshSuggestions();
+          });
+          commentText.addEventListener("keyup", refreshSuggestions);
+          commentText.addEventListener("click", refreshSuggestions);
+          commentText.addEventListener("focus", refreshSuggestions);
+          commentText.style.height = "auto";
+          commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
+          refreshSuggestions();
+        }
+
+        if (commentPrivate) {
+          commentPrivate.addEventListener("change", e => {
+            state.commentDraft.isPrivate = !!e.target.checked;
+          });
+        }
+
+        if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
+
+        document.querySelectorAll("[data-toggle-comment]").forEach(btn => {
+          btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || ""));
+        });
+        document.querySelectorAll("[data-delete-comment]").forEach(btn => {
+          btn.addEventListener("click", () => deleteComment(btn.dataset.deleteComment || ""));
+        });
+      }
+    }
+
+    function renderLoading() {
+      clearResultEnterHandler();
+      document.title = "読み込み中 | 問題作成サイト";
+      root.innerHTML = `
+        <div class="page">
+          <div class="hero">
+            <div class="card">
+              <h1 style="margin:0">読み込み中…</h1>
+              <p style="margin:12px 0 0;color:var(--muted)">Firestore からデータを取ってるよ。</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      if (state.screen === "loading") return renderLoading();
+      if (state.screen === "home") return renderHome();
+      if (state.screen === "editor") return renderEditor();
+
+      if (state.screen === "quiz") {
+        if (!state.doc || !state.doc.items || !state.doc.items.length) {
+          state.screen = "home";
+          return render();
+        }
+        if (state.quiz.phase === "question") return renderQuestion();
+        if (state.quiz.phase === "result") return renderResult();
+        if (state.quiz.phase === "done") return renderDone();
+      }
+    }
+
+    async function openEditRoute(id) {
+      state.screen = "loading";
+      render();
+
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, id));
+        if (!snap.exists()) {
+          state.screen = "home";
+          render();
+          return;
+        }
+
+        const data = snap.data() || {};
+        const parsed = data.rawText
+          ? parseQuizText(data.rawText)
+          : {
+              items: Array.isArray(data.items) ? data.items : [],
+              globalSettings: data.globalSettings || defaultGlobalSettings()
+            };
+
+        state.docId = id;
+        state.doc = {
+          title: data.title || "問題",
+          subtitle: data.subtitle || "",
+          rawText: data.rawText || reconstructRawTextFromItems(parsed.items || [], parsed.globalSettings || defaultGlobalSettings()),
+          items: parsed.items || [],
+          globalSettings: data.globalSettings || parsed.globalSettings || defaultGlobalSettings(),
+          keyMode: data.keyMode || "key",
+          key: data.key || "",
+          ownerToken: data.ownerToken || "",
+          slug: data.slug || id,
+          createdAt: data.createdAt || null,
+          updatedAt: data.updatedAt || null,
+          comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
+        };
+
+        setAccessModeForDoc(state.doc, id);
+
+        if (state.accessMode === "key") {
+          rememberAccess(id, state.doc.key, {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          openEditFromDoc();
+          return;
+        }
+
+        if (state.accessMode === "owner" || state.accessMode === "open") {
+          openEditFromDoc();
+          return;
+        }
+
+        const entered = prompt("Key を入力して編集", "");
+        if (entered === null) {
+          location.hash = `#/${encodeURIComponent(id)}`;
+          return;
+        }
+
+        if ((entered || "").trim() === (state.doc.key || "")) {
+          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
+          state.accessMode = "key";
+          openEditFromDoc();
+        } else {
+          alert("Key が違うよ");
+          location.hash = `#/${encodeURIComponent(id)}`;
+        }
+      } catch (err) {
+        console.error(err);
+        state.screen = "home";
+        render();
+      }
+    }
+
+    async function loadRoute() {
+      applySystemTheme();
+      const r = route();
+
+      if (r.name === "home") {
+        state.screen = "home";
+        state.showComments = false;
+        render();
+        return;
+      }
+
+      if (r.name === "create") {
+        state.doc = null;
+        state.docId = "";
+        state.accessMode = "none";
+        state.draft = blankDraft();
+        state.showComments = false;
+        render();
+        return;
+      }
+
+      if (r.name === "edit") {
+        await openEditRoute(r.id);
+        return;
+      }
+
+      if (r.name === "quiz") {
+        state.screen = "loading";
+        state.showComments = false;
+        render();
+
+        try {
+          const snap = await getDoc(doc(db, COLLECTION, r.id));
+          if (!snap.exists()) {
+            state.screen = "home";
+            render();
+            return;
+          }
+
+          const data = snap.data() || {};
+          const parsed = data.rawText
+            ? parseQuizText(data.rawText)
+            : {
+                items: Array.isArray(data.items) ? data.items : [],
+                globalSettings: data.globalSettings || defaultGlobalSettings()
+              };
+
+          startQuiz({
+            title: data.title || "問題",
+            subtitle: data.subtitle || "",
+            rawText: data.rawText || reconstructRawTextFromItems(parsed.items || [], parsed.globalSettings || defaultGlobalSettings()),
+            items: parsed.items || [],
+            globalSettings: data.globalSettings || parsed.globalSettings || defaultGlobalSettings(),
+            keyMode: data.keyMode || "key",
+            key: data.key || "",
+            ownerToken: data.ownerToken || "",
+            slug: data.slug || r.id,
+            createdAt: data.createdAt || null,
+            updatedAt: data.updatedAt || null,
+            comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
+          }, r.id);
+        } catch (err) {
+          console.error(err);
+          state.screen = "home";
+          render();
+        }
+      }
+    }
+
+    if (systemDark) {
+      const onThemeChange = () => {
+        applySystemTheme();
+        render();
+      };
+      if (systemDark.addEventListener) {
+        systemDark.addEventListener("change", onThemeChange);
+      } else if (systemDark.addListener) {
+        systemDark.addListener(onThemeChange);
+      }
+    }
+
+    window.addEventListener("hashchange", loadRoute);
+    loadRoute();
+  </script>
+</body>
+</html>
