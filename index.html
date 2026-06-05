@@ -714,10 +714,7 @@
       if (effectiveMode === "choice" || effectiveMode === "randomChoice") {
         const choices = splitChoiceOptions(right);
         if (!choices.length) return null;
-
-        if (!choices.some(c => c.correct)) {
-          choices[choices.length - 1].correct = true;
-        }
+        if (!choices.some(c => c.correct)) choices[choices.length - 1].correct = true;
 
         return {
           section: currentSection,
@@ -730,9 +727,7 @@
       }
 
       if (effectiveMode === "number") {
-        const answers = splitAnswers(right)
-          .map(normalizeNumberText)
-          .filter(Boolean);
+        const answers = splitAnswers(right).map(normalizeNumberText).filter(Boolean);
         if (!answers.length) return null;
 
         return {
@@ -820,13 +815,8 @@
         }
 
         if (item.mode === "choice") {
-          const choices = (item.choices || []).map(c => {
-            if (c.correct) return `!${c.text}`;
-            return c.text;
-          }).join(",");
+          const choices = (item.choices || []).map(c => c.correct ? `!${c.text}` : c.text).join(",");
           lines.push(`${item.question}=${choices}`);
-        } else if (item.mode === "number") {
-          lines.push(`${item.question}=${(item.answers || []).join(",")}`);
         } else {
           lines.push(`${item.question}=${(item.answers || []).join(",")}`);
         }
@@ -1061,11 +1051,7 @@
 
     function refreshCommentDraftDefaults() {
       if (!state.commentDraft) {
-        state.commentDraft = {
-          name: getCommentName(),
-          text: "",
-          isPrivate: false
-        };
+        state.commentDraft = { name: getCommentName(), text: "", isPrivate: false };
         return;
       }
       if (!state.commentDraft.name) state.commentDraft.name = getCommentName();
@@ -1144,7 +1130,7 @@
       render();
     }
 
-    function buildChoiceOrderForItem(item, itemIndex) {
+    function buildChoiceOrderForItem(item) {
       if (item.mode !== "choice") return null;
       const list = (item.choices || []).slice();
       return item.choiceRandom ? shuffle(list) : list;
@@ -1186,7 +1172,7 @@
 
       const choiceOrders = {};
       (docData.items || []).forEach((item, idx) => {
-        const display = buildChoiceOrderForItem(item, idx);
+        const display = buildChoiceOrderForItem(item);
         if (display) choiceOrders[idx] = display;
       });
 
@@ -1204,6 +1190,14 @@
 
       state.screen = "quiz";
       document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
+      render();
+    }
+
+    function finishQuiz() {
+      state.quiz.phase = "done";
+      state.quiz.typedAnswer = "";
+      state.quiz.lastResult = null;
+      state.quiz.selectedChoiceIndex = -1;
       render();
     }
 
@@ -1227,11 +1221,19 @@
     }
 
     function nextQuestion() {
-      state.quiz.index += 1;
+      const nextIndex = state.quiz.index + 1;
+
       state.quiz.typedAnswer = "";
       state.quiz.lastResult = null;
       state.quiz.selectedChoiceIndex = -1;
-      state.quiz.phase = state.quiz.index >= state.quiz.order.length ? "done" : "question";
+
+      if (nextIndex >= state.quiz.order.length) {
+        finishQuiz();
+        return;
+      }
+
+      state.quiz.index = nextIndex;
+      state.quiz.phase = "question";
       render();
     }
 
@@ -1412,65 +1414,6 @@
       textarea.dispatchEvent(new Event("input", { bubbles: true }));
       textarea.focus();
       return true;
-    }
-
-    function attachTagSuggestions(textarea, panel) {
-      const items = [
-        { label: "[random]", value: "[random] " },
-        { label: "[choice]", value: "[choice] " },
-        { label: "[random choice]", value: "[random choice] " },
-        { label: "[number]", value: "[number] " }
-      ];
-
-      function update() {
-        const show = getTriggerSuggestionText(textarea, "#");
-        panel.classList.toggle("hide", !show);
-        if (!show) {
-          panel.innerHTML = "";
-          return;
-        }
-        panel.innerHTML = items.map(item => `<button type="button" class="ghost" data-tag-value="${esc(item.value)}">${esc(item.label)}</button>`).join("");
-        panel.querySelectorAll("[data-tag-value]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            replaceTriggerWith(textarea, "#", btn.dataset.tagValue || "");
-          });
-        });
-      }
-
-      textarea.addEventListener("input", update);
-      textarea.addEventListener("keyup", update);
-      textarea.addEventListener("click", update);
-      textarea.addEventListener("focus", update);
-      update();
-
-      return update;
-    }
-
-    function attachScoreSuggestions(textarea, panel) {
-      function update() {
-        const show = getTriggerSuggestionText(textarea, "@") && !state.quiz.onlyWrong;
-        panel.classList.toggle("hide", !show);
-        if (!show) {
-          panel.innerHTML = "";
-          return;
-        }
-
-        panel.innerHTML = `<button type="button" class="ghost" id="scoreInsertBtn">点数</button>`;
-        const btn = panel.querySelector("#scoreInsertBtn");
-        if (btn) {
-          btn.addEventListener("click", () => {
-            replaceTriggerWith(textarea, "@", "[[SCORE]]");
-          });
-        }
-      }
-
-      textarea.addEventListener("input", update);
-      textarea.addEventListener("keyup", update);
-      textarea.addEventListener("click", update);
-      textarea.addEventListener("focus", update);
-      update();
-
-      return update;
     }
 
     function currentAccessRoleForComment() {
@@ -1724,6 +1667,31 @@
         }
       }
 
+      function updateTagPanel() {
+        const show = getTriggerSuggestionText(problemText, "#");
+        tagSuggest.classList.toggle("hide", !show);
+        if (!show) {
+          tagSuggest.innerHTML = "";
+          return;
+        }
+
+        const tokens = [
+          { label: "[random]", value: "[random] " },
+          { label: "[choice]", value: "[choice] " },
+          { label: "[random choice]", value: "[random choice] " },
+          { label: "[number]", value: "[number] " }
+        ];
+
+        tagSuggest.innerHTML = tokens.map(t => `<button type="button" class="ghost" data-tag-value="${esc(t.value)}">${esc(t.label)}</button>`).join("");
+        tagSuggest.querySelectorAll("[data-tag-value]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            replaceTriggerWith(problemText, "#", btn.dataset.tagValue || "");
+            syncEditorArea(problemText, gutter);
+            updateTagPanel();
+          });
+        });
+      }
+
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
       problemText.addEventListener("input", e => {
@@ -1755,36 +1723,7 @@
         refreshKeyStatus();
       });
 
-      if (topBtn) {
-        topBtn.addEventListener("click", () => {
-          location.hash = "";
-        });
-      }
-
-      function updateTagPanel() {
-        const show = getTriggerSuggestionText(problemText, "#");
-        tagSuggest.classList.toggle("hide", !show);
-        if (!show) {
-          tagSuggest.innerHTML = "";
-          return;
-        }
-
-        const tokens = [
-          { label: "[random]", value: "[random] " },
-          { label: "[choice]", value: "[choice] " },
-          { label: "[random choice]", value: "[random choice] " },
-          { label: "[number]", value: "[number] " }
-        ];
-
-        tagSuggest.innerHTML = tokens.map(t => `<button type="button" class="ghost" data-tag-value="${esc(t.value)}">${esc(t.label)}</button>`).join("");
-        tagSuggest.querySelectorAll("[data-tag-value]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            replaceTriggerWith(problemText, "#", btn.dataset.tagValue || "");
-            syncEditorArea(problemText, gutter);
-            updateTagPanel();
-          });
-        });
-      }
+      if (topBtn) topBtn.addEventListener("click", () => { location.hash = ""; });
 
       if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
@@ -2038,9 +1977,7 @@
       if (q.mode === "choice") {
         answerText = (q.choices || []).filter(c => c.correct).map(c => c.text).join(" / ");
       } else {
-        answerText = q.mode === "number"
-          ? (q.answers || []).join(" / ")
-          : (q.answers || []).join(" / ");
+        answerText = (q.answers || []).join(" / ");
       }
 
       root.innerHTML = `
@@ -2103,6 +2040,26 @@
 
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
+    }
+
+    function getTriggerSuggestionText(textarea, triggerChar) {
+      const pos = textarea.selectionStart ?? 0;
+      return pos > 0 && textarea.value[pos - 1] === triggerChar;
+    }
+
+    function replaceTriggerWith(textarea, triggerChar, replacement) {
+      const start = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? 0;
+      if (start < 1 || textarea.value[start - 1] !== triggerChar) return false;
+
+      const nextValue = textarea.value.slice(0, start - 1) + replacement + textarea.value.slice(end);
+      const nextPos = start - 1 + replacement.length;
+
+      textarea.value = nextValue;
+      textarea.selectionStart = textarea.selectionEnd = nextPos;
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      textarea.focus();
+      return true;
     }
 
     function renderCommentPanel(comments) {
@@ -2275,14 +2232,14 @@
         const commentText = document.getElementById("commentText");
         const commentPrivate = document.getElementById("commentPrivate");
         const postCommentBtn = document.getElementById("postCommentBtn");
-        const scoreInsertRow = document.getElementById("scoreInsertRow");
         const scoreInsertBtn = document.getElementById("scoreInsertBtn");
+        const scoreInsertRow = document.getElementById("scoreInsertRow");
 
-        function updateScoreVisibility() {
+        const updateScoreVisibility = () => {
           if (!scoreInsertRow || !commentText) return;
           const show = !state.quiz.onlyWrong && getTriggerSuggestionText(commentText, "@");
           scoreInsertRow.classList.toggle("hide", !show);
-        }
+        };
 
         if (commentName) {
           commentName.addEventListener("input", e => {
@@ -2290,6 +2247,7 @@
             setCommentName(e.target.value.trim() || "匿名");
           });
         }
+
         if (commentText) {
           commentText.addEventListener("input", e => {
             state.commentDraft.text = e.target.value;
@@ -2304,11 +2262,13 @@
           commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
           updateScoreVisibility();
         }
+
         if (commentPrivate) {
           commentPrivate.addEventListener("change", e => {
             state.commentDraft.isPrivate = !!e.target.checked;
           });
         }
+
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
         if (scoreInsertBtn && commentText) {
           scoreInsertBtn.addEventListener("click", () => {
