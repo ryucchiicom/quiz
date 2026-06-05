@@ -59,7 +59,7 @@
       cursor:pointer;
     }
 
-    a{color:inherit}
+    .hide{display:none !important;}
 
     .page{
       max-width:980px;
@@ -540,6 +540,23 @@
       background:var(--panel);
     }
 
+    .choiceGrid{
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    }
+
+    .choiceBtn{
+      text-align:center;
+      width:100%;
+    }
+
+    .selected{
+      background:#dfe9ff !important;
+      border-color:#9ab8ff !important;
+      box-shadow:0 0 0 4px rgba(47,111,237,.08);
+    }
+
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
@@ -576,7 +593,7 @@
     const db = getFirestore(appFirebase);
 
     const root = document.getElementById("app");
-    if (!root) throw new Error('Missing <div id="app"></div>');
+    if (!root) throw new Error("Missing <div id=\"app\"></div>");
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
@@ -584,15 +601,14 @@
     const ACCESS_KEY = "qb_access_quizzes";
     const COMMENT_TOKEN_KEY = "qb_comment_token";
     const COMMENT_NAME_KEY = "qb_comment_name";
-
-    const KNOWN_TAGS = ["random", "choice", "random choice", "number"];
+    const TAGS = ["random", "choice", "random choice", "number"];
 
     const state = {
       screen: "loading",
       docId: "",
       doc: null,
       draft: null,
-      accessMode: "none", // none | owner | open | key
+      accessMode: "none",
       showComments: false,
       commentDraft: {
         name: "",
@@ -656,56 +672,45 @@
     function parseLeadingTags(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
-
       while (rest.startsWith("[")) {
         const end = rest.indexOf("]");
         if (end < 0) break;
         const token = rest.slice(1, end).trim().toLowerCase();
-        if (!token) break;
-        if (!KNOWN_TAGS.includes(token)) break;
+        if (!TAGS.includes(token)) break;
         tags.push(token);
         rest = rest.slice(end + 1).trimStart();
       }
-
       return { tags, rest };
     }
 
-    function isTagOnlyLine(line) {
-      const { tags, rest } = parseLeadingTags(line);
-      return tags.length > 0 && !rest;
-    }
-
-    function mergeTagFlags(base, tags) {
+    function mergeFlags(base, tags) {
       const out = { ...base };
-      for (const tag of tags) {
-        if (tag === "random") out.random = true;
-        if (tag === "choice") out.choice = true;
-        if (tag === "random choice") {
+      for (const t of tags) {
+        if (t === "random") out.random = true;
+        if (t === "choice") out.choice = true;
+        if (t === "random choice") {
           out.choice = true;
           out.randomChoice = true;
         }
-        if (tag === "number") out.number = true;
+        if (t === "number") out.number = true;
       }
       return out;
     }
 
-    function effectiveMode(flags) {
-      if (flags.number) return "number";
-      if (flags.choice) return "choice";
-      return "text";
+    function pickMode(globalFlags, localTags) {
+      const localNumber = localTags.includes("number");
+      const localChoice = localTags.includes("choice") || localTags.includes("random choice");
+      const localRandomChoice = localTags.includes("random choice");
+
+      if (localNumber) return { mode: "number", randomChoice: false };
+      if (localChoice) return { mode: "choice", randomChoice: localRandomChoice || !!globalFlags.randomChoice };
+      if (globalFlags.number) return { mode: "number", randomChoice: false };
+      if (globalFlags.choice || globalFlags.randomChoice) return { mode: "choice", randomChoice: !!globalFlags.randomChoice };
+      return { mode: "text", randomChoice: false };
     }
 
     function parseQuestionLine(line, globalFlags) {
       const { tags, rest } = parseLeadingTags(line);
-      const localFlags = mergeTagFlags({ random: false, choice: false, randomChoice: false, number: false }, tags);
-      const flags = {
-        random: globalFlags.random || localFlags.random,
-        choice: globalFlags.choice || localFlags.choice,
-        randomChoice: globalFlags.randomChoice || localFlags.randomChoice,
-        number: globalFlags.number || localFlags.number
-      };
-
-      const mode = effectiveMode(flags);
       const raw = rest.trim();
       if (!raw) return null;
 
@@ -715,10 +720,11 @@
       const question = parts[0].trim();
       if (!question) return null;
 
-      if (mode === "choice") {
-        const answerPart = parts.slice(1).join("=").trim();
-        const rawOptions = splitAnswers(answerPart);
+      const { mode, randomChoice } = pickMode(globalFlags, tags);
 
+      if (mode === "choice") {
+        const answerText = parts.slice(1).join("=").trim();
+        const rawOptions = splitAnswers(answerText);
         const options = rawOptions.map(opt => {
           let text = opt.trim();
           let correct = false;
@@ -737,7 +743,7 @@
           mode: "choice",
           question,
           options,
-          randomChoice: flags.randomChoice
+          randomChoice
         };
       }
 
@@ -767,51 +773,49 @@
     function parseItems(text) {
       const lines = String(text ?? "").split(/\r?\n/);
       const items = [];
-
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false };
-      let started = false;
-      let startIndex = 0;
 
-      for (let i = 0; i < lines.length; i++) {
-        if (!String(lines[i]).trim()) continue;
-        started = true;
-        if (isTagOnlyLine(lines[i])) {
-          globalFlags = mergeTagFlags(globalFlags, parseLeadingTags(lines[i]).tags);
-          startIndex = i + 1;
+      let i = 0;
+      while (i < lines.length && !String(lines[i]).trim()) i++;
+
+      while (i < lines.length) {
+        const raw = String(lines[i] ?? "");
+        const trimmed = raw.trim();
+        if (!trimmed) {
+          i++;
+          continue;
+        }
+        const { tags, rest } = parseLeadingTags(raw);
+        if (tags.length && !rest) {
+          globalFlags = mergeFlags(globalFlags, tags);
+          i++;
+          continue;
         }
         break;
       }
 
       let currentSection = "";
-
-      for (let i = startIndex; i < lines.length; i++) {
-        const line = lines[i];
-        const trimmed = String(line ?? "").trim();
+      for (; i < lines.length; i++) {
+        const line = String(lines[i] ?? "");
+        const trimmed = line.trim();
         if (!trimmed) continue;
 
         const { tags, rest } = parseLeadingTags(line);
-        if (!rest && tags.length) {
-          if (i === startIndex) {
-            globalFlags = mergeTagFlags(globalFlags, tags);
-          }
+        if (tags.length && !rest) continue;
+
+        const parsed = parseQuestionLine(line, globalFlags);
+        if (parsed) {
+          items.push({
+            id: uid(),
+            section: currentSection,
+            ...parsed
+          });
           continue;
         }
 
-        const merged = mergeTagFlags(globalFlags, tags);
-        const parsed = parseQuestionLine(line, merged);
-
-        if (!parsed) {
-          if (!trimmed.includes("=") && !trimmed.startsWith("[")) {
-            currentSection = trimmed;
-          }
-          continue;
+        if (!trimmed.startsWith("[")) {
+          currentSection = trimmed;
         }
-
-        items.push({
-          id: uid(),
-          section: currentSection,
-          ...parsed
-        });
       }
 
       return { globalFlags, items };
@@ -821,7 +825,7 @@
       const lines = [];
       const gf = [];
       if (globalFlags.random) gf.push("[random]");
-      if (globalFlags.randomChoice) gf.push("[random choice]");
+      if (globalFlags.choice && globalFlags.randomChoice) gf.push("[random choice]");
       else if (globalFlags.choice) gf.push("[choice]");
       if (globalFlags.number) gf.push("[number]");
       if (gf.length) lines.push(gf.join(" "));
@@ -832,11 +836,9 @@
           lines.push(item.section);
           lastSection = item.section;
         }
-
         let prefix = "";
         if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
         if (item.mode === "number") prefix = "[number] ";
-
         if (item.mode === "choice") {
           const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
           lines.push(`${prefix}${item.question}=${opts}`);
@@ -844,7 +846,6 @@
           lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
         }
       }
-
       return lines.join("\n");
     }
 
@@ -1120,16 +1121,21 @@
       };
     }
 
+    function openCreate() {
+      state.doc = null;
+      state.docId = "";
+      state.accessMode = "none";
+      state.draft = blankDraft();
+      state.showComments = false;
+      state.screen = "editor";
+      render();
+    }
+
     function openEditFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
-        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], {
-          random: !!state.doc?.globalFlags?.random,
-          choice: !!state.doc?.globalFlags?.choice,
-          randomChoice: !!state.doc?.globalFlags?.randomChoice,
-          number: !!state.doc?.globalFlags?.number
-        }),
+        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false }),
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
@@ -1145,7 +1151,6 @@
       state.docId = id;
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
-
       state.commentDraft = {
         name: getCommentName(),
         text: "",
@@ -1173,9 +1178,13 @@
       }
 
       const allIndices = (docData.items || []).map((_, i) => i);
+      const order = Array.isArray(orderIndices)
+        ? orderIndices.slice()
+        : (docData.globalFlags?.random ? shuffle(allIndices) : allIndices);
+
       state.quiz = {
         phase: "question",
-        order: Array.isArray(orderIndices) ? orderIndices.slice() : shuffle(allIndices),
+        order,
         index: 0,
         typedAnswer: "",
         lastResult: null,
@@ -1417,12 +1426,6 @@
       return "commentViewer";
     }
 
-    function insertScoreTokenIntoComment(textarea) {
-      if (!textarea || state.quiz.onlyWrong) return;
-      replaceTriggerAtCaret(textarea, "@", "[[SCORE]]");
-      state.commentDraft.scoreWanted = true;
-    }
-
     function setupCommentSuggestions(textarea, box) {
       setupTriggerSuggestions({
         textarea,
@@ -1507,6 +1510,13 @@
       render();
     }
 
+    function commentButtonText(comments) {
+      const total = comments.length;
+      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      if (state.showComments) return "コメントを閉じる";
+      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
+    }
+
     function topButtonHtml() {
       return `<button class="ghost" id="topBtn">トップ</button>`;
     }
@@ -1514,11 +1524,8 @@
     function editorActionHtml() {
       const buttons = [];
       if (state.doc) {
-        if (state.accessMode === "owner") {
-          buttons.push(`<button class="danger" id="deleteBtn">削除</button>`);
-        } else if (state.accessMode === "key") {
-          buttons.push(`<button class="danger" id="leaveBtn">脱退</button>`);
-        }
+        if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn">削除</button>`);
+        else if (state.accessMode === "key") buttons.push(`<button class="danger" id="leaveBtn">脱退</button>`);
       }
       buttons.push(`<button class="primary" id="saveBtn">保存</button>`);
       return buttons.join("");
@@ -1563,97 +1570,9 @@
       if (createBtn) {
         createBtn.addEventListener("click", () => {
           location.hash = "#/create";
+          openCreate();
         });
       }
-    }
-
-    function commentButtonLabel(comments) {
-      const total = comments.length;
-      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      if (state.showComments) return "コメントを閉じる";
-      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
-    }
-
-    function renderCommentsPanel(comments) {
-      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      const visibleComments = comments.filter(c => canViewComment(c));
-
-      const list = visibleComments.length ? visibleComments.map(comment => {
-        const role = comment.authorRole || "viewer";
-        const roleLabel = commentRoleLabel(role);
-        const roleClass = commentRoleClass(role);
-        const canManage = canManageComment(comment);
-
-        if (!canViewComment(comment)) {
-          return `
-            <div class="commentItem">
-              <div class="commentMask">🫥 非公開コメント</div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="commentItem ${roleClass}">
-            <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span> <span class="commentBadge">${comment.isPrivate ? "🫥 非公開" : "公開"}</span></div>
-            <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
-            <div class="commentBody">${renderCommentBody(comment)}</div>
-            <div class="row" style="justify-content:flex-end;">
-              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
-              ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}">削除</button>` : ""}
-            </div>
-          </div>
-        `;
-      }).join("") : `<div class="note">まだコメントはないよ。</div>`;
-
-      const scoreHint = state.quiz.onlyWrong
-        ? `<div class="note">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
-        : `<div id="scoreSuggestBox" class="suggestBox hide"></div>`;
-
-      return `
-        <div class="commentWrap">
-          <div class="card commentWrap">
-            <div class="commentHeader">
-              <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="commentPrivateNote">🫥 は非公開コメント</div>
-            </div>
-
-            <div class="commentForm">
-              <div>
-                <div class="label">名前（任意）</div>
-                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
-              </div>
-
-              <div>
-                <div class="label">コメント</div>
-                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
-              </div>
-
-              ${scoreHint}
-
-              <div class="row" style="justify-content:space-between;align-items:center;">
-                <label class="row" style="gap:8px;cursor:pointer;">
-                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
-                  <span>非公開にする</span>
-                </label>
-                <button class="primary" id="postCommentBtn">コメントする</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="commentHeader">
-              <div class="label" style="font-size:14px">コメント一覧</div>
-              <div class="commentToggleRow">
-                <span class="commentBadge">表示 ${visibleComments.length}</span>
-                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
-              </div>
-            </div>
-            <div class="reviewList">
-              ${list}
-            </div>
-          </div>
-        </div>
-      `;
     }
 
     function renderHome() {
@@ -1989,9 +1908,7 @@
       }
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
-
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
-      const inputAttrs = q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : '';
 
       root.innerHTML = `
         <div class="page">
@@ -2021,8 +1938,8 @@
               <div class="label">${esc(modeLabel)}</div>
               ${
                 q.item.mode === "choice"
-                  ? `<div id="choiceGrid" class="listGrid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));"></div>`
-                  : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${inputAttrs}>`
+                  ? `<div id="choiceGrid" class="choiceGrid"></div>`
+                  : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`
               }
               <div class="actions">
                 <button class="submit" id="submitBtn">✅</button>
@@ -2058,9 +1975,8 @@
       if (q.item.mode === "choice") {
         const grid = document.getElementById("choiceGrid");
         const options = (q.item.randomChoice ? shuffle(q.item.options || []) : (q.item.options || [])).slice();
-
         grid.innerHTML = options.map((opt, idx) => `
-          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}" style="text-align:center;">${esc(opt.text)}</button>
+          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>
         `).join("");
 
         const buttons = [...grid.querySelectorAll(".choiceBtn")];
@@ -2199,7 +2115,7 @@
 
             <div class="actions" style="justify-content:flex-start">
               <button class="primary" id="restartBtn">もう一度！</button>
-              <button class="ghost" id="commentsBtn">${esc(commentButtonLabel(comments))}</button>
+              <button class="ghost" id="commentsBtn">${esc(commentButtonText(comments))}</button>
               ${wrongCount > 0 && !state.quiz.onlyWrong ? `<button class="ghost" id="wrongOnlyBtn">間違えた問題だけやり直す</button>` : ``}
             </div>
 
@@ -2269,6 +2185,7 @@
             setCommentName(e.target.value.trim() || "匿名");
           });
         }
+
         if (commentText) {
           commentText.addEventListener("input", e => {
             state.commentDraft.text = e.target.value;
@@ -2278,16 +2195,15 @@
           commentText.style.height = "auto";
           commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
         }
+
         if (commentPrivate) {
           commentPrivate.addEventListener("change", e => {
             state.commentDraft.isPrivate = !!e.target.checked;
           });
         }
-        if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
 
-        if (commentText && scoreSuggestBox) {
-          setupCommentSuggestions(commentText, scoreSuggestBox);
-        }
+        if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
+        if (commentText && scoreSuggestBox) setupCommentSuggestions(commentText, scoreSuggestBox);
 
         document.querySelectorAll("[data-toggle-comment]").forEach(btn => {
           btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || ""));
@@ -2343,9 +2259,7 @@
 
         const data = snap.data() || {};
         const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false }, items: [] };
-        const items = Array.isArray(data.items) && data.items.length
-          ? data.items
-          : parsed.items;
+        const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
 
         state.docId = id;
         state.doc = {
@@ -2420,12 +2334,7 @@
       }
 
       if (r.name === "create") {
-        state.doc = null;
-        state.docId = "";
-        state.accessMode = "none";
-        state.draft = blankDraft();
-        state.showComments = false;
-        render();
+        openCreate();
         return;
       }
 
@@ -2449,9 +2358,7 @@
 
           const data = snap.data() || {};
           const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false }, items: [] };
-          const items = Array.isArray(data.items) && data.items.length
-            ? data.items
-            : parsed.items;
+          const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
 
           startQuiz({
             title: data.title || "問題",
