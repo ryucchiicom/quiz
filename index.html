@@ -730,9 +730,7 @@
       }
 
       if (effectiveMode === "number") {
-        const answers = splitAnswers(right)
-          .map(normalizeNumberText)
-          .filter(Boolean);
+        const answers = splitAnswers(right).map(normalizeNumberText).filter(Boolean);
         if (!answers.length) return null;
 
         return {
@@ -1109,6 +1107,20 @@
       return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
     }
 
+    function resetQuizState() {
+      state.quiz = {
+        phase: "question",
+        order: [],
+        index: 0,
+        typedAnswer: "",
+        lastResult: null,
+        attempts: {},
+        onlyWrong: false,
+        selectedChoiceIndex: -1,
+        choiceOrders: {}
+      };
+    }
+
     function topButtonHtml() {
       return `<button class="ghost" id="topBtn">トップ</button>`;
     }
@@ -1415,37 +1427,6 @@
     function getTriggerSuggestionText(textarea, triggerChar) {
       const pos = textarea.selectionStart ?? 0;
       return pos > 0 && textarea.value[pos - 1] === triggerChar;
-    }
-
-    function attachTagSuggestions(textarea, panel) {
-      const items = [
-        { label: "[random]", value: "[random] " },
-        { label: "[choice]", value: "[choice] " },
-        { label: "[random choice]", value: "[random choice] " },
-        { label: "[number]", value: "[number] " }
-      ];
-
-      function update() {
-        const show = getTriggerSuggestionText(textarea, "#");
-        panel.classList.toggle("hide", !show);
-        if (!show) {
-          panel.innerHTML = "";
-          return;
-        }
-        panel.innerHTML = items.map(item => `<button type="button" class="ghost" data-tag-value="${esc(item.value)}">${esc(item.label)}</button>`).join("");
-        panel.querySelectorAll("[data-tag-value]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            replaceTriggerWith(textarea, "#", btn.dataset.tagValue || "");
-            update();
-          });
-        });
-      }
-
-      textarea.addEventListener("input", update);
-      textarea.addEventListener("keyup", update);
-      textarea.addEventListener("click", update);
-      textarea.addEventListener("focus", update);
-      update();
     }
 
     function currentAccessRoleForComment() {
@@ -1779,7 +1760,7 @@
           if (!title) return alert("タイトルを入れてね");
           if (!items.length) return alert("問題が1つも読めなかったよ。");
 
-          const newId = slugify(title);
+          const newId = state.docId || `${slugify(title)}-${uid().slice(0, 8)}`;
           const oldId = state.docId || "";
           const isExisting = !!state.doc;
           const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
@@ -1801,7 +1782,7 @@
             keyMode: effectiveKeyMode,
             key: effectiveKey,
             ownerToken,
-            slug: newId,
+            slug: slugify(title),
             createdAt: existingCreatedAt,
             updatedAt: Date.now(),
             comments: existingComments
@@ -1877,8 +1858,6 @@
       refreshKeyStatus();
       updateTagPanel();
       titleInput.focus();
-
-      attachTagSuggestions(problemText, tagSuggest);
     }
 
     function renderQuestion() {
@@ -2008,6 +1987,124 @@
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
 
+    function renderCommentBody(text) {
+      const parts = String(text ?? "").split(/(\[\[SCORE:[^\]]+\]\])/g);
+      return parts.map(part => {
+        const m = part.match(/^\[\[SCORE:([^\]]+)\]\]$/);
+        if (m) return `<span class="scoreToken">${esc(m[1])}</span>`;
+        return esc(part);
+      }).join("");
+    }
+
+    function commentRoleLabel(role) {
+      if (role === "owner") return "主催者";
+      if (role === "editor") return "共同編集者";
+      return "コメント";
+    }
+
+    function commentRoleClass(role) {
+      if (role === "owner") return "commentOwner";
+      if (role === "editor") return "commentEditor";
+      return "commentViewer";
+    }
+
+    function replaceTriggerWith(textarea, triggerChar, replacement) {
+      const start = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? 0;
+      if (start < 1 || textarea.value[start - 1] !== triggerChar) return false;
+
+      const nextValue = textarea.value.slice(0, start - 1) + replacement + textarea.value.slice(end);
+      const nextPos = start - 1 + replacement.length;
+
+      textarea.value = nextValue;
+      textarea.selectionStart = textarea.selectionEnd = nextPos;
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      textarea.focus();
+      return true;
+    }
+
+    function getTriggerSuggestionText(textarea, triggerChar) {
+      const pos = textarea.selectionStart ?? 0;
+      return pos > 0 && textarea.value[pos - 1] === triggerChar;
+    }
+
+    function renderCommentPanel(comments) {
+      const { label } = currentScoreMeta();
+      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      const visibleComments = comments.filter(c => canViewComment(c));
+      const canInsertScore = !state.quiz.onlyWrong;
+
+      const list = visibleComments.length ? visibleComments.map(comment => {
+        const role = comment.authorRole || "viewer";
+        const roleLabel = commentRoleLabel(role);
+        const roleClass = commentRoleClass(role);
+        const canManage = canManageComment(comment);
+
+        return `
+          <div class="commentItem ${roleClass}">
+            <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span> <span class="commentBadge">${comment.isPrivate ? "🫥 非公開" : "公開"}</span></div>
+            <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
+            <div class="commentBody">${renderCommentBody(comment.text)}</div>
+            <div class="row" style="justify-content:flex-end;">
+              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
+              ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}">削除</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("") : `<div class="note">まだコメントはないよ。</div>`;
+
+      return `
+        <div class="commentWrap">
+          <div class="card commentWrap">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメントを書く</div>
+              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+            </div>
+
+            <div class="commentForm">
+              <div>
+                <div class="label">名前（任意）</div>
+                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
+              </div>
+
+              <div>
+                <div class="label">コメント</div>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+              </div>
+
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <label class="row" style="gap:8px;cursor:pointer;">
+                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
+                  <span>非公開にする</span>
+                </label>
+                <button class="primary" id="postCommentBtn">コメントする</button>
+              </div>
+
+              <div class="row hide" id="scoreInsertRow" style="justify-content:flex-start;">
+                <button class="ghost" id="scoreInsertBtn" type="button">点数</button>
+                <span class="commentPrivateNote">＠ の位置に ${esc(label)} を入れる</span>
+              </div>
+
+              ${!canInsertScore ? `<div class="commentPrivateNote">間違えた問題だけのやり直しでは点数は出ないよ。</div>` : ""}
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメント一覧</div>
+              <div class="commentToggleRow">
+                <span class="commentBadge">表示 ${visibleComments.length}</span>
+                ${hiddenCount ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+              </div>
+            </div>
+            <div class="reviewList">
+              ${list}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderResult() {
       const r = state.quiz.lastResult;
       if (!r) {
@@ -2086,83 +2183,6 @@
 
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
-    }
-
-    function renderCommentPanel(comments) {
-      const { label } = currentScoreMeta();
-      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      const visibleComments = comments.filter(c => canViewComment(c));
-      const canInsertScore = !state.quiz.onlyWrong;
-
-      const list = visibleComments.length ? visibleComments.map(comment => {
-        const role = comment.authorRole || "viewer";
-        const roleLabel = commentRoleLabel(role);
-        const roleClass = commentRoleClass(role);
-        const canManage = canManageComment(comment);
-
-        return `
-          <div class="commentItem ${roleClass}">
-            <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span> <span class="commentBadge">${comment.isPrivate ? "🫥 非公開" : "公開"}</span></div>
-            <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
-            <div class="commentBody">${renderCommentBody(comment.text)}</div>
-            <div class="row" style="justify-content:flex-end;">
-              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
-              ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}">削除</button>` : ""}
-            </div>
-          </div>
-        `;
-      }).join("") : `<div class="note">まだコメントはないよ。</div>`;
-
-      return `
-        <div class="commentWrap">
-          <div class="card commentWrap">
-            <div class="commentHeader">
-              <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="commentPrivateNote">🫥 は非公開コメント</div>
-            </div>
-
-            <div class="commentForm">
-              <div>
-                <div class="label">名前（任意）</div>
-                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
-              </div>
-
-              <div>
-                <div class="label">コメント</div>
-                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
-              </div>
-
-              <div class="row" style="justify-content:space-between;align-items:center;">
-                <label class="row" style="gap:8px;cursor:pointer;">
-                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
-                  <span>非公開にする</span>
-                </label>
-                <button class="primary" id="postCommentBtn">コメントする</button>
-              </div>
-
-              <div class="row ${canInsertScore ? "hide" : ""}" id="scoreInsertRow" style="justify-content:flex-start;">
-                <button class="ghost" id="scoreInsertBtn" type="button">点数</button>
-                <span class="commentPrivateNote">＠ の位置に ${esc(label)} を入れる</span>
-              </div>
-
-              ${!canInsertScore ? `<div class="commentPrivateNote">間違えた問題だけのやり直しでは点数は出ないよ。</div>` : ""}
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="commentHeader">
-              <div class="label" style="font-size:14px">コメント一覧</div>
-              <div class="commentToggleRow">
-                <span class="commentBadge">表示 ${visibleComments.length}</span>
-                ${hiddenCount ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
-              </div>
-            </div>
-            <div class="reviewList">
-              ${list}
-            </div>
-          </div>
-        </div>
-      `;
     }
 
     function renderDone() {
@@ -2520,6 +2540,7 @@
         state.accessMode = "none";
         state.draft = blankDraft();
         state.showComments = false;
+        resetQuizState();
         render();
         return;
       }
