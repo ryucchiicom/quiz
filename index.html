@@ -669,13 +669,13 @@
     .replyHint{font-size:12px;color:var(--muted);}
     .timeOnlyNote{font-size:12px;color:var(--muted);}
 
-    /* tutorial */
     #tutorialLayer{
       position:fixed;
       inset:0;
       z-index:1000;
       pointer-events:none;
     }
+
     .tutorialOverlay{
       position:fixed;
       inset:0;
@@ -688,10 +688,12 @@
       backdrop-filter:blur(8px);
       transition:opacity .22s ease, transform .22s ease;
     }
+
     .tutorialOverlay.closing{
       opacity:0;
       transform:translateY(18px);
     }
+
     .tutorialPanel{
       width:min(860px, 100%);
       max-height:min(86vh, 860px);
@@ -704,6 +706,7 @@
       display:grid;
       grid-template-rows:auto 1fr auto;
     }
+
     .tutorialTop{
       display:flex;
       justify-content:space-between;
@@ -711,18 +714,21 @@
       gap:12px;
       padding:16px 18px 0;
     }
+
     .tutorialTitle{
       font-size:24px;
       font-weight:1000;
       line-height:1.1;
       margin:0;
     }
+
     .tutorialSub{
       margin-top:6px;
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
+
     .tutorialClose{
       width:44px;
       height:44px;
@@ -733,10 +739,12 @@
       font-size:22px;
       font-weight:900;
     }
+
     .tutorialBody{
       padding:14px 18px 6px;
       overflow:auto;
     }
+
     .tutorialPage{
       min-height:340px;
       display:grid;
@@ -744,48 +752,42 @@
       animation-duration:.26s;
       animation-fill-mode:both;
     }
+
     .tutorialPage.anim-open{animation-name:tutInOpen;}
     .tutorialPage.anim-next{animation-name:tutInRight;}
     .tutorialPage.anim-prev{animation-name:tutInLeft;}
     .tutorialPage.anim-close{animation-name:tutOutDown;}
+
     .tutorialCard{
       border:1px solid var(--line);
       border-radius:20px;
       padding:16px;
       background:rgba(127,127,127,.05);
     }
+
     body.dark .tutorialCard{
       background:rgba(255,255,255,.03);
     }
+
     .tutorialHero{
       display:grid;
       gap:8px;
     }
+
     .tutorialHero h2{
       margin:0;
       font-size:28px;
       line-height:1.1;
       letter-spacing:-.03em;
     }
+
     .tutorialHero p{
       margin:0;
       line-height:1.8;
       color:var(--muted);
       font-size:15px;
     }
-    .tutorialCode{
-      background:#0f172a;
-      color:#e8f0ff;
-      border-radius:16px;
-      padding:14px 16px;
-      overflow:auto;
-      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+
     .tutorialFooter{
       display:flex;
       justify-content:space-between;
@@ -794,6 +796,7 @@
       padding:0 18px 18px;
       flex-wrap:wrap;
     }
+
     .tutorialDots{
       display:flex;
       gap:6px;
@@ -802,11 +805,14 @@
       justify-content:center;
       flex:1;
     }
+
     .dot{
       width:8px;height:8px;border-radius:999px;
       background:rgba(127,127,127,.35);
     }
+
     .dot.active{background:var(--accent);}
+
     .tutorialNavBtn{
       min-width:110px;
       font-weight:900;
@@ -816,14 +822,17 @@
       from{opacity:0;transform:translateX(28px);}
       to{opacity:1;transform:translateX(0);}
     }
+
     @keyframes tutInLeft{
       from{opacity:0;transform:translateX(-28px);}
       to{opacity:1;transform:translateX(0);}
     }
+
     @keyframes tutInOpen{
       from{opacity:0;transform:translateY(14px) scale(.985);}
       to{opacity:1;transform:translateY(0) scale(1);}
     }
+
     @keyframes tutOutDown{
       from{opacity:1;transform:translateY(0) scale(1);}
       to{opacity:0;transform:translateY(30px) scale(.98);}
@@ -859,7 +868,15 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      getDocs,
+      setDoc,
+      deleteDoc,
+      collection
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -2082,7 +2099,10 @@
           try {
             unique = await ensureUniqueTitleAndId(title, oldId);
           } catch (e) {
-            if (String(e?.message || e) === "SAVE_CANCELLED") { alert("保存をやめたよ"); return; }
+            if (String(e?.message || e) === "SAVE_CANCELLED") {
+              alert("保存をやめたよ");
+              return;
+            }
             throw e;
           }
 
@@ -2132,7 +2152,8 @@
 
             const normalized = normalizeDoc(newId, payload);
             const idx = state.allDocs.findIndex(x => x.id === newId);
-            if (idx >= 0) state.allDocs[idx] = normalized; else state.allDocs.unshift(normalized);
+            if (idx >= 0) state.allDocs[idx] = normalized;
+            else state.allDocs.unshift(normalized);
             rebuildPublicOrder();
 
             if (isOwner() || !isExisting) upsertMyMeta({ id: newId, title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
@@ -2562,7 +2583,7 @@
       return [
         {
           title: "ようこそ！",
-          subtitle: "クイズを遊ぶ前に、ざっくり全体像を見てね。",
+          subtitle: "まずは全体の流れを軽く見よう。",
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>このサイトでできること</h2>
@@ -2570,9 +2591,6 @@
                 クイズを作る、公開する、コメントする、共同編集する。<br>
                 ひとつのページで全部できるようにしてあるよ。
               </p>
-            </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">右上の「説明を読む」から、いつでも見直せるよ。</div>
             </div>
           `
         },
@@ -2587,11 +2605,6 @@
                 PCでは Enter でも進めるよ。
               </p>
             </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">正解すると答え合わせが出る
-→ 次へ
-→ 全部終わると正解数が出る</div>
-            </div>
             <div class="tutorialCard tutorialHero">
               <h2>コメント</h2>
               <p>
@@ -2600,58 +2613,133 @@
                 返信もできる。
               </p>
             </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">@ を入力すると「点数」が候補に出る。
-満点のときだけ「時間」も出るよ。</div>
+          `
+        },
+        {
+          title: "基本文法",
+          subtitle: "まずは、1問をどう書くかを覚えよう。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>A=B の形</h2>
+              <p>
+                1行に <b>A=B</b> と書くと、A が問題文、B が答えになるよ。<br>
+                1行につき1問。<br>
+                <b>=</b> の前後にある余分なスペースはあまり気にしなくていいけど、問題文の見やすさのためにできるだけシンプルに書くのがおすすめ。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>見出し</h2>
+              <p>
+                <b>=</b> がない行は問題にならない。<br>
+                その下に続く問題のまとまりを示す見出しとして表示されるよ。<br>
+                見出しは、サブ問題の名前みたいな役割。
+              </p>
             </div>
           `
         },
         {
-          title: "作り方",
-          subtitle: "文法は「問題文=答え」から始めるよ。",
+          title: "1行目に書くタグ",
+          subtitle: "全体に効く設定は、いちばん上の行に書く。",
           body: `
             <div class="tutorialCard tutorialHero">
-              <h2>基本文法</h2>
+              <h2>書く場所</h2>
               <p>
-                <b>A=B</b> の形で書くと、A が問題文、B が答えになるよ。<br>
-                <b>=</b> のない行は、その下の問題の見出しになる。
+                1行目の先頭に書くよ。<br>
+                複数あるときは、半角スペースで区切る。<br>
+                1行目のタグは、その下のすべての問題に効く。<br>
+                1行目には <b>=</b> は書かない。
               </p>
-            </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">日本の首都=東京
-[choice] 好きな色=赤,青,!緑
-[number] 123+456=579</div>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>見出しとサブ問題</h2>
+              <h2>[random]</h2>
               <p>
-                <b>=</b> がない行を1行目に書けば、その下の問題にまとめてかかる。<br>
-                1行目にタグを書くなら、見出しは2行目から書くと分かりやすいよ。
+                問題の出る順番をランダムにする。
               </p>
-            </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">世界の国
-日本の首都=東京
-アメリカの首都=ワシントン
-
-[open] [random]
-歴史
-江戸幕府が始まった年=1603</div>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>1行目のタグと個別タグ</h2>
+              <h2>[choice]</h2>
               <p>
-                1行目に書くタグは全体設定。<br>
-                個別の行の先頭に書くタグは、その行だけに効くよ。
+                すべての問題を選択式として扱う。<br>
+                個別の行に書いたものがあれば、そちらが優先される。
               </p>
             </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">[random]
-[choice]
-問題A=1,2,!3
-
-[choice] 問題B=赤,青,!緑
-[random choice] 問題C=春,夏,!秋</div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[random choice]</h2>
+              <p>
+                すべての問題を選択式にし、選択肢の順番もランダムにする。<br>
+                [choice] より少しだけ強い設定として考えておけば大丈夫。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[number]</h2>
+              <p>
+                すべての問題を数字入力モードにする。<br>
+                数字だけ入れたいときに使う。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[open]</h2>
+              <p>
+                公開クイズにする。<br>
+                オンライン公開クイズ一覧に表示される。<br>
+                検索の対象にもなる。
+              </p>
+            </div>
+          `
+        },
+        {
+          title: "個別の行に書くタグ",
+          subtitle: "その問題だけ変えたいときに使う。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>書く場所</h2>
+              <p>
+                問題文の行のいちばん前に書くよ。<br>
+                タグのあとには半角スペースを1つ入れてから、問題文を書く。<br>
+                そのあとに <b>=</b> と答えを書く。<br>
+                1行目の設定より、個別の指定が優先される。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[choice]</h2>
+              <p>
+                その行だけ選択式にする。<br>
+                1行目にタグを書いていなくても、この行だけ選択式にできる。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[random choice]</h2>
+              <p>
+                その行だけ選択式にして、選択肢の順番もランダムにする。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[number]</h2>
+              <p>
+                その行だけ数字入力モードにする。<br>
+                数字で答えさせたい問題に使う。
+              </p>
+            </div>
+          `
+        },
+        {
+          title: "見出しとサブ問題",
+          subtitle: "まとまりを作るための書き方。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>見出しの役割</h2>
+              <p>
+                <b>=</b> がない行は見出しになる。<br>
+                その行の下にある問題に、まとめてかかるイメージ。<br>
+                見出しは問題ではないから、答えは書かない。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>サブ問題の並び</h2>
+              <p>
+                1行目にタグがあるときは、見出しを2行目以降に書くと分かりやすい。<br>
+                見出しの下に複数の問題を置けば、まとまりのあるクイズになる。
+              </p>
             </div>
           `
         },
@@ -2665,9 +2753,6 @@
                 「作成」から始めて、公開して、コメントして、遊んでみてね。<br>
                 右上の「説明を読む」から、またいつでも戻ってこれるよ。
               </p>
-            </div>
-            <div class="tutorialCard">
-              <div class="tutorialCode">準備はできた！</div>
             </div>
           `
         }
