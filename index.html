@@ -40,7 +40,10 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{overflow-x:auto;}
+    html, body{
+      overflow-x:auto;
+    }
+
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -49,226 +52,942 @@
       color:var(--text);
       min-height:100vh;
     }
+
     button,input,textarea,select{font:inherit}
-    button{border:none;border-radius:14px;padding:12px 16px;cursor:pointer}
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      cursor:pointer;
+    }
+
     .hide{display:none !important;}
     .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
 
-    .titleArea{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0;}
+    .titleArea{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      min-width:0;
+    }
     .titleBlock{min-width:0}
+
     .topbar{
-      display:flex;justify-content:space-between;gap:12px;align-items:center;position:sticky;top:0;
-      padding:8px 0 12px;backdrop-filter:blur(8px);z-index:5;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      position:sticky;
+      top:0;
+      padding:8px 0 12px;
+      backdrop-filter:blur(8px);
+      z-index:5;
     }
+
     .title{
-      font-size:28px;font-weight:900;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.1;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .sub{margin-top:4px;color:var(--muted);font-size:13px}
-    .card{background:var(--panel);border:1px solid rgba(15,23,42,.08);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-    .hero{max-width:860px;margin:36px auto 0;display:grid;gap:16px}
-    .bigBtn,.primary{background:var(--accent);color:#fff;font-weight:800}
-    .ghost{background:#eef3ff;color:#244a9c;border:1px solid #d7e2ff;font-weight:700}
-    body.dark .ghost{background:#182133;color:#d7e5ff;border-color:#2d3a4f}
-    .danger{background:#ffeded;color:#a72b2b;border:1px solid #ffc7c7;font-weight:800}
-    body.dark .danger{background:#2a1620;color:#ffaaaa;border-color:#5b2a39}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    .sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+
+    .hero{
+      max-width:860px;
+      margin:36px auto 0;
+      display:grid;
+      gap:16px;
+    }
+
+    .bigBtn,.primary{
+      background:var(--accent);
+      color:#fff;
+      font-weight:800;
+    }
+
+    .ghost{
+      background:#eef3ff;
+      color:#244a9c;
+      border:1px solid #d7e2ff;
+      font-weight:700;
+    }
+
+    body.dark .ghost{
+      background:#182133;
+      color:#d7e5ff;
+      border-color:#2d3a4f;
+    }
+
+    .danger{
+      background:#ffeded;
+      color:#a72b2b;
+      border:1px solid #ffc7c7;
+      font-weight:800;
+    }
+
+    body.dark .danger{
+      background:#2a1620;
+      color:#ffaaaa;
+      border-color:#5b2a39;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
     .input{
-      width:100%;border:1px solid var(--line);border-radius:14px;padding:14px 15px;outline:none;
-      background:var(--panel);color:var(--text);
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px 15px;
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
     }
-    .input:focus{border-color:#9ab8ff;box-shadow:0 0 0 4px rgba(47,111,237,.08)}
-    .label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+
+    .input:focus{
+      border-color:#9ab8ff;
+      box-shadow:0 0 0 4px rgba(47,111,237,.08);
+    }
+
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
 
     .gridEditor{
-      display:grid;grid-template-columns:64px 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;
-      min-height:420px;background:var(--panel);align-items:stretch;
+      display:grid;
+      grid-template-columns:64px 1fr;
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:420px;
+      background:var(--panel);
+      align-items:stretch;
     }
+
     .gutter{
-      background:rgba(127,127,127,.07);border-right:1px solid var(--line);padding:14px 10px 14px 0;text-align:right;
-      color:#8a93a8;font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;user-select:none;
-      overflow:hidden;align-self:stretch;min-height:420px;
+      background:rgba(127,127,127,.07);
+      border-right:1px solid var(--line);
+      padding:14px 10px 14px 0;
+      text-align:right;
+      color:#8a93a8;
+      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      user-select:none;
+      overflow:hidden;
+      align-self:stretch;
+      min-height:420px;
     }
+
     .textarea{
-      width:100%;border:none;outline:none;resize:none;min-height:420px;padding:14px;
-      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;overflow:auto;
-      touch-action:pan-x pan-y;tab-size:2;background:var(--panel);color:var(--text);scrollbar-gutter:stable;
+      width:100%;
+      border:none;
+      outline:none;
+      resize:none;
+      min-height:420px;
+      padding:14px;
+      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      overflow:auto;
+      touch-action:pan-x pan-y;
+      tab-size:2;
+      background:var(--panel);
+      color:var(--text);
+      scrollbar-gutter:stable;
     }
-    .help,.note{color:var(--muted);font-size:13px;line-height:1.8}
-    .quiz{max-width:860px;margin:20px auto 0;display:grid;gap:14px}
-    .progress{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;font-weight:700}
-    .sectionText{font-size:18px;font-weight:900;line-height:1.35;color:#334155;word-break:break-word}
-    body.dark .sectionText{color:#d7def0}
-    .question{font-size:clamp(22px,4vw,32px);font-weight:900;line-height:1.4;word-break:break-word}
+
+    .help,.note{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .quiz{
+      max-width:860px;
+      margin:20px auto 0;
+      display:grid;
+      gap:14px;
+    }
+
+    .progress{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .sectionText{
+      font-size:18px;
+      font-weight:900;
+      line-height:1.35;
+      color:#334155;
+      word-break:break-word;
+    }
+
+    body.dark .sectionText{
+      color:#d7def0;
+    }
+
+    .question{
+      font-size:clamp(22px,4vw,32px);
+      font-weight:900;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
     .answer{
-      width:100%;font-size:18px;padding:16px;border-radius:16px;border:1px solid var(--line);outline:none;
-      background:var(--panel);color:var(--text);
+      width:100%;
+      font-size:18px;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
     }
-    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
-    .submit{background:var(--accent);color:#fff;font-weight:900;padding:14px 20px;border-radius:16px;min-width:116px}
-    .next{background:#1c9c59;color:#fff;font-weight:900;padding:14px 20px;border-radius:16px;min-width:116px}
-    .good{border:1px solid rgba(47,111,237,.22);background:#eef4ff;color:var(--accent);padding:14px 16px;border-radius:16px;font-weight:900;font-size:18px}
-    body.dark .good{border-color:rgba(91,140,255,.35);background:#13264a;color:#9ebdff}
-    .bad{border:1px solid rgba(211,60,60,.22);background:#fff3f3;color:var(--bad);padding:14px 16px;border-radius:16px;font-weight:900;font-size:18px}
-    .explain{background:#f8faff;border:1px solid #dbe4fb;padding:14px 16px;border-radius:16px;line-height:1.8;word-break:break-word;color:#2b3241}
-    body.dark .explain{background:#182133;border-color:#2d3a4f;color:#e7ecf7}
-    .summary{max-width:860px;margin:20px auto 0;display:grid;gap:14px}
-    .score{font-size:28px;font-weight:1000;line-height:1.2}
-    .reviewList{display:grid;gap:10px}
-    .reviewItem{border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:var(--panel);display:grid;gap:6px}
-    .reviewItem.reviewGood{border-color:rgba(47,111,237,.35);background:rgba(47,111,237,.06)}
-    .reviewItem.reviewBad{border-color:rgba(211,60,60,.35);background:rgba(211,60,60,.06)}
-    body.dark .reviewItem.reviewGood{border-color:rgba(91,140,255,.40);background:rgba(91,140,255,.10)}
-    body.dark .reviewItem.reviewBad{border-color:rgba(255,118,118,.35);background:rgba(255,118,118,.08)}
-    .reviewSection{font-size:15px;font-weight:900;color:#334155;line-height:1.4}
-    body.dark .reviewSection{color:#d7def0}
-    .reviewQ{font-weight:900;font-size:16px;word-break:break-word}
-    .reviewA{font-size:14px;color:var(--muted);line-height:1.6;word-break:break-word}
 
-    .listGrid{display:grid;gap:10px;margin-top:12px}
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    .submit{
+      background:var(--accent);
+      color:#fff;
+      font-weight:900;
+      padding:14px 20px;
+      border-radius:16px;
+      min-width:116px;
+    }
+
+    .next{
+      background:#1c9c59;
+      color:#fff;
+      font-weight:900;
+      padding:14px 20px;
+      border-radius:16px;
+      min-width:116px;
+    }
+
+    .good{
+      border:1px solid rgba(47,111,237,.22);
+      background:#eef4ff;
+      color:var(--accent);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
+    }
+
+    body.dark .good{
+      border-color:rgba(91,140,255,.35);
+      background:#13264a;
+      color:#9ebdff;
+    }
+
+    .bad{
+      border:1px solid rgba(211,60,60,.22);
+      background:#fff3f3;
+      color:var(--bad);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
+    }
+
+    .explain{
+      background:#f8faff;
+      border:1px solid #dbe4fb;
+      padding:14px 16px;
+      border-radius:16px;
+      line-height:1.8;
+      word-break:break-word;
+      color:#2b3241;
+    }
+
+    body.dark .explain{
+      background:#182133;
+      border-color:#2d3a4f;
+      color:#e7ecf7;
+    }
+
+    .summary{
+      max-width:860px;
+      margin:20px auto 0;
+      display:grid;
+      gap:14px;
+    }
+
+    .score{
+      font-size:28px;
+      font-weight:1000;
+      line-height:1.2;
+    }
+
+    .reviewList{
+      display:grid;
+      gap:10px;
+    }
+
+    .reviewItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--panel);
+      display:grid;
+      gap:6px;
+    }
+
+    .reviewItem.reviewGood{
+      border-color:rgba(47,111,237,.35);
+      background:rgba(47,111,237,.06);
+    }
+
+    .reviewItem.reviewBad{
+      border-color:rgba(211,60,60,.35);
+      background:rgba(211,60,60,.06);
+    }
+
+    body.dark .reviewItem.reviewGood{
+      border-color:rgba(91,140,255,.40);
+      background:rgba(91,140,255,.10);
+    }
+
+    body.dark .reviewItem.reviewBad{
+      border-color:rgba(255,118,118,.35);
+      background:rgba(255,118,118,.08);
+    }
+
+    .reviewSection{
+      font-size:15px;
+      font-weight:900;
+      color:#334155;
+      line-height:1.4;
+    }
+
+    body.dark .reviewSection{
+      color:#d7def0;
+    }
+
+    .reviewQ{
+      font-weight:900;
+      font-size:16px;
+      word-break:break-word;
+    }
+
+    .reviewA{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .listGrid{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
     .listItem{
-      display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;
-      background:var(--panel);box-shadow:var(--shadow);padding:14px 15px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      padding:14px 15px;
     }
-    .listMeta{min-width:0;display:grid;gap:4px;flex:1}
-    .listActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .miniAction{padding:10px 12px;font-size:13px;border-radius:12px;white-space:nowrap}
-    .metaLine{font-size:12px;color:var(--muted);line-height:1.6;word-break:break-word}
 
-    .commentWrap{display:grid;gap:12px}
-    .commentForm{display:grid;gap:10px}
-    .commentHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-    .commentToggleRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .listMeta{
+      min-width:0;
+      display:grid;
+      gap:4px;
+      flex:1;
+    }
+
+    .listActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .miniAction{
+      padding:10px 12px;
+      font-size:13px;
+      border-radius:12px;
+      white-space:nowrap;
+    }
+
+    .metaLine{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .commentWrap{
+      display:grid;
+      gap:12px;
+    }
+
+    .commentForm{
+      display:grid;
+      gap:10px;
+    }
+
+    .commentHeader{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .commentToggleRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
     .commentBadge{
-      display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;
-      background:rgba(127,127,127,.08);color:var(--text);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(127,127,127,.08);
+      color:var(--text);
     }
-    .commentPrivateNote{font-size:12px;color:var(--muted)}
-    .commentMask{font-weight:900;font-size:18px;line-height:1.4}
-    .commentBody{white-space:pre-wrap;line-height:1.8;word-break:break-word;color:var(--text)}
-    .scoreToken{color:#14994a;font-weight:900}
-    .timeToken{color:#2f6fed;font-weight:900}
-    body.dark .scoreToken{color:#66e08d}
-    body.dark .timeToken{color:#8db2ff}
 
-    .commentItem{border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:var(--panel);display:grid;gap:6px}
-    .commentOwner{border-color:var(--ownerLine);background:var(--ownerBg)}
-    .commentEditor{border-color:var(--editorLine);background:var(--editorBg)}
-    .commentViewer{border-color:var(--line);background:var(--panel)}
+    .commentPrivateNote{
+      font-size:12px;
+      color:var(--muted);
+    }
 
-    .choiceGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-    .choiceBtn{text-align:center;width:100%}
-    .selected{background:#dfe9ff !important;border-color:#9ab8ff !important;box-shadow:0 0 0 4px rgba(47,111,237,.08)}
+    .commentMask{
+      font-weight:900;
+      font-size:18px;
+      line-height:1.4;
+    }
 
-    .homeControls{display:grid;gap:10px}
-    .homeTopRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-    .tabSelect{min-width:220px;max-width:100%;height:48px}
-    .searchWrap{display:flex;gap:8px;align-items:center;flex:1;min-width:220px}
-    .searchInput{flex:1;height:48px}
-    .homeSectionTitle{font-size:16px;font-weight:900;margin:0 0 10px;color:var(--text)}
-    .dividerLine{text-align:center;color:var(--muted);font-weight:900;margin:10px 0 6px;user-select:none}
+    .commentBody{
+      white-space:pre-wrap;
+      line-height:1.8;
+      word-break:break-word;
+      color:var(--text);
+    }
+
+    .scoreToken{
+      color:#14994a;
+      font-weight:900;
+    }
+
+    .timeToken{
+      color:#2f6fed;
+      font-weight:900;
+    }
+
+    body.dark .scoreToken{
+      color:#66e08d;
+    }
+
+    body.dark .timeToken{
+      color:#8db2ff;
+    }
+
+    .commentItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--panel);
+      display:grid;
+      gap:6px;
+    }
+
+    .commentOwner{
+      border-color:var(--ownerLine);
+      background:var(--ownerBg);
+    }
+
+    .commentEditor{
+      border-color:var(--editorLine);
+      background:var(--editorBg);
+    }
+
+    .commentViewer{
+      border-color:var(--line);
+      background:var(--panel);
+    }
+
+    .choiceGrid{
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    }
+
+    .choiceBtn{
+      text-align:center;
+      width:100%;
+    }
+
+    .selected{
+      background:#dfe9ff !important;
+      border-color:#9ab8ff !important;
+      box-shadow:0 0 0 4px rgba(47,111,237,.08);
+    }
+
+    .homeControls{
+      display:grid;
+      gap:10px;
+    }
+
+    .homeTopRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .tabSelect{
+      min-width:220px;
+      max-width:100%;
+      height:48px;
+    }
+
+    .searchWrap{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex:1;
+      min-width:220px;
+    }
+
+    .searchInput{
+      flex:1;
+      height:48px;
+    }
+
+    .homeSectionTitle{
+      font-size:16px;
+      font-weight:900;
+      margin:0 0 10px;
+      color:var(--text);
+    }
+
+    .dividerLine{
+      text-align:center;
+      color:var(--muted);
+      font-weight:900;
+      margin:10px 0 6px;
+      user-select:none;
+    }
+
     .publicBadge{
-      font-size:12px;font-weight:900;color:var(--accent);border:1px solid rgba(47,111,237,.2);background:rgba(47,111,237,.08);
-      padding:4px 8px;border-radius:999px;white-space:nowrap;
+      font-size:12px;
+      font-weight:900;
+      color:var(--accent);
+      border:1px solid rgba(47,111,237,.2);
+      background:rgba(47,111,237,.08);
+      padding:4px 8px;
+      border-radius:999px;
+      white-space:nowrap;
     }
-    body.dark .publicBadge{color:#a9c0ff;border-color:rgba(91,140,255,.28);background:rgba(91,140,255,.10)}
-    .homeMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-    .editorHost,.commentInputHost{position:relative}
+    body.dark .publicBadge{
+      color:#a9c0ff;
+      border-color:rgba(91,140,255,.28);
+      background:rgba(91,140,255,.10);
+    }
+
+    .homeMeta{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .editorHost,
+    .commentInputHost{
+      position:relative;
+    }
+
     .floatSuggest{
-      position:absolute;z-index:40;display:flex;gap:8px;flex-wrap:wrap;padding:8px;background:var(--panel);border:1px solid var(--line);
-      border-radius:14px;box-shadow:var(--shadow);max-width:min(420px, calc(100% - 16px));
+      position:absolute;
+      z-index:40;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:8px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      max-width:min(420px, calc(100% - 16px));
     }
-    .replyBox{
-      border:1px solid var(--line);background:rgba(127,127,127,.06);border-radius:14px;padding:10px 12px;display:flex;
-      justify-content:space-between;gap:10px;align-items:center;
-    }
-    .replyLabel{font-size:13px;font-weight:900;color:var(--text)}
-    .replyHint{font-size:12px;color:var(--muted)}
-    .timeOnlyNote{font-size:12px;color:var(--muted)}
 
-    .settingsScreen{display:grid;gap:14px}
-    .settingList{display:grid;gap:10px}
-    .settingRow{
-      display:flex;justify-content:space-between;gap:12px;align-items:center;width:100%;text-align:left;padding:16px;border-radius:18px;
-      border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);color:var(--text);
+    .replyBox{
+      border:1px solid var(--line);
+      background:rgba(127,127,127,.06);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
     }
-    .settingText{display:grid;gap:4px;min-width:0;flex:1}
-    .settingLabel{font-size:16px;font-weight:900;line-height:1.2}
-    .settingHint{font-size:12px;color:var(--muted);line-height:1.5}
-    .toggleSwitch{position:relative;width:58px;height:34px;border-radius:999px;background:#c8d0df;transition:.2s background;flex:none}
-    body.dark .toggleSwitch{background:#42506a}
-    .toggleSwitch.on{background:var(--accent)}
+
+    .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
+    .replyHint{font-size:12px;color:var(--muted);}
+    .timeOnlyNote{font-size:12px;color:var(--muted);}
+
+    .settingsScreen{
+      display:grid;
+      gap:14px;
+    }
+
+    .settingList{
+      display:grid;
+      gap:10px;
+    }
+
+    .settingRow{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      width:100%;
+      text-align:left;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      color:var(--text);
+    }
+
+    .settingText{
+      display:grid;
+      gap:4px;
+      min-width:0;
+      flex:1;
+    }
+
+    .settingLabel{
+      font-size:16px;
+      font-weight:900;
+      line-height:1.2;
+    }
+
+    .settingHint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .toggleSwitch{
+      position:relative;
+      width:58px;
+      height:34px;
+      border-radius:999px;
+      background:#c8d0df;
+      transition:.2s background;
+      flex:none;
+    }
+
+    body.dark .toggleSwitch{
+      background:#42506a;
+    }
+
+    .toggleSwitch.on{
+      background:var(--accent);
+    }
+
     .toggleKnob{
-      position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.15);
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
       transition:.2s transform;
     }
-    .toggleSwitch.on .toggleKnob{transform:translateX(24px)}
-    .settingHeader{display:grid;gap:8px}
-    .settingTitle{font-size:26px;font-weight:1000;line-height:1.1;margin:0}
-    .settingSub{color:var(--muted);font-size:13px;line-height:1.6}
 
-    #tutorialLayer,#partnerLayer{position:fixed;inset:0;pointer-events:none}
-    #tutorialLayer{z-index:1000}
-    #partnerLayer{z-index:1001}
-
-    .tutorialOverlay,.partnerOverlay{
-      position:fixed;inset:0;pointer-events:auto;display:flex;align-items:center;justify-content:center;padding:16px;
-      background:rgba(6,10,18,.64);backdrop-filter:blur(8px);transition:opacity .22s ease, transform .22s ease;
-    }
-    .tutorialOverlay.closing,.partnerOverlay.closing{opacity:0;transform:translateY(18px)}
-
-    .tutorialPanel,.partnerPanel{
-      width:min(860px, 100%);max-height:min(86vh, 860px);overflow:hidden;border-radius:28px;background:var(--panel);color:var(--text);
-      border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.38);display:grid;grid-template-rows:auto 1fr auto;
-    }
-    .partnerPanel{width:min(520px, 100%)}
-
-    .tutorialTop,.partnerTop{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px 0;
-    }
-    .tutorialTitle,.partnerTitle{font-size:24px;font-weight:1000;line-height:1.1;margin:0}
-    .tutorialSub,.partnerSub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.6}
-    .tutorialClose,.partnerClose{
-      width:44px;height:44px;border-radius:14px;padding:0;background:rgba(127,127,127,.10);color:var(--text);font-size:22px;font-weight:900
+    .toggleSwitch.on .toggleKnob{
+      transform:translateX(24px);
     }
 
-    .tutorialBody,.partnerBody{padding:14px 18px 6px;overflow:auto}
+    .settingHeader{
+      display:grid;
+      gap:8px;
+    }
+
+    .settingTitle{
+      font-size:26px;
+      font-weight:1000;
+      line-height:1.1;
+      margin:0;
+    }
+
+    .settingSub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    #tutorialLayer,
+    #partnerLayer{
+      position:fixed;
+      inset:0;
+      z-index:1000;
+      pointer-events:none;
+    }
+
+    .tutorialOverlay,
+    .partnerOverlay{
+      position:fixed;
+      inset:0;
+      pointer-events:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background:rgba(6,10,18,.64);
+      backdrop-filter:blur(8px);
+      transition:opacity .22s ease, transform .22s ease;
+    }
+
+    .tutorialOverlay.closing,
+    .partnerOverlay.closing{
+      opacity:0;
+      transform:translateY(18px);
+    }
+
+    .tutorialPanel,
+    .partnerPanel{
+      width:min(860px, 100%);
+      max-height:min(86vh, 860px);
+      overflow:hidden;
+      border-radius:28px;
+      background:var(--panel);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 30px 80px rgba(0,0,0,.38);
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+
+    .tutorialTop,
+    .partnerTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:16px 18px 0;
+    }
+
+    .tutorialTitle,
+    .partnerTitle{
+      font-size:24px;
+      font-weight:1000;
+      line-height:1.1;
+      margin:0;
+    }
+
+    .tutorialSub,
+    .partnerSub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .tutorialClose,
+    .partnerClose{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      padding:0;
+      background:rgba(127,127,127,.10);
+      color:var(--text);
+      font-size:22px;
+      font-weight:900;
+    }
+
+    .tutorialBody,
+    .partnerBody{
+      padding:14px 18px 6px;
+      overflow:auto;
+    }
+
     .tutorialPage{
-      min-height:340px;display:grid;gap:14px;animation-duration:.26s;animation-fill-mode:both;
+      min-height:340px;
+      display:grid;
+      gap:14px;
+      animation-duration:.26s;
+      animation-fill-mode:both;
     }
-    .tutorialPage.anim-open{animation-name:tutInOpen}
-    .tutorialPage.anim-next{animation-name:tutInRight}
-    .tutorialPage.anim-prev{animation-name:tutInLeft}
-    .tutorialPage.anim-close{animation-name:tutOutDown}
 
-    .tutorialCard,.partnerCard{border:1px solid var(--line);border-radius:20px;padding:16px;background:rgba(127,127,127,.05)}
-    body.dark .tutorialCard,body.dark .partnerCard{background:rgba(255,255,255,.03)}
-    .tutorialHero{display:grid;gap:8px}
-    .tutorialHero h2{margin:0;font-size:28px;line-height:1.1;letter-spacing:-.03em}
-    .tutorialHero p{margin:0;line-height:1.8;color:var(--muted);font-size:15px}
+    .tutorialPage.anim-open{animation-name:tutInOpen;}
+    .tutorialPage.anim-next{animation-name:tutInRight;}
+    .tutorialPage.anim-prev{animation-name:tutInLeft;}
+    .tutorialPage.anim-close{animation-name:tutOutDown;}
+
+    .tutorialCard{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      background:rgba(127,127,127,.05);
+    }
+
+    body.dark .tutorialCard{
+      background:rgba(255,255,255,.03);
+    }
+
+    .tutorialHero{
+      display:grid;
+      gap:8px;
+    }
+
+    .tutorialHero h2{
+      margin:0;
+      font-size:28px;
+      line-height:1.1;
+      letter-spacing:-.03em;
+    }
+
+    .tutorialHero p{
+      margin:0;
+      line-height:1.8;
+      color:var(--muted);
+      font-size:15px;
+    }
+
     .tutorialCode{
-      background:#0f172a;color:#e8f0ff;border-radius:16px;padding:14px 16px;overflow:auto;
-      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;
+      background:#0f172a;
+      color:#e8f0ff;
+      border-radius:16px;
+      padding:14px 16px;
+      overflow:auto;
+      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre-wrap;
+      word-break:break-word;
     }
-    body.dark .tutorialCode{background:#0a1220}
-    .tutorialFooter,.partnerFooter{
-      display:flex;justify-content:space-between;gap:10px;align-items:center;padding:0 18px 18px;flex-wrap:wrap;
-    }
-    .tutorialDots{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center;flex:1}
-    .dot{width:8px;height:8px;border-radius:999px;background:rgba(127,127,127,.35)}
-    .dot.active{background:var(--accent)}
-    .tutorialNavBtn{min-width:110px;font-weight:900}
 
-    .partnerActions{display:grid;gap:10px}
-    .partnerUrlBox{
-      border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:rgba(127,127,127,.05);word-break:break-all;line-height:1.6
+    body.dark .tutorialCode{
+      background:#0a1220;
     }
-    .partnerActions .row{justify-content:flex-start}
 
-    @keyframes tutInRight{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
-    @keyframes tutInLeft{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
-    @keyframes tutInOpen{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-    @keyframes tutOutDown{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(30px) scale(.98)}}
+    .tutorialFooter,
+    .partnerFooter{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:0 18px 18px;
+      flex-wrap:wrap;
+    }
+
+    .tutorialDots{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+    }
+
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(127,127,127,.35);
+    }
+
+    .dot.active{background:var(--accent);}
+
+    .tutorialNavBtn{
+      min-width:110px;
+      font-weight:900;
+    }
+
+    .partnerMenu{
+      display:grid;
+      gap:10px;
+      padding:4px 0 0;
+    }
+
+    .partnerMenuBtn{
+      width:100%;
+      text-align:left;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      font-weight:900;
+    }
+
+    .partnerMenuBtn.primary{
+      background:var(--accent);
+      color:#fff;
+      border-color:transparent;
+    }
+
+    @keyframes tutInRight{
+      from{opacity:0;transform:translateX(28px);}
+      to{opacity:1;transform:translateX(0);}
+    }
+
+    @keyframes tutInLeft{
+      from{opacity:0;transform:translateX(-28px);}
+      to{opacity:1;transform:translateX(0);}
+    }
+
+    @keyframes tutInOpen{
+      from{opacity:0;transform:translateY(14px) scale(.985);}
+      to{opacity:1;transform:translateY(0) scale(1);}
+    }
+
+    @keyframes tutOutDown{
+      from{opacity:1;transform:translateY(0) scale(1);}
+      to{opacity:0;transform:translateY(30px) scale(.98);}
+    }
 
     @media (max-width:640px){
       .page{padding:14px}
@@ -302,7 +1021,15 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      getDocs,
+      setDoc,
+      deleteDoc,
+      collection
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -324,17 +1051,24 @@
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
+    const PARTNER_ADMIN_COOKIE = "qb_partner_admin";
     const MY_KEY = "qb_my_quizzes";
     const ACCESS_KEY = "qb_access_quizzes";
     const COMMENT_TOKEN_KEY = "qb_comment_token";
     const COMMENT_NAME_KEY = "qb_comment_name";
     const TUTORIAL_COOKIE = "qb_tutorial_seen";
-    const PARTNER_KEY = "qb_partner_url_";
-
+    const PARTNER_LINK_LOCAL_KEY = "qb_partner_link";
+    const SETTINGS_COLLECTION = "siteSettings";
+    const SETTINGS_DOC_ID = "main";
     const TAGS = ["random", "choice", "random choice", "number", "open"];
 
-    const CONTROL_LABELS = { random: "問題順ランダム" };
-    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
+    const CONTROL_LABELS = {
+      random: "問題順ランダム"
+    };
+
+    const CONTROL_HINTS = {
+      random: "問題の順番をランダムにする"
+    };
 
     const state = {
       screen: "loading",
@@ -350,6 +1084,7 @@
       homeVisibleCount: { library: 20, public: 12 },
       publicOrder: [],
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
+      partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "https://example.com",
       quiz: {
         phase: "question",
         order: [],
@@ -369,8 +1104,17 @@
         pendingOrder: null,
         pendingOnlyWrong: false
       },
-      tutorial: { open: false, page: 0, seen: false, autoShown: false, closing: false, motion: "open" },
-      partner: { open: false, closing: false }
+      tutorial: {
+        open: false,
+        page: 0,
+        seen: false,
+        autoShown: false,
+        closing: false,
+        motion: "open"
+      },
+      partnerModal: {
+        open: false
+      }
     };
 
     let resultEnterHandler = null;
@@ -388,23 +1132,45 @@
     }
 
     function slugify(text) {
-      return (text || "quiz").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}\-]+/gu, "").replace(/\-+/g, "-").replace(/^-+|-+$/g, "") || "quiz";
+      return (text || "quiz")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\p{L}\p{N}\-]+/gu, "")
+        .replace(/\-+/g, "-")
+        .replace(/^-+|-+$/g, "") || "quiz";
     }
 
     function esc(s) {
-      return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     function norm(s) {
-      return String(s ?? "").replace(/\u3000/g, " ").trim().replace(/\s+/g, " ").toLowerCase();
+      return String(s ?? "")
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
     }
 
     function splitAnswers(text) {
-      return String(text ?? "").split(/[、,]/).map(v => v.trim()).filter(Boolean);
+      return String(text ?? "")
+        .split(/[、,]/)
+        .map(v => v.trim())
+        .filter(Boolean);
     }
 
     function splitSearchTerms(q) {
-      return String(q ?? "").trim().split(/[\s\u3000]+/).map(v => v.trim()).filter(Boolean);
+      return String(q ?? "")
+        .trim()
+        .split(/[\s\u3000]+/)
+        .map(v => v.trim())
+        .filter(Boolean);
     }
 
     function normalizeOnOffTarget(raw) {
@@ -508,14 +1274,15 @@
       const items = [];
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
       let onOffControls = [];
-      let i = 0;
 
+      let i = 0;
       while (i < lines.length && !String(lines[i]).trim()) i++;
 
       while (i < lines.length) {
         const raw = String(lines[i] ?? "");
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
+
         const parsed = parseLeadingSettings(raw);
         if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -523,6 +1290,7 @@
           i++;
           continue;
         }
+
         break;
       }
 
@@ -560,7 +1328,9 @@
       else if (globalFlags.choice) gf.push("[choice]");
       if (globalFlags.number) gf.push("[number]");
       if (gf.length) lines.push(gf.join(" "));
-      if (onOffControls?.length) lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
+      if (onOffControls?.length) {
+        lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
+      }
 
       let lastSection = null;
       for (const item of items || []) {
@@ -616,6 +1386,7 @@
         return [];
       }
     }
+
     function saveMyList(list) { safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50))); }
 
     function loadAccessList() {
@@ -627,6 +1398,7 @@
         return [];
       }
     }
+
     function saveAccessList(list) { safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50))); }
 
     function findAccessRecord(id) { return loadAccessList().find(v => v.id === id) || null; }
@@ -634,26 +1406,41 @@
     function rememberAccess(id, key, meta = {}) {
       if (!id || !key) return;
       const list = loadAccessList();
-      const next = { id, key, title: String(meta.title || ""), subtitle: String(meta.subtitle || ""), createdAt: Number(meta.createdAt || Date.now()), updatedAt: Number(meta.updatedAt || Date.now()) };
+      const next = {
+        id,
+        key,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
       const idx = list.findIndex(v => v.id === id);
       if (idx >= 0) list[idx] = { ...list[idx], ...next };
       else list.unshift(next);
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       saveAccessList(list);
     }
+
     function removeAccessRecord(id) { saveAccessList(loadAccessList().filter(v => v.id !== id)); }
 
     function upsertMyMeta(meta) {
       const list = loadMyList();
       const id = String(meta?.id || "");
       if (!id) return;
-      const next = { id, title: String(meta.title || ""), subtitle: String(meta.subtitle || ""), createdAt: Number(meta.createdAt || Date.now()), updatedAt: Number(meta.updatedAt || Date.now()) };
+      const next = {
+        id,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
       const idx = list.findIndex(v => v.id === id);
       if (idx >= 0) list[idx] = { ...list[idx], ...next };
       else list.unshift(next);
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       saveMyList(list);
     }
+
     function removeMyMeta(id) { saveMyList(loadMyList().filter(v => v.id !== id)); }
 
     function normalizeTs(value) {
@@ -699,6 +1486,7 @@
       clearResultEnterHandler();
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
+
       resultEnterHandler = (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
@@ -706,6 +1494,7 @@
         e.preventDefault();
         nextQuestion();
       };
+
       window.addEventListener("keydown", resultEnterHandler);
     }
 
@@ -715,6 +1504,7 @@
       const i = p.lastIndexOf("/");
       return i >= 0 ? p.slice(0, i + 1) : "/";
     };
+
     const prettyLink = (id) => `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
 
     function route() {
@@ -744,8 +1534,13 @@
       return n;
     }
 
-    function setCommentName(name) { safeLocalSet(COMMENT_NAME_KEY, name || "匿名"); }
-    function sortComments(comments) { return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0)); }
+    function setCommentName(name) {
+      safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
+    }
+
+    function sortComments(comments) {
+      return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+    }
 
     function isPerfectScore() {
       const m = currentScoreMeta();
@@ -765,6 +1560,23 @@
       return comment.authorToken && comment.authorToken === getCommentToken();
     }
 
+    function setAccessModeForDoc(docData, id) {
+      if (docData.keyMode === "open" || docData.globalFlags?.open) {
+        state.accessMode = isOwner() ? "owner" : "open";
+        return;
+      }
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
+      const rec = findAccessRecord(id);
+      if (rec && docData.key && rec.key === docData.key) {
+        state.accessMode = "key";
+        return;
+      }
+      state.accessMode = "none";
+    }
+
     function isOwner() {
       return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
     }
@@ -774,11 +1586,8 @@
       if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return true;
       return state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open";
     }
-    const canManageQuiz = () => canEdit();
 
-    function canUsePartner() {
-      return !!(state.doc && isOwner());
-    }
+    const canManageQuiz = () => canEdit();
 
     function currentQuestion() {
       if (!state.quiz?.items?.length) return null;
@@ -799,10 +1608,18 @@
       return items;
     }
 
-    function blankDraft() { return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" }; }
+    function blankDraft() {
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+    }
 
     function openCreate() {
-      state.doc = null; state.docId = ""; state.accessMode = "none"; state.draft = blankDraft(); state.showComments = false; state.partner.open = false; state.screen = "editor"; render();
+      state.doc = null;
+      state.docId = "";
+      state.accessMode = "none";
+      state.draft = blankDraft();
+      state.showComments = false;
+      state.screen = "editor";
+      render();
     }
 
     function openEditFromDoc() {
@@ -813,14 +1630,15 @@
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
-      state.partner.open = false;
       state.screen = "editor";
       render();
     }
 
     function defaultSettingValues(controls, baseFlags) {
       const out = {};
-      for (const c of controls || []) out[c] = !!baseFlags?.[c];
+      for (const c of controls || []) {
+        out[c] = !!baseFlags?.[c];
+      }
       return out;
     }
 
@@ -828,7 +1646,9 @@
       const out = { ...state.quiz.baseFlags };
       for (const c of state.quiz.onOffControls || []) {
         const enabled = !!state.quiz.settingValues?.[c];
-        if (c === "random") out.random = enabled;
+        if (c === "random") {
+          out.random = enabled;
+        }
       }
       return out;
     }
@@ -839,7 +1659,11 @@
 
     function beginQuizRun(orderIndices = null, onlyWrong = false) {
       const activeFlags = buildActiveFlagsFromSettings();
-      const parsed = parseItems(state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []), activeFlags);
+      const parsed = parseItems(
+        state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
+        activeFlags
+      );
+
       const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
       const allIndices = quizItems.map((_, i) => i);
       const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
@@ -867,14 +1691,24 @@
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
       state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
-      state.partner.open = false;
 
       if (state.accessMode === "key") {
-        rememberAccess(id, docData.key, { title: docData.title || "", subtitle: docData.subtitle || "", createdAt: normalizeTs(docData.createdAt) || Date.now(), updatedAt: normalizeTs(docData.updatedAt) || Date.now() });
+        rememberAccess(id, docData.key, {
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
       }
 
       if (state.accessMode === "owner") {
-        upsertMyMeta({ id, title: docData.title || "", subtitle: docData.subtitle || "", createdAt: normalizeTs(docData.createdAt) || Date.now(), updatedAt: normalizeTs(docData.updatedAt) || Date.now() });
+        upsertMyMeta({
+          id,
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
       }
 
       state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
@@ -1017,6 +1851,7 @@
 
     function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
       if (!host || !textarea || !box) return;
+
       const hide = () => {
         box.innerHTML = "";
         box.classList.add("hide");
@@ -1033,6 +1868,7 @@
         const hostRect = host.getBoundingClientRect();
         const taRect = textarea.getBoundingClientRect();
         const caret = caretCoordinates(textarea, pos);
+
         let left = taRect.left - hostRect.left + caret.left + 10;
         let top = taRect.top - hostRect.top + caret.top + caret.height + 8;
 
@@ -1065,8 +1901,13 @@
       refresh();
     }
 
-    function isOpenDoc(docData) { return !!(docData?.globalFlags?.open || docData?.keyMode === "open"); }
-    function sortCommentsForPersist(nextComments) { return sortComments(nextComments); }
+    function isOpenDoc(docData) {
+      return !!(docData?.globalFlags?.open || docData?.keyMode === "open");
+    }
+
+    function sortCommentsForPersist(nextComments) {
+      return sortComments(nextComments);
+    }
 
     async function persistComments(nextComments) {
       if (!state.docId) return;
@@ -1076,10 +1917,21 @@
       state.doc.comments = sorted;
       state.doc.updatedAt = updatedAt;
       if (state.accessMode === "owner") {
-        upsertMyMeta({ id: state.docId, title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt });
+        upsertMyMeta({
+          id: state.docId,
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
       }
       if (state.accessMode === "key") {
-        rememberAccess(state.docId, state.doc.key || "", { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt });
+        rememberAccess(state.docId, state.doc.key || "", {
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
       }
       updateCatalogDocFromState();
       render();
@@ -1087,10 +1939,12 @@
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
+
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
+
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
 
       const btn = document.getElementById("deleteBtn");
@@ -1148,7 +2002,14 @@
     const commentRoleClass = (role) => role === "owner" ? "commentOwner" : role === "editor" ? "commentEditor" : "commentViewer";
 
     function setupCommentSuggestions(host, textarea, box) {
-      setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar: "@", items: makeCommentSuggestionItems(), onPick: () => {} });
+      setupFloatingTriggerSuggestions({
+        host,
+        textarea,
+        box,
+        triggerChar: "@",
+        items: makeCommentSuggestionItems(),
+        onPick: () => {}
+      });
     }
 
     function setupEditorTagSuggestions(host, textarea, box) {
@@ -1185,6 +2046,7 @@
 
     async function addComment() {
       if (!state.docId || !state.doc) return;
+
       let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
       const text = (state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
@@ -1199,7 +2061,9 @@
       const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
       const proofs = {};
       if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()) proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      if (text.includes("[[TIME]]") && isPerfectScore()) {
+        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      }
 
       const comment = {
         id: uid(),
@@ -1251,7 +2115,7 @@
     };
 
     const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>${canUsePartner() ? `<button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>` : ""}`;
+    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
 
     const editorActionHtml = () => {
       const buttons = [];
@@ -1408,7 +2272,10 @@
       return searchDocs(getPublicDocs(), query);
     }
 
-    function resetHomePaging(tab) { state.homeVisibleCount[tab] = tab === "public" ? 12 : 20; }
+    function resetHomePaging(tab) {
+      state.homeVisibleCount[tab] = tab === "public" ? 12 : 20;
+    }
+
     const getHomeQuery = () => state.homeQueries[state.homeTab] || "";
 
     function setHomeQuery(query) {
@@ -1499,7 +2366,9 @@
           <div class="listGrid">
             ${mine.length ? mine.map(d => renderDocCard(d, "マイクイズ")).join("") : `<div class="note">まだないよ。作成ボタンからどうぞ。</div>`}
           </div>
+
           <div class="dividerLine">───</div>
+
           <div class="homeSectionTitle">共同編集</div>
           <div class="listGrid">
             ${access.length ? access.map(d => renderDocCard(d, "共同編集")).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`}
@@ -1527,13 +2396,76 @@
       `;
     }
 
+    function isPartnerAdmin() {
+      return getCookie(PARTNER_ADMIN_COOKIE) === "仮";
+    }
+
+    async function loadSiteSettings() {
+      try {
+        const snap = await getDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID));
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        if (typeof data.partnerLink === "string" && data.partnerLink.trim()) {
+          state.partnerLink = data.partnerLink.trim();
+          safeLocalSet(PARTNER_LINK_LOCAL_KEY, state.partnerLink);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function savePartnerLink(nextLink) {
+      const value = String(nextLink || "").trim();
+      if (!value) throw new Error("empty partner link");
+      state.partnerLink = value;
+      safeLocalSet(PARTNER_LINK_LOCAL_KEY, value);
+      await setDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID), {
+        partnerLink: value,
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
+
+    async function openPartnerAction() {
+      if (!state.partnerLink) {
+        alert("パートナーリンクがまだないよ");
+        return;
+      }
+
+      if (!isPartnerAdmin()) {
+        window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      const choice = prompt("パートナー\n1: リンクを開く\n2: リンクを編集", "1");
+      if (choice === null) return;
+
+      if (choice.trim() === "2") {
+        const next = prompt("新しいリンクを入力してね", state.partnerLink);
+        if (next === null) return;
+        const v = next.trim();
+        if (!v) return alert("空では保存できないよ");
+        try {
+          await savePartnerLink(v);
+          alert("パートナーリンクを更新したよ");
+        } catch (err) {
+          console.error(err);
+          alert(`更新で失敗したよ: ${err?.message || err}`);
+        }
+        return;
+      }
+
+      window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+    }
+
     function bindGlobalButtons() {
       const helpBtn = document.getElementById("helpBtn");
       if (helpBtn) helpBtn.onclick = () => openTutorial(false);
+
+      const partnerBtn = document.getElementById("partnerBtn");
+      if (partnerBtn) partnerBtn.onclick = () => openPartnerAction();
+
       const topBtn = document.getElementById("topBtn");
       if (topBtn) topBtn.onclick = () => { location.hash = ""; };
-      const partnerBtn = document.getElementById("partnerBtn");
-      if (partnerBtn) partnerBtn.onclick = () => openPartnerPanel();
     }
 
     function renderHome() {
@@ -1602,6 +2534,7 @@
         tabSelect.value = state.homeTab;
         tabSelect.addEventListener("change", () => setHomeTab(tabSelect.value));
       }
+
       if (searchInput) {
         searchInput.value = getHomeQuery();
         searchInput.addEventListener("keydown", e => {
@@ -1611,25 +2544,39 @@
           }
         });
       }
-      if (searchBtn && searchInput) searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
-      if (reloadBtn) reloadBtn.addEventListener("click", refreshPublicFeed);
 
-      document.querySelectorAll("[data-open-quiz]").forEach(btn => btn.addEventListener("click", () => {
-        location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
-      }));
-      document.querySelectorAll("[data-edit-quiz]").forEach(btn => btn.addEventListener("click", () => {
-        location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
-      }));
-      document.querySelectorAll("[data-copy-quiz]").forEach(btn => btn.addEventListener("click", async () => {
-        const id = btn.dataset.copyQuiz || "";
-        const link = prettyLink(id);
-        try {
-          await navigator.clipboard.writeText(link);
-          alert("リンクをコピーしたよ");
-        } catch {
-          prompt("コピーできない環境だったよ。手動でコピーしてね", link);
-        }
-      }));
+      if (searchBtn && searchInput) {
+        searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
+      }
+
+      if (reloadBtn) {
+        reloadBtn.addEventListener("click", refreshPublicFeed);
+      }
+
+      document.querySelectorAll("[data-open-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-copy-quiz]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.copyQuiz || "";
+          const link = prettyLink(id);
+          try {
+            await navigator.clipboard.writeText(link);
+            alert("リンクをコピーしたよ");
+          } catch {
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
+          }
+        });
+      });
 
       attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
     }
@@ -1780,10 +2727,9 @@
           const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
           if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
 
-          const isOpen = (state.doc?.keyMode === "open" || state.doc?.globalFlags?.open || d.keyMode === "open" || globalFlags.open);
           const canChangeKey = !state.doc || isOwner();
-          const effectiveKeyMode = isOpen ? "open" : (canChangeKey ? d.keyMode : (state.doc?.keyMode || "key"));
-          const effectiveKey = isOpen ? "" : (canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || ""));
+          const effectiveKeyMode = canChangeKey ? d.keyMode : (state.doc?.keyMode || "key");
+          const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
@@ -1826,9 +2772,20 @@
             else state.allDocs.unshift(normalized);
             rebuildPublicOrder();
 
-            if (isOwner() || !isExisting) upsertMyMeta({ id: newId, title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
-            if (state.accessMode === "key" && !isOpen) {
-              rememberAccess(newId, effectiveKey, { title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
+            if (isOwner() || !isExisting) upsertMyMeta({
+              id: newId,
+              title: payload.title,
+              subtitle: payload.subtitle,
+              createdAt: payload.createdAt,
+              updatedAt: payload.updatedAt
+            });
+            if (state.accessMode === "key") {
+              rememberAccess(newId, effectiveKey, {
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
             }
 
             location.hash = `#/${encodeURIComponent(newId)}`;
@@ -1899,7 +2856,9 @@
                         <div class="settingLabel">${esc(CONTROL_LABELS[target] || target)}</div>
                         <div class="settingHint">${esc(CONTROL_HINTS[target] || "")}</div>
                       </div>
-                      <div class="toggleSwitch ${enabled ? "on" : ""}" aria-checked="${enabled}"><div class="toggleKnob"></div></div>
+                      <div class="toggleSwitch ${enabled ? "on" : ""}" aria-checked="${enabled}">
+                        <div class="toggleKnob"></div>
+                      </div>
                     </button>
                   `;
                 }).join("")}
@@ -1924,7 +2883,12 @@
           if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
           if ((entered || "").trim() === (state.doc.key || "")) {
             if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-            rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+            rememberAccess(state.docId, (state.doc.key || ""), {
+              title: state.doc.title || "",
+              subtitle: state.doc.subtitle || "",
+              createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+              updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+            });
             state.accessMode = "key";
             return openEditFromDoc();
           }
@@ -1941,7 +2905,9 @@
       });
 
       const startQuizBtn = document.getElementById("startQuizBtn");
-      if (startQuizBtn) startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
+      if (startQuizBtn) {
+        startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
+      }
     }
 
     function renderQuestion() {
@@ -1999,7 +2965,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -2007,12 +2978,18 @@
       });
 
       const forceEndBtn = document.getElementById("forceEndBtn");
-      if (forceEndBtn) forceEndBtn.addEventListener("click", () => { if (confirm("本当に残りを×で終わりますか？")) forceFinishAsWrong(); });
+      if (forceEndBtn) {
+        forceEndBtn.addEventListener("click", () => {
+          if (confirm("本当に残りを×で終わりますか？")) forceFinishAsWrong();
+        });
+      }
 
       if (q.item.mode === "choice") {
         const grid = document.getElementById("choiceGrid");
         const options = (q.item.randomChoice ? shuffle(q.item.options || []) : (q.item.options || [])).slice();
-        grid.innerHTML = options.map((opt, idx) => `<button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>`).join("");
+        grid.innerHTML = options.map((opt, idx) => `
+          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>
+        `).join("");
         const buttons = [...grid.querySelectorAll(".choiceBtn")];
         buttons.forEach(btn => btn.addEventListener("click", () => {
           buttons.forEach(b => b.classList.remove("selected"));
@@ -2044,8 +3021,12 @@
     function renderResult() {
       const r = state.quiz.lastResult;
       if (!r) { state.quiz.phase = "question"; render(); return; }
+
       const q = state.quiz.items[r.idx];
-      const answerText = q.mode === "choice" ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ") : (q.answers || []).join(" / ");
+      const answerText = q.mode === "choice"
+        ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+        : (q.answers || []).join(" / ");
+
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
       root.innerHTML = `
@@ -2087,6 +3068,7 @@
       `;
 
       bindGlobalButtons();
+
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
         const entered = prompt("Key を入力して編集", "");
@@ -2094,7 +3076,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -2114,6 +3101,7 @@
       const parent = comment.parentId ? comments.find(c => c.id === comment.parentId) : null;
       const children = comments.filter(c => c.parentId === comment.id).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
       const replyLine = parent ? `<div class="metaLine">↳ ${esc(parent.authorName || "匿名")} への返信</div>` : "";
+
       return `
         <div class="commentItem ${roleClass}" style="margin-left:${depth * 14}px">
           ${replyLine}
@@ -2134,7 +3122,11 @@
       const visibleComments = comments.filter(c => canViewComment(c));
       const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
       const replyTarget = state.commentDraft.replyTo ? comments.find(c => c.id === state.commentDraft.replyTo) : null;
-      const list = comments.filter(c => !c.parentId || !comments.some(p => p.id === c.parentId)).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0)).map(c => renderCommentNode(c, comments, 0)).join("");
+      const list = comments
+        .filter(c => !c.parentId || !comments.some(p => p.id === c.parentId))
+        .sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0))
+        .map(c => renderCommentNode(c, comments, 0))
+        .join("");
 
       const scoreBox = state.quiz.onlyWrong
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
@@ -2147,6 +3139,7 @@
               <div class="label" style="font-size:14px">コメントを書く</div>
               <div class="commentPrivateNote">🫥 は非公開コメント</div>
             </div>
+
             <div class="commentForm">
               <div>
                 <div class="label">名前（任意）</div>
@@ -2238,7 +3231,9 @@
                   const attempt = attempts[idx] || null;
                   const isGood = !!attempt?.correct;
                   const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
-                  const answerText = item.mode === "choice" ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ") : (item.answers || []).join(" / ");
+                  const answerText = item.mode === "choice"
+                    ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+                    : (item.answers || []).join(" / ");
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
@@ -2264,7 +3259,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -2328,10 +3328,13 @@
     }
 
     function render() {
-      if (state.screen === "loading") renderLoading();
-      else if (state.screen === "home") renderHome();
-      else if (state.screen === "editor") renderEditor();
-      else if (state.screen === "quiz") {
+      if (state.screen === "loading") {
+        renderLoading();
+      } else if (state.screen === "home") {
+        renderHome();
+      } else if (state.screen === "editor") {
+        renderEditor();
+      } else if (state.screen === "quiz") {
         if (!state.doc || !state.doc.items || !state.doc.items.length) {
           state.screen = "home";
           render();
@@ -2354,9 +3357,14 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>問題作成サイトへようこそ</h2>
-              <p>このサイトでは、クイズを作って、公開して、遊べるよ。<br>作る人と遊ぶ人、どっちにも使いやすいようにしてある。</p>
+              <p>
+                このサイトでは、クイズを作って、公開して、遊べるよ。<br>
+                作る人と遊ぶ人、どっちにも使いやすいようにしてある。
+              </p>
             </div>
-            <div class="tutorialCard"><div class="tutorialCode">作る → 遊ぶ → コメントする → また作る</div></div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">作る → 遊ぶ → コメントする → また作る</div>
+            </div>
           `
         },
         {
@@ -2365,19 +3373,33 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>クイズの流れ</h2>
-              <p>問題が出たら答えを入れて、✅を押すだけ。<br>PCなら Enter でも進めるよ。<br>最後に正解数が出て、コメントもできる。</p>
+              <p>
+                問題が出たら答えを入れて、✅を押すだけ。<br>
+                PCなら Enter でも進めるよ。<br>
+                最後に正解数が出て、コメントもできる。
+              </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>コメント</h2>
-              <p>クリア後にコメントができる。<br>公開コメントは誰でも見れて、🫥非公開コメントは自分・主催者・共同編集者だけが見れるよ。<br>返信もできる。</p>
+              <p>
+                クリア後にコメントができる。<br>
+                公開コメントは誰でも見れて、🫥非公開コメントは自分・主催者・共同編集者だけが見れるよ。<br>
+                返信もできる。
+              </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>@ と #</h2>
-              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。</p>
+              <p>
+                コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>
+                問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。
+              </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>開始前の設定</h2>
-              <p>クイズによっては、始める前に ON/OFF を選ぶ画面が出る。<br>その設定を切り替えてから始めるよ。</p>
+              <p>
+                クイズによっては、始める前に ON/OFF を選ぶ画面が出る。<br>
+                その設定を切り替えてから始めるよ。
+              </p>
             </div>
           `
         },
@@ -2387,21 +3409,55 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>基本</h2>
-              <p>1行に <b>A=B</b> と書くと、A が問題文、B が答えになる。<br>1行につき1問。<br><b>=</b> がない行は見出しになるよ。</p>
+              <p>
+                1行に <b>A=B</b> と書くと、A が問題文、B が答えになる。<br>
+                1行につき1問。<br>
+                <b>=</b> がない行は見出しになるよ。
+              </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>1行目に書くタグ</h2>
-              <p>1行目の先頭に書く。<br>複数あるときは半角スペースで区切る。<br>1行目に書いたタグは、その下の全部の問題に効く。</p>
+              <p>
+                1行目の先頭に書く。<br>
+                複数あるときは半角スペースで区切る。<br>
+                1行目に書いたタグは、その下の全部の問題に効く。
+              </p>
             </div>
-            <div class="tutorialCard tutorialHero"><h2>[random]</h2><p>問題の順番をランダムにする。</p></div>
-            <div class="tutorialCard tutorialHero"><h2>[choice]</h2><p>全体を選択式にする。</p></div>
-            <div class="tutorialCard tutorialHero"><h2>[random choice]</h2><p>選択式にして、選択肢の順番もランダムにする。</p></div>
-            <div class="tutorialCard tutorialHero"><h2>[number]</h2><p>数字入力モードにする。</p></div>
-            <div class="tutorialCard tutorialHero"><h2>[open]</h2><p>公開クイズにする。オンライン公開クイズ一覧に出る。</p></div>
-            <div class="tutorialCard tutorialHero"><h2>[ONorOFF:random]</h2><p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p></div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[random]</h2>
+              <p>問題の順番をランダムにする。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[choice]</h2>
+              <p>全体を選択式にする。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[random choice]</h2>
+              <p>選択式にして、選択肢の順番もランダムにする。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[number]</h2>
+              <p>数字入力モードにする。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[open]</h2>
+              <p>公開クイズにする。オンライン公開クイズ一覧に出る。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[ONorOFF:random]</h2>
+              <p>
+                1行目に書くと、始める前にON/OFFを選べる項目になる。<br>
+                このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。
+              </p>
+            </div>
             <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
-              <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
+              <p>
+                問題文の行のいちばん前に書く。<br>
+                タグのあとには半角スペースを1つ入れてから問題文を書く。<br>
+                そのあとに <b>=</b> と答えを書く。<br>
+                1行目の設定より、個別の指定が優先される。
+              </p>
             </div>
           `
         },
@@ -2411,9 +3467,14 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>それじゃ、始めよう</h2>
-              <p>「作成」から始めて、公開して、コメントして、遊んでみてね。<br>右上の「説明を読む」から、またいつでも見直せるよ。</p>
+              <p>
+                「作成」から始めて、公開して、コメントして、遊んでみてね。<br>
+                右上の「説明を読む」から、またいつでも見直せるよ。
+              </p>
             </div>
-            <div class="tutorialCard"><div class="tutorialCode">GO!</div></div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">GO!</div>
+            </div>
           `
         }
       ];
@@ -2421,7 +3482,10 @@
 
     function renderTutorialLayer() {
       if (!tutorialLayer) return;
-      if (!state.tutorial.open) { tutorialLayer.innerHTML = ""; return; }
+      if (!state.tutorial.open) {
+        tutorialLayer.innerHTML = "";
+        return;
+      }
 
       const pages = tutorialPages();
       const pageIndex = Math.max(0, Math.min(state.tutorial.page, pages.length - 1));
@@ -2444,12 +3508,16 @@
             </div>
 
             <div class="tutorialBody">
-              <div class="tutorialPage anim-${state.tutorial.motion || "open"}">${page.body}</div>
+              <div class="tutorialPage anim-${state.tutorial.motion || "open"}">
+                ${page.body}
+              </div>
             </div>
 
             <div class="tutorialFooter">
               ${showLeft ? `<button class="ghost tutorialNavBtn" id="tutorialPrevBtn" type="button">${esc(leftLabel)}</button>` : `<div style="width:110px"></div>`}
-              <div class="tutorialDots">${pages.map((_, i) => `<div class="dot ${i === pageIndex ? "active" : ""}"></div>`).join("")}</div>
+              <div class="tutorialDots">
+                ${pages.map((_, i) => `<div class="dot ${i === pageIndex ? "active" : ""}"></div>`).join("")}
+              </div>
               <button class="primary tutorialNavBtn" id="tutorialNextBtn" type="button">${esc(rightLabel)}</button>
             </div>
           </div>
@@ -2461,24 +3529,29 @@
       const nextBtn = document.getElementById("tutorialNextBtn");
 
       if (closeBtn) closeBtn.addEventListener("click", () => closeTutorial(true));
-      if (prevBtn) prevBtn.addEventListener("click", () => {
-        if (pageIndex === 0) {
-          if (state.tutorial.seen) closeTutorial(true);
-          return;
-        }
-        state.tutorial.page = Math.max(0, pageIndex - 1);
-        state.tutorial.motion = "prev";
-        renderTutorialLayer();
-      });
-      if (nextBtn) nextBtn.addEventListener("click", () => {
-        if (isLast) {
-          closeTutorial(true);
-          return;
-        }
-        state.tutorial.page = Math.min(pages.length - 1, pageIndex + 1);
-        state.tutorial.motion = "next";
-        renderTutorialLayer();
-      });
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (pageIndex === 0) {
+            if (state.tutorial.seen) closeTutorial(true);
+            return;
+          }
+          state.tutorial.page = Math.max(0, pageIndex - 1);
+          state.tutorial.motion = "prev";
+          renderTutorialLayer();
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (isLast) {
+            closeTutorial(true);
+            return;
+          }
+          state.tutorial.page = Math.min(pages.length - 1, pageIndex + 1);
+          state.tutorial.motion = "next";
+          renderTutorialLayer();
+        });
+      }
     }
 
     function openTutorial(auto = false) {
@@ -2493,6 +3566,7 @@
       state.tutorial.closing = true;
       state.tutorial.motion = "close";
       renderTutorialLayer();
+
       setTimeout(() => {
         state.tutorial.open = false;
         state.tutorial.closing = false;
@@ -2515,120 +3589,84 @@
       }, 120);
     }
 
-    function loadTutorialSeenState() { state.tutorial.seen = getCookie(TUTORIAL_COOKIE) === "1"; }
-
-    function partnerStorageKey() { return `${PARTNER_KEY}${state.docId || "global"}`; }
-
-    function getPartnerUrl() {
-      try { return safeLocalGet(partnerStorageKey()) || ""; } catch { return ""; }
-    }
-
-    function setPartnerUrl(value) {
-      try {
-        const v = String(value ?? "").trim();
-        if (!v) localStorage.removeItem(partnerStorageKey());
-        else localStorage.setItem(partnerStorageKey(), v);
-      } catch {}
-    }
-
-    function normalizePartnerUrl(value) {
-      const raw = String(value ?? "").trim();
-      if (!raw) return "";
-      try { return new URL(raw, location.href).toString(); } catch { return ""; }
-    }
-
-    function openPartnerPanel() {
-      if (!canUsePartner()) return;
-      state.partner.open = true;
-      state.partner.closing = false;
-      renderPartnerLayer();
-    }
-
-    function closePartnerPanel() {
-      state.partner.closing = true;
-      renderPartnerLayer();
-      setTimeout(() => {
-        state.partner.open = false;
-        state.partner.closing = false;
-        renderPartnerLayer();
-      }, 220);
+    function loadTutorialSeenState() {
+      state.tutorial.seen = getCookie(TUTORIAL_COOKIE) === "1";
     }
 
     function renderPartnerLayer() {
       if (!partnerLayer) return;
-      if (!state.partner.open) {
+      if (!state.partnerModal.open) {
         partnerLayer.innerHTML = "";
         return;
       }
 
-      const current = getPartnerUrl();
+      const admin = isPartnerAdmin();
       partnerLayer.innerHTML = `
-        <div class="partnerOverlay ${state.partner.closing ? "closing" : ""}">
+        <div class="partnerOverlay">
           <div class="partnerPanel">
             <div class="partnerTop">
               <div>
                 <div class="partnerTitle">パートナー</div>
-                <div class="partnerSub">マイクイズのときだけ触れるよ。</div>
+                <div class="partnerSub">${admin ? "リンクを開くか、編集できるよ。" : "リンクへ移動するよ。"}</div>
               </div>
               <button class="partnerClose" id="partnerCloseBtn" type="button" aria-label="閉じる">×</button>
             </div>
 
             <div class="partnerBody">
-              <div class="partnerCard partnerActions">
-                <div class="label" style="font-size:14px">今のリンク</div>
-                <div class="partnerUrlBox">${current ? esc(current) : "未設定"}</div>
-                <div class="row">
-                  <button class="ghost" id="partnerOpenBtn" type="button">リンクを開く</button>
-                  <button class="ghost" id="partnerEditBtn" type="button">リンクを編集</button>
-                </div>
+              <div class="partnerMenu">
+                <button class="partnerMenuBtn primary" id="partnerOpenBtn" type="button">リンクを開く</button>
+                ${admin ? `<button class="partnerMenuBtn" id="partnerEditBtn" type="button">リンクを編集</button>` : ""}
               </div>
             </div>
 
             <div class="partnerFooter">
-              <div class="note">あなた専用の保存先にだけ入るよ。</div>
-              <button class="primary" id="partnerDoneBtn" type="button">閉じる</button>
+              <div class="note">現在のリンク: ${esc(state.partnerLink || "未設定")}</div>
             </div>
           </div>
         </div>
       `;
 
       const closeBtn = document.getElementById("partnerCloseBtn");
-      const doneBtn = document.getElementById("partnerDoneBtn");
       const openBtn = document.getElementById("partnerOpenBtn");
       const editBtn = document.getElementById("partnerEditBtn");
 
-      const close = () => closePartnerPanel();
-      if (closeBtn) closeBtn.addEventListener("click", close);
-      if (doneBtn) doneBtn.addEventListener("click", close);
-
+      if (closeBtn) closeBtn.addEventListener("click", () => closePartnerModal());
       if (openBtn) openBtn.addEventListener("click", () => {
-        const url = normalizePartnerUrl(getPartnerUrl());
-        if (!url) return alert("リンクがまだないよ");
-        window.open(url, "_blank", "noopener,noreferrer");
+        if (state.partnerLink) window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        closePartnerModal();
       });
-
-      if (editBtn) editBtn.addEventListener("click", () => {
-        const currentRaw = getPartnerUrl();
-        const next = prompt("パートナーリンクを入力してね", currentRaw);
+      if (editBtn) editBtn.addEventListener("click", async () => {
+        const next = prompt("新しいリンクを入力してね", state.partnerLink || "");
         if (next === null) return;
-        const v = String(next).trim();
-        if (!v) {
-          setPartnerUrl("");
-          renderPartnerLayer();
-          return;
+        const v = next.trim();
+        if (!v) return alert("空では保存できないよ");
+        try {
+          await savePartnerLink(v);
+          alert("パートナーリンクを更新したよ");
+          closePartnerModal();
+        } catch (err) {
+          console.error(err);
+          alert(`更新で失敗したよ: ${err?.message || err}`);
         }
-        const normalized = normalizePartnerUrl(v);
-        if (!normalized) return alert("リンクとして読めなかったよ");
-        setPartnerUrl(v);
-        renderPartnerLayer();
       });
     }
 
-    function openEditRoute(id) {
+    function openPartnerModal() {
+      state.partnerModal.open = true;
+      renderPartnerLayer();
+    }
+
+    function closePartnerModal() {
+      state.partnerModal.open = false;
+      renderPartnerLayer();
+    }
+
+    async function openEditRoute(id) {
       state.screen = "loading";
       render();
 
-      return getDoc(doc(db, COLLECTION, id)).then(snap => {
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()) { state.screen = "home"; render(); return; }
         const data = snap.data() || {};
         const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
@@ -2658,57 +3696,55 @@
         };
 
         setAccessModeForDoc(state.doc, id);
-        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") {
-          openEditFromDoc();
-          return;
-        }
+        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") { openEditFromDoc(); return; }
 
         const entered = prompt("Key を入力して編集", "");
-        if (entered === null) {
-          location.hash = `#/${encodeURIComponent(id)}`;
-          return;
-        }
+        if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           openEditFromDoc();
         } else {
           alert("Key が違うよ");
           location.hash = `#/${encodeURIComponent(id)}`;
         }
-      }).catch(err => {
+      } catch (err) {
         console.error(err);
         state.screen = "home";
         render();
-      });
+      }
     }
 
-    function loadRoute() {
+    async function loadRoute() {
       applySystemTheme();
       loadTutorialSeenState();
+      await loadSiteSettings();
       const r = route();
-      state.partner.open = false;
-      state.partner.closing = false;
 
       if (r.name === "home") {
-        loadCatalog().catch(e => console.error(e)).finally(() => {
-          state.screen = "home";
-          state.showComments = false;
-          render();
-          maybeAutoOpenTutorial();
-        });
+        try { await loadCatalog(); } catch (e) { console.error(e); }
+        state.screen = "home";
+        state.showComments = false;
+        render();
+        maybeAutoOpenTutorial();
         return;
       }
 
       if (r.name === "create") { openCreate(); maybeAutoOpenTutorial(); return; }
-      if (r.name === "edit") { openEditRoute(r.id).then(() => maybeAutoOpenTutorial()); return; }
+      if (r.name === "edit") { await openEditRoute(r.id); maybeAutoOpenTutorial(); return; }
 
       if (r.name === "quiz") {
         state.screen = "loading";
         state.showComments = false;
         render();
-        getDoc(doc(db, COLLECTION, r.id)).then(snap => {
+        try {
+          const snap = await getDoc(doc(db, COLLECTION, r.id));
           if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
           const data = snap.data() || {};
           const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
@@ -2727,12 +3763,12 @@
             onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || []))
           }), r.id);
           maybeAutoOpenTutorial();
-        }).catch(err => {
+        } catch (err) {
           console.error(err);
           state.screen = "home";
           render();
           maybeAutoOpenTutorial();
-        });
+        }
       }
     }
 
