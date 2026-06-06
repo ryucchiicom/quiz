@@ -40,6 +40,10 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
+    html, body{
+      overflow-x:auto;
+    }
+
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -207,10 +211,12 @@
       padding:14px;
       font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       white-space:pre;
-      overflow:hidden;
+      overflow:auto;
+      touch-action:pan-x pan-y;
       tab-size:2;
       background:var(--panel);
       color:var(--text);
+      scrollbar-gutter:stable;
     }
 
     .help,.note{
@@ -1014,7 +1020,7 @@
     const COMMENT_TOKEN_KEY = "qb_comment_token";
     const COMMENT_NAME_KEY = "qb_comment_name";
     const TUTORIAL_COOKIE = "qb_tutorial_seen";
-    const TAGS = ["random", "choice", "random choice", "number", "open", "onoroff:random"];
+    const TAGS = ["random", "choice", "random choice", "number", "open"];
 
     const CONTROL_LABELS = {
       random: "問題順ランダム"
@@ -1123,6 +1129,12 @@
         .filter(Boolean);
     }
 
+    function normalizeOnOffTarget(raw) {
+      const t = String(raw ?? "").trim().toLowerCase();
+      if (t === "random") return t;
+      return null;
+    }
+
     function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
@@ -1135,8 +1147,9 @@
         const token = tagMatch[1].trim().toLowerCase();
         const after = rest.slice(tagMatch[0].length).trimStart();
 
-        if (token === "onoroff:random") {
-          onOffControls.push("random");
+        if (token.startsWith("onoroff:")) {
+          const target = normalizeOnOffTarget(token.slice("onoroff:".length));
+          if (target) onOffControls.push(target);
           rest = after;
           continue;
         }
@@ -1271,7 +1284,9 @@
       else if (globalFlags.choice) gf.push("[choice]");
       if (globalFlags.number) gf.push("[number]");
       if (gf.length) lines.push(gf.join(" "));
-      if (onOffControls?.length) lines.push("[ONorOFF:random]");
+      if (onOffControls?.length) {
+        lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
+      }
 
       let lastSection = null;
       for (const item of items || []) {
@@ -1979,18 +1994,10 @@
       rebuildPublicOrder();
     }
 
-    function uniqueCommentNameOrAsk(baseName) {
-      const trimmed = String(baseName || "").trim();
-      if (!trimmed || trimmed === "匿名") return trimmed || "匿名";
-
-      const exists = (name) => (state.doc?.comments || []).some(c => String(c.authorName || "") === name);
-      let candidate = trimmed;
-      while (exists(candidate)) {
-        const yes = confirm(`コメント名「${candidate}」はもうあるよ。\n後ろに -uuid(4桁) を追加しますか？`);
-        if (!yes) return trimmed;
-        candidate = `${trimmed}-${suffix4()}`;
-      }
-      return candidate;
+    function latestCommentNameConflict(name) {
+      const clean = String(name || "").trim();
+      if (!clean || clean === "匿名") return false;
+      return (state.doc?.comments || []).some(c => String(c.authorName || "").trim() === clean);
     }
 
     async function addComment() {
@@ -2002,7 +2009,10 @@
       const replyTo = String(state.commentDraft?.replyTo || "");
       if (!text) return alert("コメントを書いてね");
 
-      name = uniqueCommentNameOrAsk(name);
+      if (name !== "匿名" && latestCommentNameConflict(name)) {
+        const yes = confirm(`「${name}」はもう使われてるよ。\n後ろに -uuid(4桁) を追加して投稿する？`);
+        if (yes) name = `${name}-${suffix4()}`;
+      }
 
       const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
       const proofs = {};
@@ -2370,8 +2380,8 @@
               <p style="margin:12px 0 0;color:var(--muted);line-height:1.8;font-size:16px">
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
                 <b>= なしの行</b> は共通見出しになるよ。<br>
-                1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> が使える。<br>
-                <b>[ONorOFF:random]</b> で開始前にON/OFFを選べるよ。
+                1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
+                <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2519,7 +2529,7 @@
                 <b>= なしの行</b> は共通見出し。<br>
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
-                <b>[ONorOFF:random]</b> で開始前に設定画面を出せる。<br>
+                <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
@@ -3039,7 +3049,7 @@
 
               <div class="commentInputHost">
                 <div class="label">コメント</div>
-                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:auto;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
                 ${scoreBox}
               </div>
 
@@ -3327,7 +3337,7 @@
               <h2>[ONorOFF:random]</h2>
               <p>
                 1行目に書くと、始める前にON/OFFを選べる項目になる。<br>
-                いまは <b>[ONorOFF:random]</b> だけを使うよ。
+                このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
