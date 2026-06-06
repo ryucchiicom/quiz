@@ -221,7 +221,8 @@
       display:flex;
       gap:8px;
       flex-wrap:wrap;
-      padding-top:10px;
+      padding:0 0 10px 0;
+      min-height:0;
     }
 
     .suggestChip{
@@ -379,6 +380,26 @@
       background:var(--panel);
       display:grid;
       gap:6px;
+    }
+
+    .reviewItem.reviewGood{
+      border-color:rgba(47,111,237,.35);
+      background:rgba(47,111,237,.06);
+    }
+
+    .reviewItem.reviewBad{
+      border-color:rgba(211,60,60,.35);
+      background:rgba(211,60,60,.06);
+    }
+
+    body.dark .reviewItem.reviewGood{
+      border-color:rgba(91,140,255,.40);
+      background:rgba(91,140,255,.10);
+    }
+
+    body.dark .reviewItem.reviewBad{
+      border-color:rgba(255,118,118,.35);
+      background:rgba(255,118,118,.08);
     }
 
     .reviewSection{
@@ -693,7 +714,7 @@
       showComments: false,
       allDocs: [],
       catalogLoaded: false,
-      homeTab: localStorage.getItem("qb_home_tab") || "library", // library | public
+      homeTab: localStorage.getItem("qb_home_tab") || "library",
       homeQueries: {
         library: "",
         public: ""
@@ -1334,18 +1355,13 @@
 
     function forceFinishAsWrong() {
       if (!state.doc) return;
-      const startIndex = state.quiz.phase === "result" ? state.quiz.index + 1 : state.quiz.index;
-      const remaining = state.quiz.order.slice(startIndex);
-      for (const idx of remaining) {
-        if (!state.quiz.attempts[idx]) {
-          state.quiz.attempts[idx] = { given: "", correct: false };
-        }
+      const q = currentQuestion();
+      if (q && !state.quiz.attempts[q.idx]) {
+        state.quiz.attempts[q.idx] = { given: "", correct: false };
       }
-      if (state.quiz.phase === "question") {
-        const q = currentQuestion();
-        if (q && !state.quiz.attempts[q.idx]) {
-          state.quiz.attempts[q.idx] = { given: "", correct: false };
-        }
+      const nextIndex = state.quiz.phase === "question" ? state.quiz.index + 1 : state.quiz.index;
+      for (const idx of state.quiz.order.slice(nextIndex)) {
+        if (!state.quiz.attempts[idx]) state.quiz.attempts[idx] = { given: "", correct: false };
       }
       state.quiz.phase = "done";
       render();
@@ -1393,7 +1409,7 @@
       textarea.style.height = `${next}px`;
       gutter.style.height = `${next}px`;
 
-      const count = Math.max(1, textarea.value.split(/\r?\n/).length + 1);
+      const count = Math.max(1, textarea.value.split(/\r?\n/).length);
       gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
     }
 
@@ -1538,11 +1554,6 @@
       removeAccessRecord(state.docId);
       state.accessMode = "none";
       alert("脱退したよ");
-      render();
-    }
-
-    function openCommentToggle() {
-      state.showComments = !state.showComments;
       render();
     }
 
@@ -1851,13 +1862,8 @@
         };
         const searchedMine = searchDocs(mine, query);
         const searchedAccess = searchDocs(access, query);
-        if (!query) {
-          searchedMine.forEach(d => add(d, "mine"));
-          searchedAccess.forEach(d => add(d, "access"));
-        } else {
-          searchedMine.forEach(d => add(d, "mine"));
-          searchedAccess.forEach(d => add(d, "access"));
-        }
+        searchedMine.forEach(d => add(d, "mine"));
+        searchedAccess.forEach(d => add(d, "access"));
         return union;
       }
 
@@ -2168,6 +2174,11 @@
             </div>
 
             <div>
+              <div class="label">候補</div>
+              <div id="tagSuggestBox" class="suggestBox hide"></div>
+            </div>
+
+            <div>
               <div class="label">問題欄</div>
               <div class="gridEditor">
                 <div id="gutter" class="gutter"></div>
@@ -2178,7 +2189,6 @@
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579">${esc(d.rawText)}</textarea>
               </div>
-              <div id="tagSuggestBox" class="suggestBox hide"></div>
               <div class="help">
                 1行に1つ書くよ。<br>
                 <b>= なしの行</b> は共通見出し。<br>
@@ -2461,7 +2471,13 @@
       });
 
       const forceEndBtn = document.getElementById("forceEndBtn");
-      if (forceEndBtn) forceEndBtn.addEventListener("click", forceFinishAsWrong);
+      if (forceEndBtn) {
+        forceEndBtn.addEventListener("click", () => {
+          if (confirm("本当に残りを×で終わりますか？")) {
+            forceFinishAsWrong();
+          }
+        });
+      }
 
       if (q.item.mode === "choice") {
         const grid = document.getElementById("choiceGrid");
@@ -2544,7 +2560,6 @@
             </div>
 
             <div class="actions">
-              ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
               <button class="next" id="nextBtn" type="button">次へ</button>
             </div>
           </div>
@@ -2574,18 +2589,97 @@
         alert("Key が違うよ");
       });
 
-      const forceEndBtn = document.getElementById("forceEndBtn");
-      if (forceEndBtn) forceEndBtn.addEventListener("click", forceFinishAsWrong);
-
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
+    }
+
+    function renderCommentsPanel(comments) {
+      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      const visibleComments = comments.filter(c => canViewComment(c));
+
+      const list = visibleComments.length ? visibleComments.map(comment => {
+        const role = comment.authorRole || "viewer";
+        const roleLabel = commentRoleLabel(role);
+        const roleClass = commentRoleClass(role);
+        const canManage = canManageComment(comment);
+
+        if (!canViewComment(comment)) {
+          return `
+            <div class="commentItem">
+              <div class="commentMask">🫥 非公開コメント</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="commentItem ${roleClass}">
+            <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span></div>
+            <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
+            <div class="commentBody">${renderCommentBody(comment)}</div>
+            <div class="row" style="justify-content:flex-end;">
+              ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}" type="button">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
+              ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}" type="button">削除</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("") : `<div class="note">まだコメントはないよ。</div>`;
+
+      const scoreBox = state.quiz.onlyWrong
+        ? `<div class="note">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
+        : `<div id="scoreSuggestBox" class="suggestBox hide"></div>`;
+
+      return `
+        <div class="commentWrap">
+          <div class="card commentWrap">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメントを書く</div>
+              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+            </div>
+
+            <div class="commentForm">
+              <div>
+                <div class="label">名前（任意）</div>
+                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
+              </div>
+
+              ${scoreBox}
+
+              <div>
+                <div class="label">コメント</div>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+              </div>
+
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <label class="row" style="gap:8px;cursor:pointer;">
+                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
+                  <span>非公開にする</span>
+                </label>
+                <button class="primary" id="postCommentBtn" type="button">コメントする</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメント一覧</div>
+              <div class="commentToggleRow">
+                <span class="commentBadge">表示 ${visibleComments.length}</span>
+                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+              </div>
+            </div>
+            <div class="reviewList">
+              ${list}
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function renderDone() {
       clearResultEnterHandler();
       const { correctCount, total } = currentScoreMeta();
-      const wrongCount = state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct).length;
       const comments = sortComments(state.doc.comments || []);
+      const attempts = state.quiz.attempts || {};
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
@@ -2611,8 +2705,7 @@
             <div class="actions" style="justify-content:flex-start">
               <button class="primary" id="restartBtn" type="button">もう一度！</button>
               <button class="ghost" id="commentsBtn" type="button">${esc(quizCommentsToggleLabel(comments))}</button>
-              ${wrongCount > 0 && !state.quiz.onlyWrong ? `<button class="ghost" id="wrongOnlyBtn" type="button">間違えた問題だけやり直す</button>` : ``}
-              ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ``}
+              ${state.quiz.onlyWrong ? "" : (state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct).length > 0 ? `<button class="ghost" id="wrongOnlyBtn" type="button">間違えた問題だけやり直す</button>` : "")}
             </div>
 
             ${state.showComments ? renderCommentsPanel(comments) : ""}
@@ -2620,17 +2713,24 @@
             <div class="card">
               <div class="label">全問題と答え</div>
               <div class="reviewList">
-                ${state.doc.items.map(item => `
-                  <div class="reviewItem">
-                    ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
-                    <div class="reviewQ">${esc(item.question)}</div>
-                    <div class="reviewA">答え: ${
-                      item.mode === "choice"
-                        ? esc((item.options || []).filter(o => o.correct).map(o => o.text).join(" / "))
-                        : esc((item.answers || []).join(" / "))
-                    }</div>
-                  </div>
-                `).join("")}
+                ${state.doc.items.map((item, i) => {
+                  const idx = state.quiz.order[i];
+                  const attempt = attempts[idx] || null;
+                  const isGood = !!attempt?.correct;
+                  const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
+                  const answerText = item.mode === "choice"
+                    ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+                    : (item.answers || []).join(" / ");
+                  const given = attempt?.given ?? "未回答";
+                  return `
+                    <div class="reviewItem ${cls}">
+                      ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
+                      <div class="reviewQ">${esc(item.question)}</div>
+                      <div class="reviewA">正解: ${esc(answerText)}</div>
+                      <div class="reviewA">あなたの答え: ${esc(given)}</div>
+                    </div>
+                  `;
+                }).join("")}
               </div>
             </div>
           </div>
@@ -2663,13 +2763,15 @@
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
 
       const commentsBtn = document.getElementById("commentsBtn");
-      if (commentsBtn) commentsBtn.addEventListener("click", openCommentToggle);
+      if (commentsBtn) {
+        commentsBtn.addEventListener("click", () => {
+          state.showComments = !state.showComments;
+          render();
+        });
+      }
 
       const wrongOnlyBtn = document.getElementById("wrongOnlyBtn");
       if (wrongOnlyBtn) wrongOnlyBtn.addEventListener("click", startWrongOnlyQuiz);
-
-      const forceEndBtn = document.getElementById("forceEndBtn");
-      if (forceEndBtn) forceEndBtn.addEventListener("click", forceFinishAsWrong);
 
       if (state.showComments) {
         const commentName = document.getElementById("commentName");
