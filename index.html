@@ -1084,7 +1084,7 @@
       homeVisibleCount: { library: 20, public: 12 },
       publicOrder: [],
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
-      partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "https://example.com",
+      partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
       quiz: {
         phase: "question",
         order: [],
@@ -2397,7 +2397,7 @@
     }
 
     function isPartnerAdmin() {
-      return getCookie(PARTNER_ADMIN_COOKIE) === "仮";
+      return (getCookie(PARTNER_ADMIN_COOKIE) || "").trim() === "仮";
     }
 
     async function loadSiteSettings() {
@@ -2425,32 +2425,14 @@
       }, { merge: true });
     }
 
-    async function openPartnerAction() {
+    function openPartnerAction() {
+      if (isPartnerAdmin()) {
+        openPartnerModal();
+        return;
+      }
+
       if (!state.partnerLink) {
-        alert("パートナーリンクがまだないよ");
-        return;
-      }
-
-      if (!isPartnerAdmin()) {
-        window.open(state.partnerLink, "_blank", "noopener,noreferrer");
-        return;
-      }
-
-      const choice = prompt("パートナー\n1: リンクを開く\n2: リンクを編集", "1");
-      if (choice === null) return;
-
-      if (choice.trim() === "2") {
-        const next = prompt("新しいリンクを入力してね", state.partnerLink);
-        if (next === null) return;
-        const v = next.trim();
-        if (!v) return alert("空では保存できないよ");
-        try {
-          await savePartnerLink(v);
-          alert("パートナーリンクを更新したよ");
-        } catch (err) {
-          console.error(err);
-          alert(`更新で失敗したよ: ${err?.message || err}`);
-        }
+        alert("パートナーリンクはまだ未設定だよ");
         return;
       }
 
@@ -3632,7 +3614,11 @@
 
       if (closeBtn) closeBtn.addEventListener("click", () => closePartnerModal());
       if (openBtn) openBtn.addEventListener("click", () => {
-        if (state.partnerLink) window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        if (state.partnerLink) {
+          window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        } else {
+          alert("パートナーリンクはまだ未設定だよ");
+        }
         closePartnerModal();
       });
       if (editBtn) editBtn.addEventListener("click", async () => {
