@@ -40,9 +40,7 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
+    html, body{ overflow-x:auto; }
 
     *{box-sizing:border-box}
     body{
@@ -1062,13 +1060,8 @@
     const SETTINGS_DOC_ID = "main";
     const TAGS = ["random", "choice", "random choice", "number", "open"];
 
-    const CONTROL_LABELS = {
-      random: "問題順ランダム"
-    };
-
-    const CONTROL_HINTS = {
-      random: "問題の順番をランダムにする"
-    };
+    const CONTROL_LABELS = { random: "問題順ランダム" };
+    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
     const state = {
       screen: "loading",
@@ -1112,9 +1105,7 @@
         closing: false,
         motion: "open"
       },
-      partnerModal: {
-        open: false
-      }
+      partnerModal: { open: false }
     };
 
     let resultEnterHandler = null;
@@ -1328,9 +1319,7 @@
       else if (globalFlags.choice) gf.push("[choice]");
       if (globalFlags.number) gf.push("[number]");
       if (gf.length) lines.push(gf.join(" "));
-      if (onOffControls?.length) {
-        lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
-      }
+      if (onOffControls?.length) lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
 
       let lastSection = null;
       for (const item of items || []) {
@@ -1382,9 +1371,7 @@
         const raw = safeLocalGet(MY_KEY);
         const list = raw ? JSON.parse(raw) : [];
         return Array.isArray(list) ? list : [];
-      } catch {
-        return [];
-      }
+      } catch { return []; }
     }
 
     function saveMyList(list) { safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50))); }
@@ -1394,9 +1381,7 @@
         const raw = safeLocalGet(ACCESS_KEY);
         const list = raw ? JSON.parse(raw) : [];
         return Array.isArray(list) ? list : [];
-      } catch {
-        return [];
-      }
+      } catch { return []; }
     }
 
     function saveAccessList(list) { safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50))); }
@@ -1636,9 +1621,7 @@
 
     function defaultSettingValues(controls, baseFlags) {
       const out = {};
-      for (const c of controls || []) {
-        out[c] = !!baseFlags?.[c];
-      }
+      for (const c of controls || []) out[c] = !!baseFlags?.[c];
       return out;
     }
 
@@ -1646,9 +1629,7 @@
       const out = { ...state.quiz.baseFlags };
       for (const c of state.quiz.onOffControls || []) {
         const enabled = !!state.quiz.settingValues?.[c];
-        if (c === "random") {
-          out.random = enabled;
-        }
+        if (c === "random") out.random = enabled;
       }
       return out;
     }
@@ -2397,7 +2378,9 @@
     }
 
     function isPartnerAdmin() {
-      return (getCookie(PARTNER_ADMIN_COOKIE) || "").trim() === "仮";
+      const cookieAdmin = (getCookie(PARTNER_ADMIN_COOKIE) || "").trim() === "仮";
+      const myQuizAdmin = loadMyList().some(v => String(v.title || "").trim() === "仮");
+      return cookieAdmin || myQuizAdmin;
     }
 
     async function loadSiteSettings() {
@@ -3339,10 +3322,7 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>問題作成サイトへようこそ</h2>
-              <p>
-                このサイトでは、クイズを作って、公開して、遊べるよ。<br>
-                作る人と遊ぶ人、どっちにも使いやすいようにしてある。
-              </p>
+              <p>このサイトでは、クイズを作って、公開して、遊べるよ。<br>作る人と遊ぶ人、どっちにも使いやすいようにしてある。</p>
             </div>
             <div class="tutorialCard">
               <div class="tutorialCode">作る → 遊ぶ → コメントする → また作る</div>
@@ -3355,33 +3335,19 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>クイズの流れ</h2>
-              <p>
-                問題が出たら答えを入れて、✅を押すだけ。<br>
-                PCなら Enter でも進めるよ。<br>
-                最後に正解数が出て、コメントもできる。
-              </p>
+              <p>問題が出たら答えを入れて、✅を押すだけ。<br>PCなら Enter でも進めるよ。<br>最後に正解数が出て、コメントもできる。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>コメント</h2>
-              <p>
-                クリア後にコメントができる。<br>
-                公開コメントは誰でも見れて、🫥非公開コメントは自分・主催者・共同編集者だけが見れるよ。<br>
-                返信もできる。
-              </p>
+              <p>クリア後にコメントができる。<br>公開コメントは誰でも見れて、🫥非公開コメントは自分・主催者・共同編集者だけが見れるよ。<br>返信もできる。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>@ と #</h2>
-              <p>
-                コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>
-                問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。
-              </p>
+              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>開始前の設定</h2>
-              <p>
-                クイズによっては、始める前に ON/OFF を選ぶ画面が出る。<br>
-                その設定を切り替えてから始めるよ。
-              </p>
+              <p>クイズによっては、始める前に ON/OFF を選ぶ画面が出る。<br>その設定を切り替えてから始めるよ。</p>
             </div>
           `
         },
@@ -3391,19 +3357,11 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>基本</h2>
-              <p>
-                1行に <b>A=B</b> と書くと、A が問題文、B が答えになる。<br>
-                1行につき1問。<br>
-                <b>=</b> がない行は見出しになるよ。
-              </p>
+              <p>1行に <b>A=B</b> と書くと、A が問題文、B が答えになる。<br>1行につき1問。<br><b>=</b> がない行は見出しになるよ。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>1行目に書くタグ</h2>
-              <p>
-                1行目の先頭に書く。<br>
-                複数あるときは半角スペースで区切る。<br>
-                1行目に書いたタグは、その下の全部の問題に効く。
-              </p>
+              <p>1行目の先頭に書く。<br>複数あるときは半角スペースで区切る。<br>1行目に書いたタグは、その下の全部の問題に効く。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[random]</h2>
@@ -3427,19 +3385,11 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[ONorOFF:random]</h2>
-              <p>
-                1行目に書くと、始める前にON/OFFを選べる項目になる。<br>
-                このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。
-              </p>
+              <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
-              <p>
-                問題文の行のいちばん前に書く。<br>
-                タグのあとには半角スペースを1つ入れてから問題文を書く。<br>
-                そのあとに <b>=</b> と答えを書く。<br>
-                1行目の設定より、個別の指定が優先される。
-              </p>
+              <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
             </div>
           `
         },
@@ -3449,10 +3399,7 @@
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>それじゃ、始めよう</h2>
-              <p>
-                「作成」から始めて、公開して、コメントして、遊んでみてね。<br>
-                右上の「説明を読む」から、またいつでも見直せるよ。
-              </p>
+              <p>「作成」から始めて、公開して、コメントして、遊んでみてね。<br>右上の「説明を読む」から、またいつでも見直せるよ。</p>
             </div>
             <div class="tutorialCard">
               <div class="tutorialCode">GO!</div>
