@@ -59,18 +59,41 @@
 
     .hide{display:none !important;}
     .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
+    .titleArea{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      min-width:0;
+    }
+    .titleBlock{min-width:0}
     .topbar{
-      display:flex;justify-content:space-between;gap:12px;align-items:center;
-      position:sticky;top:0;padding:8px 0 12px;backdrop-filter:blur(8px);z-index:5;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      position:sticky;
+      top:0;
+      padding:8px 0 12px;
+      backdrop-filter:blur(8px);
+      z-index:5;
     }
     .title{
-      font-size:28px;font-weight:900;line-height:1.1;margin:0;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.1;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .sub{margin-top:4px;color:var(--muted);font-size:13px;}
     .card{
-      background:var(--panel);border:1px solid rgba(15,23,42,.08);border-radius:var(--radius);
-      box-shadow:var(--shadow);padding:18px;
+      background:var(--panel);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
     }
     .hero{max-width:860px;margin:36px auto 0;display:grid;gap:16px;}
     .bigBtn,.primary{background:var(--accent);color:#fff;font-weight:800;}
@@ -80,25 +103,55 @@
     body.dark .danger{background:#2a1620;color:#ffaaaa;border-color:#5b2a39;}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
     .input{
-      width:100%;border:1px solid var(--line);border-radius:14px;padding:14px 15px;outline:none;
-      background:var(--panel);color:var(--text);
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px 15px;
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
     }
     .input:focus{border-color:#9ab8ff;box-shadow:0 0 0 4px rgba(47,111,237,.08);}
     .label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px;}
+
     .gridEditor{
-      display:grid;grid-template-columns:64px 1fr;border:1px solid var(--line);border-radius:18px;
-      overflow:hidden;min-height:420px;background:var(--panel);align-items:stretch;
+      display:grid;
+      grid-template-columns:64px 1fr;
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:420px;
+      background:var(--panel);
+      align-items:stretch;
     }
     .gutter{
-      background:rgba(127,127,127,.07);border-right:1px solid var(--line);padding:14px 10px 14px 0;
-      text-align:right;color:#8a93a8;font:600 14px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-      white-space:pre;user-select:none;overflow:hidden;align-self:stretch;min-height:420px;
+      background:rgba(127,127,127,.07);
+      border-right:1px solid var(--line);
+      padding:14px 10px 14px 0;
+      text-align:right;
+      color:#8a93a8;
+      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      user-select:none;
+      overflow:hidden;
+      align-self:stretch;
+      min-height:420px;
     }
     .textarea{
-      width:100%;border:none;outline:none;resize:none;min-height:420px;padding:14px;
-      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;overflow:hidden;
-      tab-size:2;background:var(--panel);color:var(--text);
+      width:100%;
+      border:none;
+      outline:none;
+      resize:none;
+      min-height:420px;
+      padding:14px;
+      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre;
+      overflow:hidden;
+      tab-size:2;
+      background:var(--panel);
+      color:var(--text);
     }
+
     .help,.note{color:var(--muted);font-size:13px;line-height:1.8;}
     .quiz{max-width:860px;margin:20px auto 0;display:grid;gap:14px;}
     .progress{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;font-weight:700;}
@@ -106,31 +159,60 @@
     body.dark .sectionText{color:#d7def0;}
     .question{font-size:clamp(22px,4vw,32px);font-weight:900;line-height:1.4;word-break:break-word;}
     .answer{
-      width:100%;font-size:18px;padding:16px;border-radius:16px;border:1px solid var(--line);outline:none;
-      background:var(--panel);color:var(--text);
+      width:100%;
+      font-size:18px;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
     }
     .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
     .submit{background:var(--accent);color:#fff;font-weight:900;padding:14px 20px;border-radius:16px;min-width:116px;}
     .next{background:#1c9c59;color:#fff;font-weight:900;padding:14px 20px;border-radius:16px;min-width:116px;}
+
     .good{
-      border:1px solid rgba(47,111,237,.22);background:#eef4ff;color:var(--accent);padding:14px 16px;
-      border-radius:16px;font-weight:900;font-size:18px;
+      border:1px solid rgba(47,111,237,.22);
+      background:#eef4ff;
+      color:var(--accent);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
     }
     body.dark .good{border-color:rgba(91,140,255,.35);background:#13264a;color:#9ebdff;}
     .bad{
-      border:1px solid rgba(211,60,60,.22);background:#fff3f3;color:var(--bad);padding:14px 16px;
-      border-radius:16px;font-weight:900;font-size:18px;
+      border:1px solid rgba(211,60,60,.22);
+      background:#fff3f3;
+      color:var(--bad);
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:18px;
     }
     .explain{
-      background:#f8faff;border:1px solid #dbe4fb;padding:14px 16px;border-radius:16px;line-height:1.8;
-      word-break:break-word;color:#2b3241;
+      background:#f8faff;
+      border:1px solid #dbe4fb;
+      padding:14px 16px;
+      border-radius:16px;
+      line-height:1.8;
+      word-break:break-word;
+      color:#2b3241;
     }
     body.dark .explain{background:#182133;border-color:#2d3a4f;color:#e7ecf7;}
+
     .summary{max-width:860px;margin:20px auto 0;display:grid;gap:14px;}
     .score{font-size:28px;font-weight:1000;line-height:1.2;}
     .reviewList{display:grid;gap:10px;}
+
     .reviewItem{
-      border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:var(--panel);display:grid;gap:6px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--panel);
+      display:grid;
+      gap:6px;
     }
     .reviewItem.reviewGood{border-color:rgba(47,111,237,.35);background:rgba(47,111,237,.06);}
     .reviewItem.reviewBad{border-color:rgba(211,60,60,.35);background:rgba(211,60,60,.06);}
@@ -140,22 +222,38 @@
     body.dark .reviewSection{color:#d7def0;}
     .reviewQ{font-weight:900;font-size:16px;word-break:break-word;}
     .reviewA{font-size:14px;color:var(--muted);line-height:1.6;word-break:break-word;}
+
     .listGrid{display:grid;gap:10px;margin-top:12px;}
     .listItem{
-      display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);
-      border-radius:16px;background:var(--panel);box-shadow:var(--shadow);padding:14px 15px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      padding:14px 15px;
     }
     .listMeta{min-width:0;display:grid;gap:4px;flex:1;}
     .listActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
     .miniAction{padding:10px 12px;font-size:13px;border-radius:12px;white-space:nowrap;}
     .metaLine{font-size:12px;color:var(--muted);line-height:1.6;word-break:break-word;}
+
     .commentWrap{display:grid;gap:12px;}
     .commentForm{display:grid;gap:10px;}
     .commentHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;}
     .commentToggleRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
     .commentBadge{
-      display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:6px 10px;
-      border-radius:999px;background:rgba(127,127,127,.08);color:var(--text);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(127,127,127,.08);
+      color:var(--text);
     }
     .commentPrivateNote{font-size:12px;color:var(--muted);}
     .commentMask{font-weight:900;font-size:18px;line-height:1.4;}
@@ -164,8 +262,14 @@
     .timeToken{color:#2f6fed;font-weight:900;}
     body.dark .scoreToken{color:#66e08d;}
     body.dark .timeToken{color:#8db2ff;}
+
     .commentItem{
-      border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:var(--panel);display:grid;gap:6px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 15px;
+      background:var(--panel);
+      display:grid;
+      gap:6px;
     }
     .commentOwner{border-color:var(--ownerLine);background:var(--ownerBg);}
     .commentEditor{border-color:var(--editorLine);background:var(--editorBg);}
@@ -173,6 +277,7 @@
     .choiceGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
     .choiceBtn{text-align:center;width:100%;}
     .selected{background:#dfe9ff !important;border-color:#9ab8ff !important;box-shadow:0 0 0 4px rgba(47,111,237,.08);}
+
     .homeControls{display:grid;gap:10px;}
     .homeTopRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
     .tabSelect{min-width:220px;max-width:100%;height:48px;}
@@ -181,30 +286,192 @@
     .homeSectionTitle{font-size:16px;font-weight:900;margin:0 0 10px;color:var(--text);}
     .dividerLine{text-align:center;color:var(--muted);font-weight:900;margin:10px 0 6px;user-select:none;}
     .publicBadge{
-      font-size:12px;font-weight:900;color:var(--accent);border:1px solid rgba(47,111,237,.2);
-      background:rgba(47,111,237,.08);padding:4px 8px;border-radius:999px;white-space:nowrap;
+      font-size:12px;
+      font-weight:900;
+      color:var(--accent);
+      border:1px solid rgba(47,111,237,.2);
+      background:rgba(47,111,237,.08);
+      padding:4px 8px;
+      border-radius:999px;
+      white-space:nowrap;
     }
     body.dark .publicBadge{color:#a9c0ff;border-color:rgba(91,140,255,.28);background:rgba(91,140,255,.10);}
     .homeMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
     .editorHost,.commentInputHost{position:relative;}
     .floatSuggest{
-      position:absolute;z-index:40;display:flex;gap:8px;flex-wrap:wrap;padding:8px;
-      background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+      position:absolute;
+      z-index:40;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:8px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:var(--shadow);
       max-width:min(360px, calc(100% - 16px));
     }
-    .replyBox{
-      border:1px solid var(--line);
-      background:rgba(127,127,127,.06);
+
+    /* tutorial */
+    #tutorialLayer{
+      position:fixed;
+      inset:0;
+      z-index:1000;
+      pointer-events:none;
+    }
+    .tutorialOverlay{
+      position:fixed;
+      inset:0;
+      pointer-events:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background:rgba(6,10,18,.64);
+      backdrop-filter:blur(8px);
+      transition:opacity .22s ease, transform .22s ease;
+    }
+    .tutorialOverlay.closing{
+      opacity:0;
+      transform:translateY(18px);
+    }
+    .tutorialPanel{
+      width:min(860px, 100%);
+      max-height:min(86vh, 860px);
+      overflow:hidden;
+      border-radius:28px;
+      background:var(--panel);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 30px 80px rgba(0,0,0,.38);
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+    .tutorialTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:16px 18px 0;
+    }
+    .tutorialTitle{
+      font-size:24px;
+      font-weight:1000;
+      line-height:1.1;
+      margin:0;
+    }
+    .tutorialSub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+    .tutorialClose{
+      width:44px;
+      height:44px;
       border-radius:14px;
-      padding:10px 12px;
+      padding:0;
+      background:rgba(127,127,127,.10);
+      color:var(--text);
+      font-size:22px;
+      font-weight:900;
+    }
+    .tutorialBody{
+      padding:14px 18px 6px;
+      overflow:auto;
+    }
+    .tutorialPage{
+      min-height:340px;
+      display:grid;
+      gap:14px;
+      animation-duration:.26s;
+      animation-fill-mode:both;
+    }
+    .tutorialPage.anim-open{animation-name:tutInOpen;}
+    .tutorialPage.anim-next{animation-name:tutInRight;}
+    .tutorialPage.anim-prev{animation-name:tutInLeft;}
+    .tutorialPage.anim-close{animation-name:tutOutDown;}
+    .tutorialCard{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      background:rgba(127,127,127,.05);
+    }
+    body.dark .tutorialCard{
+      background:rgba(255,255,255,.03);
+    }
+    .tutorialHero{
+      display:grid;
+      gap:8px;
+    }
+    .tutorialHero h2{
+      margin:0;
+      font-size:28px;
+      line-height:1.1;
+      letter-spacing:-.03em;
+    }
+    .tutorialHero p{
+      margin:0;
+      line-height:1.8;
+      color:var(--muted);
+      font-size:15px;
+    }
+    .tutorialCode{
+      background:#0f172a;
+      color:#e8f0ff;
+      border-radius:16px;
+      padding:14px 16px;
+      overflow:auto;
+      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    body.dark .tutorialCode{
+      background:#0a1220;
+    }
+    .tutorialFooter{
       display:flex;
       justify-content:space-between;
       gap:10px;
       align-items:center;
+      padding:0 18px 18px;
+      flex-wrap:wrap;
     }
-    .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
-    .replyHint{font-size:12px;color:var(--muted);}
-    .timeOnlyNote{font-size:12px;color:var(--muted);}
+    .tutorialDots{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(127,127,127,.35);
+    }
+    .dot.active{background:var(--accent);}
+    .tutorialNavBtn{
+      min-width:110px;
+      font-weight:900;
+    }
+
+    @keyframes tutInRight{
+      from{opacity:0;transform:translateX(28px);}
+      to{opacity:1;transform:translateX(0);}
+    }
+    @keyframes tutInLeft{
+      from{opacity:0;transform:translateX(-28px);}
+      to{opacity:1;transform:translateX(0);}
+    }
+    @keyframes tutInOpen{
+      from{opacity:0;transform:translateY(14px) scale(.985);}
+      to{opacity:1;transform:translateY(0) scale(1);}
+    }
+    @keyframes tutOutDown{
+      from{opacity:1;transform:translateY(0) scale(1);}
+      to{opacity:0;transform:translateY(30px) scale(.98);}
+    }
 
     @media (max-width:640px){
       .page{padding:14px}
@@ -221,15 +488,30 @@
       .tabSelect,.searchInput{min-width:0}
       .homeTopRow{align-items:stretch}
       .searchWrap{min-width:0}
+      .tutorialTop{padding:14px 14px 0}
+      .tutorialBody{padding:12px 14px 6px}
+      .tutorialFooter{padding:0 14px 14px}
+      .tutorialTitle{font-size:20px}
+      .tutorialHero h2{font-size:24px}
+      .tutorialNavBtn{min-width:88px}
     }
   </style>
 </head>
 <body>
   <div id="app"></div>
+  <div id="tutorialLayer"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      getDocs,
+      setDoc,
+      deleteDoc,
+      collection
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -243,7 +525,9 @@
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
+
     const root = document.getElementById("app");
+    const tutorialLayer = document.getElementById("tutorialLayer");
     if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
@@ -252,6 +536,7 @@
     const ACCESS_KEY = "qb_access_quizzes";
     const COMMENT_TOKEN_KEY = "qb_comment_token";
     const COMMENT_NAME_KEY = "qb_comment_name";
+    const TUTORIAL_COOKIE = "qb_tutorial_seen";
     const TAGS = ["random", "choice", "random choice", "number", "open"];
 
     const state = {
@@ -279,6 +564,14 @@
         startedAt: 0,
         finishedAt: 0,
         elapsedMs: 0
+      },
+      tutorial: {
+        open: false,
+        page: 0,
+        seen: false,
+        autoShown: false,
+        closing: false,
+        motion: "open"
       }
     };
 
@@ -286,13 +579,57 @@
     let homeObserver = null;
     const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
 
-    const uid = () => (crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).slice(2) + Date.now().toString(36));
-    const suffix4 = () => (crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "").slice(0, 4) : Math.random().toString(16).slice(2, 6).padEnd(4, "0"));
-    const slugify = (text) => (text || "quiz").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}\-]+/gu, "").replace(/\-+/g, "-").replace(/^-+|-+$/g, "") || "quiz";
-    const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const norm = (s) => String(s ?? "").replace(/\u3000/g, " ").trim().replace(/\s+/g, " ").toLowerCase();
-    const splitAnswers = (text) => String(text ?? "").split(/[、,]/).map(v => v.trim()).filter(Boolean);
-    const splitSearchTerms = (q) => String(q ?? "").trim().split(/[\s\u3000]+/).map(v => v.trim()).filter(Boolean);
+    function uid() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function suffix4() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "").slice(0, 4);
+      return Math.random().toString(16).slice(2, 6).padEnd(4, "0");
+    }
+
+    function slugify(text) {
+      return (text || "quiz")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\p{L}\p{N}\-]+/gu, "")
+        .replace(/\-+/g, "-")
+        .replace(/^-+|-+$/g, "") || "quiz";
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function norm(s) {
+      return String(s ?? "")
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+    }
+
+    function splitAnswers(text) {
+      return String(text ?? "")
+        .split(/[、,]/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function splitSearchTerms(q) {
+      return String(q ?? "")
+        .trim()
+        .split(/[\s\u3000]+/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
 
     function parseLeadingTags(line) {
       let rest = String(line ?? "").trimStart();
@@ -348,7 +685,8 @@
       if (mode === "choice") {
         const rawOptions = splitAnswers(parts.slice(1).join("=").trim());
         const options = rawOptions.map(opt => {
-          let text = opt.trim(), correct = false;
+          let text = opt.trim();
+          let correct = false;
           if (text.startsWith("!") || text.startsWith("*") || text.startsWith("＊")) {
             correct = true;
             text = text.slice(1).trim();
@@ -378,12 +716,20 @@
 
       let i = 0;
       while (i < lines.length && !String(lines[i]).trim()) i++;
+
       while (i < lines.length) {
         const raw = String(lines[i] ?? "");
         const trimmed = raw.trim();
-        if (!trimmed) { i++; continue; }
+        if (!trimmed) {
+          i++;
+          continue;
+        }
         const { tags, rest } = parseLeadingTags(raw);
-        if (tags.length && !rest) { globalFlags = mergeFlags(globalFlags, tags); i++; continue; }
+        if (tags.length && !rest) {
+          globalFlags = mergeFlags(globalFlags, tags);
+          i++;
+          continue;
+        }
         break;
       }
 
@@ -401,18 +747,25 @@
 
         const parsed = parseQuestionLine(line, globalFlags);
         if (parsed) {
-          items.push({ id: uid(), section: currentSection, ...parsed });
+          items.push({
+            id: uid(),
+            section: currentSection,
+            ...parsed
+          });
           continue;
         }
 
-        if (!trimmed.startsWith("[")) currentSection = trimmed;
+        if (!trimmed.startsWith("[")) {
+          currentSection = trimmed;
+        }
       }
 
       return { globalFlags, items };
     }
 
-    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }) {
-      const lines = [], gf = [];
+    function itemsToRawText(items, globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false }) {
+      const lines = [];
+      const gf = [];
       if (globalFlags.open) gf.push("[open]");
       if (globalFlags.random) gf.push("[random]");
       if (globalFlags.choice && globalFlags.randomChoice) gf.push("[random choice]");
@@ -421,26 +774,36 @@
       if (gf.length) lines.push(gf.join(" "));
       let lastSection = null;
       for (const item of items || []) {
-        if (item.section && item.section !== lastSection) { lines.push(item.section); lastSection = item.section; }
+        if (item.section && item.section !== lastSection) {
+          lines.push(item.section);
+          lastSection = item.section;
+        }
         let prefix = "";
         if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
         if (item.mode === "number") prefix = "[number] ";
-        if (item.mode === "choice") lines.push(`${prefix}${item.question}=${(item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",")}`);
-        else lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
+        if (item.mode === "choice") {
+          const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
+          lines.push(`${prefix}${item.question}=${opts}`);
+        } else {
+          lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
+        }
       }
       return lines.join("\n");
     }
 
-    const shuffle = (arr) => {
+    function shuffle(arr) {
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
-    };
+    }
 
-    function setCookie(name, value, days = 3650) { document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`; }
+    function setCookie(name, value, days = 3650) {
+      document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`;
+    }
+
     function getCookie(name) {
       const parts = document.cookie ? document.cookie.split("; ") : [];
       for (const part of parts) {
@@ -450,50 +813,109 @@
       }
       return "";
     }
-    function safeLocalGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
-    function safeLocalSet(key, value) { try { localStorage.setItem(key, value); } catch {} }
 
-    function loadMyList() { try { const raw = safeLocalGet(MY_KEY); const list = raw ? JSON.parse(raw) : []; return Array.isArray(list) ? list : []; } catch { return []; } }
-    function saveMyList(list) { safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50))); }
-    function loadAccessList() { try { const raw = safeLocalGet(ACCESS_KEY); const list = raw ? JSON.parse(raw) : []; return Array.isArray(list) ? list : []; } catch { return []; } }
-    function saveAccessList(list) { safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50))); }
+    function safeLocalGet(key) {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
 
-    function findAccessRecord(id) { return loadAccessList().find(v => v.id === id) || null; }
+    function safeLocalSet(key, value) {
+      try { localStorage.setItem(key, value); } catch {}
+    }
+
+    function loadMyList() {
+      try {
+        const raw = safeLocalGet(MY_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveMyList(list) {
+      safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50)));
+    }
+
+    function loadAccessList() {
+      try {
+        const raw = safeLocalGet(ACCESS_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveAccessList(list) {
+      safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50)));
+    }
+
+    function findAccessRecord(id) {
+      return loadAccessList().find(v => v.id === id) || null;
+    }
+
     function rememberAccess(id, key, meta = {}) {
       if (!id || !key) return;
       const list = loadAccessList();
-      const next = { id, key, title: String(meta.title || ""), subtitle: String(meta.subtitle || ""), createdAt: Number(meta.createdAt || Date.now()), updatedAt: Number(meta.updatedAt || Date.now()) };
+      const next = {
+        id,
+        key,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
       const idx = list.findIndex(v => v.id === id);
-      if (idx >= 0) list[idx] = { ...list[idx], ...next }; else list.unshift(next);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       saveAccessList(list);
     }
-    function removeAccessRecord(id) { saveAccessList(loadAccessList().filter(v => v.id !== id)); }
+
+    function removeAccessRecord(id) {
+      saveAccessList(loadAccessList().filter(v => v.id !== id));
+    }
 
     function upsertMyMeta(meta) {
       const list = loadMyList();
       const id = String(meta?.id || "");
       if (!id) return;
-      const next = { id, title: String(meta.title || ""), subtitle: String(meta.subtitle || ""), createdAt: Number(meta.createdAt || Date.now()), updatedAt: Number(meta.updatedAt || Date.now()) };
+      const next = {
+        id,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
       const idx = list.findIndex(v => v.id === id);
-      if (idx >= 0) list[idx] = { ...list[idx], ...next }; else list.unshift(next);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       saveMyList(list);
     }
-    function removeMyMeta(id) { saveMyList(loadMyList().filter(v => v.id !== id)); }
+
+    function removeMyMeta(id) {
+      saveMyList(loadMyList().filter(v => v.id !== id));
+    }
 
     function normalizeTs(value) {
       if (typeof value === "number") return value;
       if (!value) return null;
-      if (typeof value.toDate === "function") { const d = value.toDate(); return d instanceof Date ? d.getTime() : null; }
-      if (typeof value.seconds === "number") return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
+      if (typeof value.toDate === "function") {
+        const d = value.toDate();
+        return d instanceof Date ? d.getTime() : null;
+      }
+      if (typeof value.seconds === "number") {
+        return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
+      }
       return null;
     }
 
     function formatMinute(value) {
       const ts = normalizeTs(value);
       if (!ts) return "—";
-      const d = new Date(ts), pad = n => String(n).padStart(2, "0");
+      const d = new Date(ts);
+      const pad = n => String(n).padStart(2, "0");
       return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
@@ -507,7 +929,9 @@
       return `${pad(minutes)}:${pad(seconds)}:${pad(hundredths)}`;
     }
 
-    function applySystemTheme() { document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)); }
+    function applySystemTheme() {
+      document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
+    }
 
     function clearResultEnterHandler() {
       if (resultEnterHandler) {
@@ -532,8 +956,15 @@
       window.addEventListener("keydown", resultEnterHandler);
     }
 
-    const basePath = () => { const p = location.pathname; if (p.endsWith("/")) return p; const i = p.lastIndexOf("/"); return i >= 0 ? p.slice(0, i + 1) : "/"; };
+    const basePath = () => {
+      const p = location.pathname;
+      if (p.endsWith("/")) return p;
+      const i = p.lastIndexOf("/");
+      return i >= 0 ? p.slice(0, i + 1) : "/";
+    };
+
     const prettyLink = (id) => `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
+
     function route() {
       const raw = location.hash.replace(/^#/, "");
       const parts = raw.split("/").filter(Boolean);
@@ -545,16 +976,29 @@
 
     function getCommentToken() {
       let token = safeLocalGet(COMMENT_TOKEN_KEY);
-      if (!token) { token = uid(); safeLocalSet(COMMENT_TOKEN_KEY, token); }
+      if (!token) {
+        token = uid();
+        safeLocalSet(COMMENT_TOKEN_KEY, token);
+      }
       return token;
     }
+
     function getCommentName() {
       const n = safeLocalGet(COMMENT_NAME_KEY);
-      if (!n) { safeLocalSet(COMMENT_NAME_KEY, "匿名"); return "匿名"; }
+      if (!n) {
+        safeLocalSet(COMMENT_NAME_KEY, "匿名");
+        return "匿名";
+      }
       return n;
     }
-    const setCommentName = (name) => safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
-    const sortComments = (comments) => (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+
+    function setCommentName(name) {
+      safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
+    }
+
+    function sortComments(comments) {
+      return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+    }
 
     function isPerfectScore() {
       const m = currentScoreMeta();
@@ -567,6 +1011,7 @@
       if (state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open") return true;
       return comment.authorToken && comment.authorToken === getCommentToken();
     }
+
     function canManageComment(comment) {
       if (!comment || !state.doc) return false;
       if (state.accessMode === "owner") return true;
@@ -578,36 +1023,53 @@
         state.accessMode = isOwner() ? "owner" : "open";
         return;
       }
-      if (isOwner()) { state.accessMode = "owner"; return; }
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
       const rec = findAccessRecord(id);
-      if (rec && docData.key && rec.key === docData.key) { state.accessMode = "key"; return; }
+      if (rec && docData.key && rec.key === docData.key) {
+        state.accessMode = "key";
+        return;
+      }
       state.accessMode = "none";
     }
-    function isOwner() { return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken); }
+
+    function isOwner() {
+      return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
+    }
+
     function canEdit() {
       if (!state.doc) return false;
       if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return true;
       return state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open";
     }
+
     const canManageQuiz = () => canEdit();
+
     function currentQuestion() {
       if (!state.doc?.items?.length) return null;
       const idx = state.quiz.order[state.quiz.index];
       if (idx === undefined) return null;
       return { idx, item: state.doc.items[idx] };
     }
+
     function currentScoreMeta() {
       const total = state.quiz.order.length || (state.doc?.items?.length || 0);
       const correctCount = Object.values(state.quiz.attempts || {}).filter(v => v.correct).length;
       return { correctCount, total, label: `${correctCount}/${total}` };
     }
+
     function makeCommentSuggestionItems() {
       const items = [{ label: "点数", value: "[[SCORE]]" }];
       if (isPerfectScore()) items.push({ label: "時間", value: "[[TIME]]" });
       return items;
     }
 
-    function blankDraft() { return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" }; }
+    function blankDraft() {
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+    }
+
     function openCreate() {
       state.doc = null;
       state.docId = "";
@@ -617,6 +1079,7 @@
       state.screen = "editor";
       render();
     }
+
     function openEditFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
@@ -637,14 +1100,29 @@
       state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
 
       if (state.accessMode === "key") {
-        rememberAccess(id, docData.key, { title: docData.title || "", subtitle: docData.subtitle || "", createdAt: normalizeTs(docData.createdAt) || Date.now(), updatedAt: normalizeTs(docData.updatedAt) || Date.now() });
+        rememberAccess(id, docData.key, {
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
       }
+
       if (state.accessMode === "owner") {
-        upsertMyMeta({ id, title: docData.title || "", subtitle: docData.subtitle || "", createdAt: normalizeTs(docData.createdAt) || Date.now(), updatedAt: normalizeTs(docData.updatedAt) || Date.now() });
+        upsertMyMeta({
+          id,
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
       }
 
       const allIndices = (docData.items || []).map((_, i) => i);
-      const order = Array.isArray(orderIndices) ? orderIndices.slice() : (docData.globalFlags?.random ? shuffle(allIndices) : allIndices);
+      const order = Array.isArray(orderIndices)
+        ? orderIndices.slice()
+        : (docData.globalFlags?.random ? shuffle(allIndices) : allIndices);
+
       state.quiz = {
         phase: "question",
         order,
@@ -657,6 +1135,7 @@
         finishedAt: 0,
         elapsedMs: 0
       };
+
       state.screen = "quiz";
       document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
       render();
@@ -738,14 +1217,22 @@
       const count = Math.max(1, textarea.value.split(/\r?\n/).length);
       gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
     }
+
     let editorRaf = 0;
-    const scheduleEditorSync = (textarea, gutter) => { cancelAnimationFrame(editorRaf); editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter)); };
+    const scheduleEditorSync = (textarea, gutter) => {
+      cancelAnimationFrame(editorRaf);
+      editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter));
+    };
 
     function caretCoordinates(textarea, pos) {
       const style = getComputedStyle(textarea);
       const div = document.createElement("div");
       const span = document.createElement("span");
-      const props = ["boxSizing","width","height","overflowX","overflowY","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth","paddingTop","paddingRight","paddingBottom","paddingLeft","fontStyle","fontVariant","fontWeight","fontStretch","fontSize","fontFamily","lineHeight","letterSpacing","textIndent","textTransform","wordSpacing","tabSize","MozTabSize"];
+      const props = [
+        "boxSizing","width","height","overflowX","overflowY","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth",
+        "paddingTop","paddingRight","paddingBottom","paddingLeft","fontStyle","fontVariant","fontWeight","fontStretch","fontSize",
+        "fontFamily","lineHeight","letterSpacing","textIndent","textTransform","wordSpacing","tabSize","MozTabSize"
+      ];
       props.forEach(p => { div.style[p] = style[p]; });
       div.style.position = "absolute";
       div.style.visibility = "hidden";
@@ -768,10 +1255,26 @@
       return out;
     }
 
+    function replaceTriggerAtCaret(textarea, triggerChar, insertValue) {
+      const pos = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? pos;
+      if (pos <= 0) return;
+      if (textarea.value[pos - 1] !== triggerChar) return;
+      const start = pos - 1;
+      textarea.value = textarea.value.slice(0, start) + insertValue + textarea.value.slice(end);
+      const newPos = start + insertValue.length;
+      textarea.selectionStart = textarea.selectionEnd = newPos;
+      textarea.focus();
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
       if (!host || !textarea || !box) return;
 
-      const hide = () => { box.innerHTML = ""; box.classList.add("hide"); };
+      const hide = () => {
+        box.innerHTML = "";
+        box.classList.add("hide");
+      };
 
       const refresh = () => {
         const pos = textarea.selectionStart ?? 0;
@@ -817,21 +1320,13 @@
       refresh();
     }
 
-    function replaceTriggerAtCaret(textarea, triggerChar, insertValue) {
-      const pos = textarea.selectionStart ?? 0;
-      const end = textarea.selectionEnd ?? pos;
-      if (pos <= 0) return;
-      if (textarea.value[pos - 1] !== triggerChar) return;
-      const start = pos - 1;
-      textarea.value = textarea.value.slice(0, start) + insertValue + textarea.value.slice(end);
-      const newPos = start + insertValue.length;
-      textarea.selectionStart = textarea.selectionEnd = newPos;
-      textarea.focus();
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    function isOpenDoc(docData) {
+      return !!(docData?.globalFlags?.open || docData?.keyMode === "open");
     }
 
-    function isOpenDoc(docData) { return !!(docData?.globalFlags?.open || docData?.keyMode === "open"); }
-    function sortCommentsForPersist(nextComments) { return sortComments(nextComments); }
+    function sortCommentsForPersist(nextComments) {
+      return sortComments(nextComments);
+    }
 
     async function persistComments(nextComments) {
       if (!state.docId) return;
@@ -840,19 +1335,37 @@
       await setDoc(doc(db, COLLECTION, state.docId), { comments: sorted, updatedAt }, { merge: true });
       state.doc.comments = sorted;
       state.doc.updatedAt = updatedAt;
-      if (state.accessMode === "owner") upsertMyMeta({ id: state.docId, title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt });
-      if (state.accessMode === "key") rememberAccess(state.docId, state.doc.key || "", { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt });
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id: state.docId,
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
+      }
+      if (state.accessMode === "key") {
+        rememberAccess(state.docId, state.doc.key || "", {
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
+      }
       updateCatalogDocFromState();
       render();
     }
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
+
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
+
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+
       const btn = document.getElementById("deleteBtn");
       if (btn) btn.disabled = true;
 
@@ -873,7 +1386,9 @@
         } catch (err) {
           console.error("delete failed:", err);
           alert(`削除で失敗したよ: ${err?.message || err}`);
-        } finally { if (btn) btn.disabled = false; }
+        } finally {
+          if (btn) btn.disabled = false;
+        }
       })();
     }
 
@@ -901,6 +1416,7 @@
         return esc(part);
       }).join("");
     }
+
     const commentRoleLabel = (role) => role === "owner" ? "主催者" : role === "editor" ? "共同編集者" : "コメント";
     const commentRoleClass = (role) => role === "owner" ? "commentOwner" : role === "editor" ? "commentEditor" : "commentViewer";
 
@@ -917,7 +1433,10 @@
 
     function setupEditorTagSuggestions(host, textarea, box) {
       setupFloatingTriggerSuggestions({
-        host, textarea, box, triggerChar: "#",
+        host,
+        textarea,
+        box,
+        triggerChar: "#",
         items: [
           { label: "[open]", value: "[open]" },
           { label: "[random]", value: "[random]" },
@@ -939,6 +1458,7 @@
 
     async function addComment() {
       if (!state.docId || !state.doc) return;
+
       const name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
       const text = (state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
@@ -948,7 +1468,9 @@
       const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
       const proofs = {};
       if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()) proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      if (text.includes("[[TIME]]") && isPerfectScore()) {
+        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      }
 
       const comment = {
         id: uid(),
@@ -1000,6 +1522,8 @@
     };
 
     const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
+    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>`;
+
     const editorActionHtml = () => {
       const buttons = [];
       if (state.doc) {
@@ -1035,7 +1559,10 @@
       state.catalogLoaded = true;
       rebuildPublicOrder();
     }
-    function rebuildPublicOrder() { state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id)); }
+
+    function rebuildPublicOrder() {
+      state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id));
+    }
 
     function normalizeDoc(id, data) {
       const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
@@ -1047,6 +1574,7 @@
         number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
         open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
       };
+
       return {
         id,
         title: data.title || "問題",
@@ -1085,10 +1613,16 @@
       let group = 3, score = 0;
       for (const termRaw of terms) {
         const term = termRaw.toLowerCase();
-        if (title.includes(term)) { score += term.length * 10; group = Math.min(group, 0); }
-        else if (subtitle.includes(term)) { score += term.length * 5; group = Math.min(group, 1); }
-        else if (code.includes(term)) { score += term.length * 1; group = Math.min(group, 2); }
-        else return null;
+        if (title.includes(term)) {
+          score += term.length * 10;
+          group = Math.min(group, 0);
+        } else if (subtitle.includes(term)) {
+          score += term.length * 5;
+          group = Math.min(group, 1);
+        } else if (code.includes(term)) {
+          score += term.length * 1;
+          group = Math.min(group, 2);
+        } else return null;
       }
       return { group, score };
     }
@@ -1108,6 +1642,7 @@
       access.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
       return { mine, access };
     }
+
     const getPublicDocs = () => state.allDocs.filter(isOpenDoc);
 
     function canEditDocMeta(docData) {
@@ -1138,7 +1673,11 @@
         const { mine, access } = getLibraryDocs();
         const union = [];
         const seen = new Set();
-        const add = (docData, source) => { if (seen.has(docData.id)) return; seen.add(docData.id); union.push({ ...docData, source }); };
+        const add = (docData, source) => {
+          if (seen.has(docData.id)) return;
+          seen.add(docData.id);
+          union.push({ ...docData, source });
+        };
         searchDocs(mine, query).forEach(d => add(d, "mine"));
         searchDocs(access, query).forEach(d => add(d, "access"));
         return union;
@@ -1146,13 +1685,28 @@
       return searchDocs(getPublicDocs(), query);
     }
 
-    function resetHomePaging(tab) { state.homeVisibleCount[tab] = tab === "public" ? 12 : 20; }
+    function resetHomePaging(tab) {
+      state.homeVisibleCount[tab] = tab === "public" ? 12 : 20;
+    }
+
     const getHomeQuery = () => state.homeQueries[state.homeTab] || "";
-    function setHomeQuery(query) { state.homeQueries[state.homeTab] = query; resetHomePaging(state.homeTab); render(); }
-    function setHomeTab(tab) { state.homeTab = tab; localStorage.setItem("qb_home_tab", tab); resetHomePaging(tab); render(); }
+    function setHomeQuery(query) {
+      state.homeQueries[state.homeTab] = query;
+      resetHomePaging(state.homeTab);
+      render();
+    }
+    function setHomeTab(tab) {
+      state.homeTab = tab;
+      localStorage.setItem("qb_home_tab", tab);
+      resetHomePaging(tab);
+      render();
+    }
 
     function attachHomeObserver(tab, hasMore) {
-      if (homeObserver) { homeObserver.disconnect(); homeObserver = null; }
+      if (homeObserver) {
+        homeObserver.disconnect();
+        homeObserver = null;
+      }
       const sentinel = document.getElementById("homeSentinel");
       if (!sentinel || !hasMore || !("IntersectionObserver" in window)) return;
       homeObserver = new IntersectionObserver(entries => {
@@ -1163,7 +1717,12 @@
       }, { rootMargin: "220px" });
       homeObserver.observe(sentinel);
     }
-    async function refreshPublicFeed() { await loadCatalog(true); resetHomePaging("public"); render(); }
+
+    async function refreshPublicFeed() {
+      await loadCatalog(true);
+      resetHomePaging("public");
+      render();
+    }
 
     function renderDocActions(docData) {
       const canEditHere = canEditDocMeta(docData);
@@ -1199,6 +1758,7 @@
       const results = getSearchResultsForHomeTab();
       const visible = results.slice(0, state.homeVisibleCount.library);
       const hasMore = results.length > visible.length;
+
       if (query) {
         return `
           <div class="card">
@@ -1210,11 +1770,7 @@
           </div>
         `;
       }
-      const combined = [
-        ...mine.map(d => ({ ...d, source: "マイクイズ" })),
-        ...access.map(d => ({ ...d, source: "共同編集" }))
-      ];
-      const more = combined.length > (mine.length + access.length);
+
       return `
         <div class="card">
           <div class="homeSectionTitle">マイクイズ</div>
@@ -1228,7 +1784,7 @@
           <div class="listGrid">
             ${access.length ? access.map(d => renderDocCard(d, "共同編集")).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`}
           </div>
-          ${more ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
+          ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
         </div>
       `;
     }
@@ -1251,46 +1807,27 @@
       `;
     }
 
-    function bindHomeActions() {
-      const tabSelect = document.getElementById("homeTabSelect");
-      const searchInput = document.getElementById("homeSearchInput");
-      const searchBtn = document.getElementById("homeSearchBtn");
-      const reloadBtn = document.getElementById("homeReloadBtn");
+    function bindGlobalButtons() {
+      const helpBtn = document.getElementById("helpBtn");
+      if (helpBtn) helpBtn.onclick = () => openTutorial(false);
 
-      if (tabSelect) { tabSelect.value = state.homeTab; tabSelect.addEventListener("change", () => setHomeTab(tabSelect.value)); }
-      if (searchInput) {
-        searchInput.value = getHomeQuery();
-        searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); setHomeQuery(searchInput.value.trim()); } });
-      }
-      if (searchBtn && searchInput) searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
-      if (reloadBtn) reloadBtn.addEventListener("click", refreshPublicFeed);
-
-      document.querySelectorAll("[data-open-quiz]").forEach(btn => btn.addEventListener("click", () => { location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`; }));
-      document.querySelectorAll("[data-edit-quiz]").forEach(btn => btn.addEventListener("click", () => { location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`; }));
-      document.querySelectorAll("[data-copy-quiz]").forEach(btn => btn.addEventListener("click", async () => {
-        const id = btn.dataset.copyQuiz || "";
-        const link = prettyLink(id);
-        try { await navigator.clipboard.writeText(link); alert("リンクをコピーしたよ"); }
-        catch { prompt("コピーできない環境だったよ。手動でコピーしてね", link); }
-      }));
-      document.querySelectorAll("[data-leave-quiz]").forEach(btn => btn.addEventListener("click", () => {
-        const id = btn.dataset.leaveQuiz || "";
-        if (!confirm("本当に共同編集から脱退しますか？")) return;
-        removeAccessRecord(id);
-        render();
-      }));
-      attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
+      const topBtn = document.getElementById("topBtn");
+      if (topBtn) topBtn.onclick = () => { location.hash = ""; };
     }
 
     function renderHome() {
       clearResultEnterHandler();
       document.title = "問題作成サイト";
+
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
-            <div>
-              <h1 class="title">問題作成サイト</h1>
-              <div class="sub">作って、そのまま遊べる</div>
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">問題作成サイト</h1>
+                <div class="sub">作って、そのまま遊べる</div>
+              </div>
+              ${helpButtonHtml()}
             </div>
           </div>
 
@@ -1330,21 +1867,94 @@
 
       const createBtn = document.getElementById("createBtn");
       if (createBtn) createBtn.addEventListener("click", () => { location.hash = "#/create"; openCreate(); });
+      bindGlobalButtons();
       bindHomeActions();
+    }
+
+    function bindHomeActions() {
+      const tabSelect = document.getElementById("homeTabSelect");
+      const searchInput = document.getElementById("homeSearchInput");
+      const searchBtn = document.getElementById("homeSearchBtn");
+      const reloadBtn = document.getElementById("homeReloadBtn");
+
+      if (tabSelect) {
+        tabSelect.value = state.homeTab;
+        tabSelect.addEventListener("change", () => setHomeTab(tabSelect.value));
+      }
+
+      if (searchInput) {
+        searchInput.value = getHomeQuery();
+        searchInput.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            setHomeQuery(searchInput.value.trim());
+          }
+        });
+      }
+
+      if (searchBtn && searchInput) {
+        searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
+      }
+
+      if (reloadBtn) {
+        reloadBtn.addEventListener("click", refreshPublicFeed);
+      }
+
+      document.querySelectorAll("[data-open-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-copy-quiz]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.copyQuiz || "";
+          const link = prettyLink(id);
+          try {
+            await navigator.clipboard.writeText(link);
+            alert("リンクをコピーしたよ");
+          } catch {
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-leave-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.leaveQuiz || "";
+          if (!confirm("本当に共同編集から脱退しますか？")) return;
+          removeAccessRecord(id);
+          render();
+        });
+      });
+
+      attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
     }
 
     function renderEditor() {
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
+
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
-            <div>
-              <h1 class="title">作成 / 編集</h1>
-              <div class="sub">タイトルの右に Key ボタン</div>
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">作成 / 編集</h1>
+                <div class="sub">タイトルの右に Key ボタン</div>
+              </div>
+              ${helpButtonHtml()}
             </div>
-            <div class="row">${topButtonHtml()}</div>
+            <div class="row">
+              ${topButtonHtml()}
+            </div>
           </div>
 
           <div class="card" style="display:grid;gap:14px">
@@ -1400,7 +2010,6 @@
       const saveBtn = document.getElementById("saveBtn");
       const deleteBtn = document.getElementById("deleteBtn");
       const leaveBtn = document.getElementById("leaveBtn");
-      const topBtn = document.getElementById("topBtn");
       const editorInfo = document.getElementById("editorInfo");
       const tagSuggestBox = document.getElementById("tagSuggestBox");
       const editorHost = document.querySelector(".editorHost");
@@ -1427,7 +2036,10 @@
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
-      problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); });
+      problemText.addEventListener("input", e => {
+        d.rawText = e.target.value;
+        scheduleEditorSync(problemText, gutter);
+      });
 
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
@@ -1435,12 +2047,20 @@
         const next = prompt("Key を入力。open で誰でも編集。", cur);
         if (next === null) return;
         const v = next.trim();
-        if (!v) { d.keyMode = "key"; d.key = ""; }
-        else if (v.toLowerCase() === "open") { d.keyMode = "open"; d.key = ""; }
-        else { d.keyMode = "key"; d.key = v; }
+        if (!v) {
+          d.keyMode = "key";
+          d.key = "";
+        } else if (v.toLowerCase() === "open") {
+          d.keyMode = "open";
+          d.key = "";
+        } else {
+          d.keyMode = "key";
+          d.key = v;
+        }
         refreshKeyStatus();
       });
 
+      const topBtn = document.getElementById("topBtn");
       if (topBtn) topBtn.addEventListener("click", () => { location.hash = ""; });
 
       if (saveBtn) {
@@ -1459,7 +2079,10 @@
           try {
             unique = await ensureUniqueTitleAndId(title, oldId);
           } catch (e) {
-            if (String(e?.message || e) === "SAVE_CANCELLED") { alert("保存をやめたよ"); return; }
+            if (String(e?.message || e) === "SAVE_CANCELLED") {
+              alert("保存をやめたよ");
+              return;
+            }
             throw e;
           }
 
@@ -1492,6 +2115,7 @@
 
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
+
           try {
             await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
 
@@ -1508,16 +2132,34 @@
 
             const normalized = normalizeDoc(newId, payload);
             const idx = state.allDocs.findIndex(x => x.id === newId);
-            if (idx >= 0) state.allDocs[idx] = normalized; else state.allDocs.unshift(normalized);
+            if (idx >= 0) state.allDocs[idx] = normalized;
+            else state.allDocs.unshift(normalized);
             rebuildPublicOrder();
 
-            if (isOwner() || !isExisting) upsertMyMeta({ id: newId, title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
-            if (state.accessMode === "key") rememberAccess(newId, effectiveKey, { title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
+            if (isOwner() || !isExisting) {
+              upsertMyMeta({
+                id: newId,
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
+
+            if (state.accessMode === "key") {
+              rememberAccess(newId, effectiveKey, {
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
 
             location.hash = `#/${encodeURIComponent(newId)}`;
             const link = prettyLink(newId);
             navigator.clipboard?.writeText(link).catch(() => {});
             alert(`保存したよ！\n\n${link}`);
+
             startQuiz(state.doc, newId);
           } catch (err) {
             console.error("save failed:", err);
@@ -1536,21 +2178,30 @@
       setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox);
       refreshKeyStatus();
       titleInput.focus();
+      bindGlobalButtons();
     }
 
     function renderQuestion() {
       clearResultEnterHandler();
       const q = currentQuestion();
-      if (!q) { state.quiz.phase = "done"; render(); return; }
+      if (!q) {
+        state.quiz.phase = "done";
+        render();
+        return;
+      }
+
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
 
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
-            <div>
-              <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-              <div class="sub">${esc(state.doc.subtitle || "")}</div>
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+              </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -1560,7 +2211,10 @@
 
           <div class="quiz">
             <div class="card">
-              <div class="progress"><div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div><div>${state.doc.items.length}問中</div></div>
+              <div class="progress">
+                <div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div>
+                <div>${state.doc.items.length}問中</div>
+              </div>
               <div style="height:12px"></div>
               ${q.item.section ? `<div class="sectionText">${esc(q.item.section)}</div><div style="height:10px"></div>` : ""}
               <div class="question">${esc(q.item.question)}</div>
@@ -1578,7 +2232,8 @@
         </div>
       `;
 
-      document.getElementById("topBtn").addEventListener("click", () => { location.hash = ""; });
+      bindGlobalButtons();
+
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
         const entered = prompt("Key を入力して編集", "");
@@ -1586,7 +2241,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -1594,12 +2254,21 @@
       });
 
       const forceEndBtn = document.getElementById("forceEndBtn");
-      if (forceEndBtn) forceEndBtn.addEventListener("click", () => { if (confirm("本当に残りを×で終わりますか？")) forceFinishAsWrong(); });
+      if (forceEndBtn) {
+        forceEndBtn.addEventListener("click", () => {
+          if (confirm("本当に残りを×で終わりますか？")) {
+            forceFinishAsWrong();
+          }
+        });
+      }
 
       if (q.item.mode === "choice") {
         const grid = document.getElementById("choiceGrid");
         const options = (q.item.randomChoice ? shuffle(q.item.options || []) : (q.item.options || [])).slice();
-        grid.innerHTML = options.map((opt, idx) => `<button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>`).join("");
+        grid.innerHTML = options.map((opt, idx) => `
+          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>
+        `).join("");
+
         const buttons = [...grid.querySelectorAll(".choiceBtn")];
         buttons.forEach(btn => btn.addEventListener("click", () => {
           buttons.forEach(b => b.classList.remove("selected"));
@@ -1614,8 +2283,14 @@
           state.quiz.typedAnswer = e.target.value;
         });
         input.addEventListener("keydown", e => {
-          if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) { e.preventDefault(); return; }
-          if (e.key === "Enter") { e.preventDefault(); submitAnswer(); }
+          if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+            return;
+          }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            submitAnswer();
+          }
         });
       }
 
@@ -1624,17 +2299,28 @@
 
     function renderResult() {
       const r = state.quiz.lastResult;
-      if (!r) { state.quiz.phase = "question"; render(); return; }
+      if (!r) {
+        state.quiz.phase = "question";
+        render();
+        return;
+      }
+
       const q = state.doc.items[r.idx];
-      const answerText = q.mode === "choice" ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ") : (q.answers || []).join(" / ");
+      const answerText = q.mode === "choice"
+        ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+        : (q.answers || []).join(" / ");
+
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
-            <div>
-              <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-              <div class="sub">${esc(state.doc.subtitle || "")}</div>
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+              </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -1664,7 +2350,8 @@
         </div>
       `;
 
-      document.getElementById("topBtn").addEventListener("click", () => { location.hash = ""; });
+      bindGlobalButtons();
+
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
         const entered = prompt("Key を入力して編集", "");
@@ -1672,12 +2359,18 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
         alert("Key が違うよ");
       });
+
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
     }
@@ -1715,7 +2408,11 @@
       const visibleComments = comments.filter(c => canViewComment(c));
       const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
       const replyTarget = state.commentDraft.replyTo ? comments.find(c => c.id === state.commentDraft.replyTo) : null;
-      const list = comments.filter(c => !c.parentId || !comments.some(p => p.id === c.parentId)).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0)).map(c => renderCommentNode(c, comments, 0)).join("");
+      const list = comments
+        .filter(c => !c.parentId || !comments.some(p => p.id === c.parentId))
+        .sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0))
+        .map(c => renderCommentNode(c, comments, 0))
+        .join("");
 
       const scoreBox = state.quiz.onlyWrong
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
@@ -1785,9 +2482,12 @@
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
-            <div>
-              <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-              <div class="sub">${esc(state.doc.subtitle || "")}</div>
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+              </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -1834,7 +2534,8 @@
         </div>
       `;
 
-      document.getElementById("topBtn").addEventListener("click", () => { location.hash = ""; });
+      bindGlobalButtons();
+
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
         const entered = prompt("Key を入力して編集", "");
@@ -1842,7 +2543,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -1851,7 +2557,10 @@
 
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
       const commentsBtn = document.getElementById("commentsBtn");
-      if (commentsBtn) commentsBtn.addEventListener("click", () => { state.showComments = !state.showComments; render(); });
+      if (commentsBtn) commentsBtn.addEventListener("click", () => {
+        state.showComments = !state.showComments;
+        render();
+      });
       const wrongOnlyBtn = document.getElementById("wrongOnlyBtn");
       if (wrongOnlyBtn) wrongOnlyBtn.addEventListener("click", startWrongOnlyQuiz);
 
@@ -1866,7 +2575,11 @@
 
         if (commentName) commentName.addEventListener("input", e => { state.commentDraft.name = e.target.value; setCommentName(e.target.value.trim() || "匿名"); });
         if (commentText) {
-          commentText.addEventListener("input", e => { state.commentDraft.text = e.target.value; e.target.style.height = "auto"; e.target.style.height = `${Math.max(120, e.target.scrollHeight)}px`; });
+          commentText.addEventListener("input", e => {
+            state.commentDraft.text = e.target.value;
+            e.target.style.height = "auto";
+            e.target.style.height = `${Math.max(120, e.target.scrollHeight)}px`;
+          });
           commentText.style.height = "auto";
           commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
         }
@@ -1898,75 +2611,326 @@
           </div>
         </div>
       `;
+      bindGlobalButtons();
     }
 
     function render() {
-      if (state.screen === "loading") return renderLoading();
-      if (state.screen === "home") return renderHome();
-      if (state.screen === "editor") return renderEditor();
-      if (state.screen === "quiz") {
-        if (!state.doc || !state.doc.items || !state.doc.items.length) { state.screen = "home"; return render(); }
-        if (state.quiz.phase === "question") return renderQuestion();
-        if (state.quiz.phase === "result") return renderResult();
-        if (state.quiz.phase === "done") return renderDone();
+      if (state.screen === "loading") {
+        renderLoading();
+      } else if (state.screen === "home") {
+        renderHome();
+      } else if (state.screen === "editor") {
+        renderEditor();
+      } else if (state.screen === "quiz") {
+        if (!state.doc || !state.doc.items || !state.doc.items.length) {
+          state.screen = "home";
+          render();
+          return;
+        }
+        if (state.quiz.phase === "question") renderQuestion();
+        else if (state.quiz.phase === "result") renderResult();
+        else if (state.quiz.phase === "done") renderDone();
+      }
+
+      renderTutorialLayer();
+    }
+
+    function tutorialPages() {
+      return [
+        {
+          title: "ようこそ！",
+          subtitle: "ここでは、遊び方と作り方をざっくりまとめてるよ。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>クイズも作成も、ここでできる</h2>
+              <p>
+                問題を作って保存すると、そのまま遊べる。<br>
+                コメント、共同編集、公開クイズにも対応してるよ。
+              </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">まずは気軽に「作成」から触ってみてね。</div>
+            </div>
+          `
+        },
+        {
+          title: "遊び方",
+          subtitle: "問題が出たら答えを入れて、✅を押すだけ。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>答え方はシンプル</h2>
+              <p>
+                テキスト問題は入力して Enter。<br>
+                選択式はボタンを押して、数字問題は数字だけ入れるよ。
+              </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">正解すると青、不正解だと赤で表示されるよ。</div>
+            </div>
+          `
+        },
+        {
+          title: "コメント",
+          subtitle: "クリア後にコメントできるよ。返信もできる。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>公開と非公開</h2>
+              <p>
+                公開コメントは誰でも見れる。<br>
+                🫥非公開コメントは、自分・主催者・共同編集者だけが見れるよ。
+              </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">@ を入力すると「点数」が出る。
+満点なら「時間」も出る。</div>
+            </div>
+          `
+        },
+        {
+          title: "作り方",
+          subtitle: "1行に1問。共通見出しも書ける。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>基本文法</h2>
+              <p>
+                問題と答えは <b>=</b> で区切るよ。<br>
+                <b>=</b> のない行は、その下の問題にかかる見出しになる。
+              </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">日本の首都=東京
+[choice] 好きな色=赤,青,!緑
+[number] 123+456=579</div>
+            </div>
+          `
+        },
+        {
+          title: "特殊タグ",
+          subtitle: "1行目に書くと、全体に効く設定になる。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>[open] で公開</h2>
+              <p>
+                <b>[random]</b> で順番ランダム。<br>
+                <b>[choice]</b> で選択式。<br>
+                <b>[random choice]</b> で選択肢もランダム。<br>
+                <b>[number]</b> で数字入力になるよ。
+              </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">[open] [random]
+[choice]
+[ number ]</div>
+            </div>
+          `
+        },
+        {
+          title: "準備完了！",
+          subtitle: "これでいつでも始められる。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>それじゃ、楽しんで！</h2>
+              <p>
+                右上の「説明を読む」から、あとで何回でも見返せるよ。
+              </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">始める準備はできた！</div>
+            </div>
+          `
+        }
+      ];
+    }
+
+    function renderTutorialLayer() {
+      if (!tutorialLayer) return;
+      if (!state.tutorial.open) {
+        tutorialLayer.innerHTML = "";
+        return;
+      }
+
+      const pages = tutorialPages();
+      const pageIndex = Math.max(0, Math.min(state.tutorial.page, pages.length - 1));
+      const page = pages[pageIndex];
+      const isLast = pageIndex === pages.length - 1;
+      const leftLabel = pageIndex === 0 ? (state.tutorial.seen ? "閉じる" : "前へ") : "前へ";
+      const rightLabel = isLast ? "始める" : "次へ";
+
+      tutorialLayer.innerHTML = `
+        <div class="tutorialOverlay ${state.tutorial.closing ? "closing" : ""}">
+          <div class="tutorialPanel">
+            <div class="tutorialTop">
+              <div>
+                <div class="tutorialTitle">${esc(page.title)}</div>
+                <div class="tutorialSub">${esc(page.subtitle)}</div>
+              </div>
+              <button class="tutorialClose" id="tutorialCloseBtn" type="button" aria-label="閉じる">×</button>
+            </div>
+
+            <div class="tutorialBody">
+              <div class="tutorialPage anim-${state.tutorial.motion || "open"}">
+                ${page.body}
+              </div>
+            </div>
+
+            <div class="tutorialFooter">
+              <button class="ghost tutorialNavBtn" id="tutorialPrevBtn" type="button" ${pageIndex === 0 && !state.tutorial.seen ? "disabled" : ""}>${esc(leftLabel)}</button>
+              <div class="tutorialDots">
+                ${pages.map((_, i) => `<div class="dot ${i === pageIndex ? "active" : ""}"></div>`).join("")}
+              </div>
+              <button class="primary tutorialNavBtn" id="tutorialNextBtn" type="button">${esc(rightLabel)}</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const closeBtn = document.getElementById("tutorialCloseBtn");
+      const prevBtn = document.getElementById("tutorialPrevBtn");
+      const nextBtn = document.getElementById("tutorialNextBtn");
+
+      if (closeBtn) closeBtn.addEventListener("click", () => closeTutorial(true));
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (pageIndex === 0) {
+            if (state.tutorial.seen) closeTutorial(true);
+            return;
+          }
+          state.tutorial.page = Math.max(0, pageIndex - 1);
+          state.tutorial.motion = "prev";
+          renderTutorialLayer();
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (isLast) {
+            closeTutorial(true);
+            return;
+          }
+          state.tutorial.page = Math.min(pages.length - 1, pageIndex + 1);
+          state.tutorial.motion = "next";
+          renderTutorialLayer();
+        });
       }
     }
 
-    async function openEditRoute(id) {
-      state.screen = "loading";
+    function openTutorial(auto = false) {
+      state.tutorial.open = true;
+      state.tutorial.page = 0;
+      state.tutorial.closing = false;
+      state.tutorial.motion = auto ? "open" : "open";
       render();
-      try {
-        const snap = await getDoc(doc(db, COLLECTION, id));
-        if (!snap.exists()) { state.screen = "home"; render(); return; }
-        const data = snap.data() || {};
-        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
-        const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+    }
 
-        state.docId = id;
-        state.doc = {
-          title: data.title || "問題",
-          subtitle: data.subtitle || "",
-          items,
-          rawText: data.rawText || "",
-          globalFlags: {
-            random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
-            choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
-            randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
-            number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
-            open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
-          },
-          keyMode: data.keyMode || "key",
-          key: data.key || "",
-          ownerToken: data.ownerToken || "",
-          slug: data.slug || id,
-          createdAt: data.createdAt || null,
-          updatedAt: data.updatedAt || null,
-          comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
-        };
+    function closeTutorial(markSeen = true) {
+      state.tutorial.closing = true;
+      state.tutorial.motion = "close";
+      renderTutorialLayer();
 
-        setAccessModeForDoc(state.doc, id);
-        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") { openEditFromDoc(); return; }
-
-        const entered = prompt("Key を入力して編集", "");
-        if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
-        if ((entered || "").trim() === (state.doc.key || "")) {
-          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
-          state.accessMode = "key";
-          openEditFromDoc();
-        } else {
-          alert("Key が違うよ");
-          location.hash = `#/${encodeURIComponent(id)}`;
+      setTimeout(() => {
+        state.tutorial.open = false;
+        state.tutorial.closing = false;
+        state.tutorial.motion = "open";
+        if (markSeen) {
+          state.tutorial.seen = true;
+          setCookie(TUTORIAL_COOKIE, "1");
         }
-      } catch (err) {
-        console.error(err);
-        state.screen = "home";
+        renderTutorialLayer();
         render();
-      }
+      }, 220);
+    }
+
+    function maybeAutoOpenTutorial() {
+      if (state.tutorial.seen) return;
+      if (state.tutorial.autoShown) return;
+      state.tutorial.autoShown = true;
+      setTimeout(() => {
+        if (!state.tutorial.seen && !state.tutorial.open) openTutorial(true);
+      }, 120);
+    }
+
+    function loadTutorialSeenState() {
+      state.tutorial.seen = getCookie(TUTORIAL_COOKIE) === "1";
+    }
+
+    function openEditRoute(id) {
+      return (async () => {
+        state.screen = "loading";
+        render();
+
+        try {
+          const snap = await getDoc(doc(db, COLLECTION, id));
+          if (!snap.exists()) {
+            state.screen = "home";
+            render();
+            return;
+          }
+
+          const data = snap.data() || {};
+          const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
+          const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+
+          state.docId = id;
+          state.doc = {
+            title: data.title || "問題",
+            subtitle: data.subtitle || "",
+            items,
+            rawText: data.rawText || "",
+            globalFlags: {
+              random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
+              choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
+              randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
+              number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
+              open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
+            },
+            keyMode: data.keyMode || "key",
+            key: data.key || "",
+            ownerToken: data.ownerToken || "",
+            slug: data.slug || id,
+            createdAt: data.createdAt || null,
+            updatedAt: data.updatedAt || null,
+            comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
+          };
+
+          setAccessModeForDoc(state.doc, id);
+
+          if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") {
+            openEditFromDoc();
+            return;
+          }
+
+          const entered = prompt("Key を入力して編集", "");
+          if (entered === null) {
+            location.hash = `#/${encodeURIComponent(id)}`;
+            return;
+          }
+
+          if ((entered || "").trim() === (state.doc.key || "")) {
+            if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+            rememberAccess(state.docId, (state.doc.key || ""), {
+              title: state.doc.title || "",
+              subtitle: state.doc.subtitle || "",
+              createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+              updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+            });
+            state.accessMode = "key";
+            openEditFromDoc();
+          } else {
+            alert("Key が違うよ");
+            location.hash = `#/${encodeURIComponent(id)}`;
+          }
+        } catch (err) {
+          console.error(err);
+          state.screen = "home";
+          render();
+        }
+      })();
     }
 
     async function loadRoute() {
       applySystemTheme();
+      loadTutorialSeenState();
       const r = route();
 
       if (r.name === "home") {
@@ -1974,22 +2938,40 @@
         state.screen = "home";
         state.showComments = false;
         render();
+        maybeAutoOpenTutorial();
         return;
       }
 
-      if (r.name === "create") { openCreate(); return; }
-      if (r.name === "edit") { await openEditRoute(r.id); return; }
+      if (r.name === "create") {
+        openCreate();
+        maybeAutoOpenTutorial();
+        return;
+      }
+
+      if (r.name === "edit") {
+        await openEditRoute(r.id);
+        maybeAutoOpenTutorial();
+        return;
+      }
 
       if (r.name === "quiz") {
         state.screen = "loading";
         state.showComments = false;
         render();
+
         try {
           const snap = await getDoc(doc(db, COLLECTION, r.id));
-          if (!snap.exists()) { state.screen = "home"; render(); return; }
+          if (!snap.exists()) {
+            state.screen = "home";
+            render();
+            maybeAutoOpenTutorial();
+            return;
+          }
+
           const data = snap.data() || {};
           const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
           const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+
           startQuiz(normalizeDoc(r.id, {
             ...data,
             items,
@@ -2002,16 +2984,22 @@
               open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
             }
           }), r.id);
+
+          maybeAutoOpenTutorial();
         } catch (err) {
           console.error(err);
           state.screen = "home";
           render();
+          maybeAutoOpenTutorial();
         }
       }
     }
 
     if (systemDark) {
-      const onThemeChange = () => { applySystemTheme(); render(); };
+      const onThemeChange = () => {
+        applySystemTheme();
+        render();
+      };
       if (systemDark.addEventListener) systemDark.addEventListener("change", onThemeChange);
       else if (systemDark.addListener) systemDark.addListener(onThemeChange);
     }
