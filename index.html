@@ -2984,6 +2984,100 @@
       enableResultEnterHandler();
     }
 
+    function renderCommentNode(comment, comments, depth = 0) {
+      if (!canViewComment(comment)) return `<div class="commentItem" style="margin-left:${depth * 14}px"><div class="commentMask">🫥</div></div>`;
+      const role = comment.authorRole || "viewer";
+      const roleLabel = commentRoleLabel(role);
+      const roleClass = commentRoleClass(role);
+      const canManage = canManageComment(comment);
+      const parent = comment.parentId ? comments.find(c => c.id === comment.parentId) : null;
+      const children = comments.filter(c => c.parentId === comment.id).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
+      const replyLine = parent ? `<div class="metaLine">↳ ${esc(parent.authorName || "匿名")} への返信</div>` : "";
+
+      return `
+        <div class="commentItem ${roleClass}" style="margin-left:${depth * 14}px">
+          ${replyLine}
+          <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span>${comment.isPrivate ? ` <span class="commentBadge">🫥</span>` : ""}</div>
+          <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
+          <div class="commentBody">${renderCommentBody(comment)}</div>
+          <div class="row" style="justify-content:flex-end;">
+            <button class="ghost miniAction" data-reply-comment="${esc(comment.id)}" type="button">返信</button>
+            ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}" type="button">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
+            ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}" type="button">削除</button>` : ""}
+          </div>
+          ${children.length ? `<div class="reviewList" style="margin-top:8px">${children.map(child => renderCommentNode(child, comments, depth + 1)).join("")}</div>` : ""}
+        </div>
+      `;
+    }
+
+    function renderCommentsPanel(comments) {
+      const visibleComments = comments.filter(c => canViewComment(c));
+      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      const replyTarget = state.commentDraft.replyTo ? comments.find(c => c.id === state.commentDraft.replyTo) : null;
+      const list = comments
+        .filter(c => !c.parentId || !comments.some(p => p.id === c.parentId))
+        .sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0))
+        .map(c => renderCommentNode(c, comments, 0))
+        .join("");
+
+      const scoreBox = state.quiz.onlyWrong
+        ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
+        : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
+
+      return `
+        <div class="commentWrap">
+          <div class="card commentWrap">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメントを書く</div>
+              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+            </div>
+
+            <div class="commentForm">
+              <div>
+                <div class="label">名前（任意）</div>
+                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
+              </div>
+
+              ${replyTarget ? `
+                <div class="replyBox">
+                  <div>
+                    <div class="replyLabel">返信先: ${esc(replyTarget.authorName || "匿名")}</div>
+                    <div class="replyHint">${esc(replyTarget.text || "")}</div>
+                  </div>
+                  <button class="ghost miniAction" id="cancelReplyBtn" type="button">解除</button>
+                </div>
+              ` : ""}
+
+              <div class="commentInputHost">
+                <div class="label">コメント</div>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+                ${scoreBox}
+              </div>
+
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <label class="row" style="gap:8px;cursor:pointer;">
+                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
+                  <span>非公開にする</span>
+                </label>
+                <button class="primary" id="postCommentBtn" type="button">コメントする</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="commentHeader">
+              <div class="label" style="font-size:14px">コメント一覧</div>
+              <div class="commentToggleRow">
+                <span class="commentBadge">表示 ${visibleComments.length}</span>
+                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+              </div>
+            </div>
+            <div class="reviewList">${list || `<div class="note">まだコメントはないよ。</div>`}</div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderDone() {
       clearResultEnterHandler();
       const { correctCount, total } = currentScoreMeta();
@@ -3149,212 +3243,128 @@
     function tutorialPages() {
       return [
         {
-          title: "ようこそ！",
-          subtitle: "まずは全体の流れを軽く見よう。",
+          title: "ようこそ",
+          subtitle: "このサイトの入口だよ。",
           body: `
             <div class="tutorialCard tutorialHero">
-              <h2>このサイトでできること</h2>
+              <h2>問題作成サイトへようこそ</h2>
               <p>
-                クイズを作る、公開する、コメントする、共同編集する。<br>
-                ひとつのページで全部できるようにしてあるよ。
+                このサイトでは、クイズを作って、公開して、遊べるよ。<br>
+                作る人と遊ぶ人、どっちにも使いやすいようにしてある。
               </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">作る → 遊ぶ → コメントする → また作る</div>
             </div>
           `
         },
         {
-          title: "遊び方",
-          subtitle: "答えを入れて進める、コメントも残せる。",
+          title: "遊ぶ",
+          subtitle: "クイズの楽しみ方を先に見よう。",
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>クイズの流れ</h2>
               <p>
                 問題が出たら答えを入れて、✅を押すだけ。<br>
-                PCでは Enter でも進めるよ。
+                PCなら Enter でも進めるよ。<br>
+                最後に正解数が出て、コメントもできる。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>コメント</h2>
               <p>
-                クリア後にコメントできる。<br>
+                クリア後にコメントができる。<br>
                 公開コメントは誰でも見れて、🫥非公開コメントは自分・主催者・共同編集者だけが見れるよ。<br>
                 返信もできる。
               </p>
             </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>@ と #</h2>
+              <p>
+                コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>
+                問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>開始前の設定</h2>
+              <p>
+                クイズによっては、始める前に ON/OFF を選ぶ画面が出る。<br>
+                その設定を切り替えてから始めるよ。
+              </p>
+            </div>
           `
         },
         {
-          title: "基本文法",
-          subtitle: "まずは、1問をどう書くかを覚えよう。",
+          title: "作る",
+          subtitle: "文法を1つずつ見よう。",
           body: `
             <div class="tutorialCard tutorialHero">
-              <h2>A=B の形</h2>
+              <h2>基本</h2>
               <p>
-                1行に <b>A=B</b> と書くと、A が問題文、B が答えになるよ。<br>
+                1行に <b>A=B</b> と書くと、A が問題文、B が答えになる。<br>
                 1行につき1問。<br>
-                <b>=</b> の前後にある余分なスペースはあまり気にしなくていいけど、問題文の見やすさのためにできるだけシンプルに書くのがおすすめ。
+                <b>=</b> がない行は見出しになるよ。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>見出し</h2>
+              <h2>1行目に書くタグ</h2>
               <p>
-                <b>=</b> がない行は問題にならない。<br>
-                その下に続く問題のまとまりを示す見出しとして表示されるよ。<br>
-                見出しは、サブ問題の名前みたいな役割。
-              </p>
-            </div>
-          `
-        },
-        {
-          title: "1行目に書くタグ",
-          subtitle: "全体に効く設定は、いちばん上の行に書く。",
-          body: `
-            <div class="tutorialCard tutorialHero">
-              <h2>書く場所</h2>
-              <p>
-                1行目の先頭に書くよ。<br>
-                複数あるときは、半角スペースで区切る。<br>
-                1行目のタグは、その下のすべての問題に効く。<br>
-                1行目には <b>=</b> は書かない。
+                1行目の先頭に書く。<br>
+                複数あるときは半角スペースで区切る。<br>
+                1行目に書いたタグは、その下の全部の問題に効く。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[random]</h2>
-              <p>
-                問題の順番をランダムにする。
-              </p>
+              <p>問題の順番をランダムにする。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[choice]</h2>
-              <p>
-                全体を選択式にする。<br>
-                個別の行に書いたものがあれば、そちらが優先される。
-              </p>
+              <p>全体を選択式にする。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[random choice]</h2>
-              <p>
-                選択式にし、選択肢の順番もランダムにする。<br>
-                [choice] とほぼ同じだけど、こっちは選択肢の並びも変わる。
-              </p>
+              <p>選択式にして、選択肢の順番もランダムにする。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[number]</h2>
-              <p>
-                数字入力モードにする。<br>
-                数字だけ入れたいときに使う。
-              </p>
+              <p>数字入力モードにする。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[open]</h2>
+              <p>公開クイズにする。オンライン公開クイズ一覧に出る。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[ONorOFF]([random])</h2>
               <p>
-                公開クイズにする。<br>
-                オンライン公開クイズ一覧に表示される。<br>
-                検索の対象にもなる。
+                1行目に書くと、始める前にON/OFFを選べる項目になる。<br>
+                カッコの中には <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> を入れる。
               </p>
             </div>
-          `
-        },
-        {
-          title: "個別の行に書くタグ",
-          subtitle: "その問題だけ変えたいときに使う。",
-          body: `
             <div class="tutorialCard tutorialHero">
-              <h2>書く場所</h2>
+              <h2>個別の行に書くタグ</h2>
               <p>
-                問題文の行のいちばん前に書くよ。<br>
-                タグのあとには半角スペースを1つ入れてから、問題文を書く。<br>
+                問題文の行のいちばん前に書く。<br>
+                タグのあとには半角スペースを1つ入れてから問題文を書く。<br>
                 そのあとに <b>=</b> と答えを書く。<br>
                 1行目の設定より、個別の指定が優先される。
               </p>
             </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>[choice]</h2>
-              <p>
-                その行だけ選択式にする。<br>
-                1行目にタグを書いていなくても、この行だけ選択式にできる。
-              </p>
-            </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>[random choice]</h2>
-              <p>
-                その行だけ選択式にして、選択肢の順番もランダムにする。
-              </p>
-            </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>[number]</h2>
-              <p>
-                その行だけ数字入力モードにする。<br>
-                数字で答えさせたい問題に使う。
-              </p>
-            </div>
           `
         },
         {
-          title: "ON/OFF選択",
-          subtitle: "開始前に、遊ぶ人が設定を切り替えられる。",
-          body: `
-            <div class="tutorialCard tutorialHero">
-              <h2>[ONorOFF]([random])</h2>
-              <p>
-                1行目に書くと、開始前にON/OFFを選べる項目になる。<br>
-                カッコの中に入れるのは <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> のどれか。<br>
-                複数あれば、開始前に全部まとめて表示される。
-              </p>
-            </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>使いどころ</h2>
-              <p>
-                たとえば、ランダム出題を遊ぶ人に切り替えさせたいときや、数字入力をオンにしたいときに使う。<br>
-                1行目に書いたものは、クイズ開始前の設定画面に出るよ。
-              </p>
-            </div>
-          `
-        },
-        {
-          title: "見出しとサブ問題",
-          subtitle: "まとまりを作るための書き方。",
-          body: `
-            <div class="tutorialCard tutorialHero">
-              <h2>見出しの役割</h2>
-              <p>
-                <b>=</b> がない行は見出しになる。<br>
-                その行の下にある問題に、まとめてかかるイメージ。<br>
-                見出しは問題ではないから、答えは書かない。
-              </p>
-            </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>サブ問題の並び</h2>
-              <p>
-                1行目にタグがあるときは、見出しを2行目以降に書くと分かりやすい。<br>
-                見出しの下に複数の問題を置けば、まとまりのあるクイズになる。
-              </p>
-            </div>
-          `
-        },
-        {
-          title: "# の候補",
-          subtitle: "問題欄では、入力を少しだけ楽にできる。",
-          body: `
-            <div class="tutorialCard tutorialHero">
-              <h2># で候補が出る</h2>
-              <p>
-                問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。<br>
-                そこからタップすると、そのまま入力できる。<br>
-                <b>[ONorOFF]([random])</b> みたいなものも候補に入ってる。
-              </p>
-            </div>
-          `
-        },
-        {
-          title: "準備完了！",
-          subtitle: "あとは作って遊ぶだけ。",
+          title: "GO!",
+          subtitle: "準備はできた。あとは始めるだけ。",
           body: `
             <div class="tutorialCard tutorialHero">
               <h2>それじゃ、始めよう</h2>
               <p>
                 「作成」から始めて、公開して、コメントして、遊んでみてね。<br>
-                右上の「説明を読む」から、またいつでも戻ってこれるよ。
+                右上の「説明を読む」から、またいつでも見直せるよ。
               </p>
+            </div>
+            <div class="tutorialCard">
+              <div class="tutorialCode">GO!</div>
             </div>
           `
         }
