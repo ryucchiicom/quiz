@@ -651,7 +651,7 @@
       border:1px solid var(--line);
       border-radius:14px;
       box-shadow:var(--shadow);
-      max-width:min(360px, calc(100% - 16px));
+      max-width:min(420px, calc(100% - 16px));
     }
 
     .replyBox{
@@ -668,6 +668,102 @@
     .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
     .replyHint{font-size:12px;color:var(--muted);}
     .timeOnlyNote{font-size:12px;color:var(--muted);}
+
+    .settingsScreen{
+      display:grid;
+      gap:14px;
+    }
+
+    .settingList{
+      display:grid;
+      gap:10px;
+    }
+
+    .settingRow{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      width:100%;
+      text-align:left;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      color:var(--text);
+    }
+
+    .settingText{
+      display:grid;
+      gap:4px;
+      min-width:0;
+      flex:1;
+    }
+
+    .settingLabel{
+      font-size:16px;
+      font-weight:900;
+      line-height:1.2;
+    }
+
+    .settingHint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .toggleSwitch{
+      position:relative;
+      width:58px;
+      height:34px;
+      border-radius:999px;
+      background:#c8d0df;
+      transition:.2s background;
+      flex:none;
+    }
+
+    body.dark .toggleSwitch{
+      background:#42506a;
+    }
+
+    .toggleSwitch.on{
+      background:var(--accent);
+    }
+
+    .toggleKnob{
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
+      transition:.2s transform;
+    }
+
+    .toggleSwitch.on .toggleKnob{
+      transform:translateX(24px);
+    }
+
+    .settingHeader{
+      display:grid;
+      gap:8px;
+    }
+
+    .settingTitle{
+      font-size:26px;
+      font-weight:1000;
+      line-height:1.1;
+      margin:0;
+    }
+
+    .settingSub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
 
     #tutorialLayer{
       position:fixed;
@@ -788,6 +884,21 @@
       font-size:15px;
     }
 
+    .tutorialCode{
+      background:#0f172a;
+      color:#e8f0ff;
+      border-radius:16px;
+      padding:14px 16px;
+      overflow:auto;
+      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    body.dark .tutorialCode{
+      background:#0a1220;
+    }
+
     .tutorialFooter{
       display:flex;
       justify-content:space-between;
@@ -859,6 +970,7 @@
       .tutorialTitle{font-size:20px}
       .tutorialHero h2{font-size:24px}
       .tutorialNavBtn{min-width:88px}
+      .settingTitle{font-size:22px}
     }
   </style>
 </head>
@@ -902,7 +1014,21 @@
     const COMMENT_TOKEN_KEY = "qb_comment_token";
     const COMMENT_NAME_KEY = "qb_comment_name";
     const TUTORIAL_COOKIE = "qb_tutorial_seen";
-    const TAGS = ["random", "choice", "random choice", "number", "open"];
+    const TAGS = ["random", "choice", "random choice", "number", "open", "onoroff"];
+
+    const CONTROL_LABELS = {
+      random: "問題順ランダム",
+      choice: "選択式",
+      "random choice": "選択肢順ランダム",
+      number: "数字入力"
+    };
+
+    const CONTROL_HINTS = {
+      random: "問題の順番をランダムにする",
+      choice: "全体を選択式にする",
+      "random choice": "選択肢の順番をランダムにする",
+      number: "数字だけ入力できる"
+    };
 
     const state = {
       screen: "loading",
@@ -928,7 +1054,14 @@
         onlyWrong: false,
         startedAt: 0,
         finishedAt: 0,
-        elapsedMs: 0
+        elapsedMs: 0,
+        baseFlags: {},
+        activeFlags: {},
+        settingValues: {},
+        onOffControls: [],
+        items: [],
+        pendingOrder: null,
+        pendingOnlyWrong: false
       },
       tutorial: {
         open: false,
@@ -944,26 +1077,95 @@
     let homeObserver = null;
     const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
 
-    const uid = () => (crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).slice(2) + Date.now().toString(36));
-    const suffix4 = () => (crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "").slice(0, 4) : Math.random().toString(16).slice(2, 6).padEnd(4, "0"));
-    const slugify = (text) => (text || "quiz").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}\-]+/gu, "").replace(/\-+/g, "-").replace(/^-+|-+$/g, "") || "quiz";
-    const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const norm = (s) => String(s ?? "").replace(/\u3000/g, " ").trim().replace(/\s+/g, " ").toLowerCase();
-    const splitAnswers = (text) => String(text ?? "").split(/[、,]/).map(v => v.trim()).filter(Boolean);
-    const splitSearchTerms = (q) => String(q ?? "").trim().split(/[\s\u3000]+/).map(v => v.trim()).filter(Boolean);
+    function uid() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
 
-    function parseLeadingTags(line) {
+    function suffix4() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "").slice(0, 4);
+      return Math.random().toString(16).slice(2, 6).padEnd(4, "0");
+    }
+
+    function slugify(text) {
+      return (text || "quiz")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\p{L}\p{N}\-]+/gu, "")
+        .replace(/\-+/g, "-")
+        .replace(/^-+|-+$/g, "") || "quiz";
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function norm(s) {
+      return String(s ?? "")
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+    }
+
+    function splitAnswers(text) {
+      return String(text ?? "")
+        .split(/[、,]/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function splitSearchTerms(q) {
+      return String(q ?? "")
+        .trim()
+        .split(/[\s\u3000]+/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function normalizeOnOffTarget(raw) {
+      const t = String(raw ?? "").trim().toLowerCase();
+      if (["random", "choice", "random choice", "number"].includes(t)) return t;
+      return null;
+    }
+
+    function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
+      const onOffControls = [];
+
       while (rest.startsWith("[")) {
-        const end = rest.indexOf("]");
-        if (end < 0) break;
-        const token = rest.slice(1, end).trim().toLowerCase();
-        if (!TAGS.includes(token)) break;
-        tags.push(token);
-        rest = rest.slice(end + 1).trimStart();
+        const tagMatch = rest.match(/^\[([^\]]+)\]/);
+        if (!tagMatch) break;
+
+        const token = tagMatch[1].trim().toLowerCase();
+        const after = rest.slice(tagMatch[0].length).trimStart();
+
+        if (token === "onoroff") {
+          const onOffMatch = after.match(/^\(\s*\[([^\]]+)\]\s*\)/);
+          if (!onOffMatch) break;
+          const target = normalizeOnOffTarget(onOffMatch[1]);
+          if (target) onOffControls.push(target);
+          rest = after.slice(onOffMatch[0].length).trimStart();
+          continue;
+        }
+
+        if (TAGS.includes(token)) {
+          tags.push(token);
+          rest = after;
+          continue;
+        }
+
+        break;
       }
-      return { tags, rest };
+
+      return { tags, onOffControls: Array.from(new Set(onOffControls)), rest };
     }
 
     function mergeFlags(base, tags) {
@@ -990,7 +1192,7 @@
     }
 
     function parseQuestionLine(line, globalFlags) {
-      const { tags, rest } = parseLeadingTags(line);
+      const { tags, onOffControls, rest } = parseLeadingSettings(line);
       const raw = rest.trim();
       if (!raw) return null;
       const parts = raw.split(/[=＝]/);
@@ -1003,29 +1205,33 @@
         const rawOptions = splitAnswers(parts.slice(1).join("=").trim());
         const options = rawOptions.map(opt => {
           let text = opt.trim(), correct = false;
-          if (text.startsWith("!") || text.startsWith("*") || text.startsWith("＊")) { correct = true; text = text.slice(1).trim(); }
+          if (text.startsWith("!") || text.startsWith("*") || text.startsWith("＊")) {
+            correct = true;
+            text = text.slice(1).trim();
+          }
           return { text, correct };
         }).filter(o => o.text);
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return { type: "question", mode: "choice", question, options, randomChoice };
+        return { type: "question", mode: "choice", question, options, randomChoice, localTags: tags, localOnOffControls: onOffControls };
       }
 
       if (mode === "number") {
         const answerText = parts.slice(1).join("=").trim();
         if (!answerText) return null;
-        return { type: "question", mode: "number", question, answers: [answerText] };
+        return { type: "question", mode: "number", question, answers: [answerText], localTags: tags, localOnOffControls: onOffControls };
       }
 
       const answers = splitAnswers(parts.slice(1).join("=").trim());
       if (!answers.length) return null;
-      return { type: "question", mode: "text", question, answers };
+      return { type: "question", mode: "text", question, answers, localTags: tags, localOnOffControls: onOffControls };
     }
 
-    function parseItems(text) {
+    function parseItems(text, overrideFlags = null) {
       const lines = String(text ?? "").split(/\r?\n/);
       const items = [];
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
+      let onOffControls = [];
 
       let i = 0;
       while (i < lines.length && !String(lines[i]).trim()) i++;
@@ -1034,8 +1240,15 @@
         const raw = String(lines[i] ?? "");
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
-        const { tags, rest } = parseLeadingTags(raw);
-        if (tags.length && !rest) { globalFlags = mergeFlags(globalFlags, tags); i++; continue; }
+
+        const parsed = parseLeadingSettings(raw);
+        if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length)) {
+          globalFlags = mergeFlags(globalFlags, parsed.tags);
+          onOffControls = Array.from(new Set([...onOffControls, ...parsed.onOffControls]));
+          i++;
+          continue;
+        }
+
         break;
       }
 
@@ -1044,42 +1257,71 @@
         const line = String(lines[i] ?? "");
         const trimmed = line.trim();
         if (!trimmed) continue;
-        const { tags, rest } = parseLeadingTags(line);
-        if (tags.length && !rest) { globalFlags = mergeFlags(globalFlags, tags); continue; }
-        const parsed = parseQuestionLine(line, globalFlags);
+
+        const parsedSettings = parseLeadingSettings(line);
+        if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length)) {
+          globalFlags = mergeFlags(globalFlags, parsedSettings.tags);
+          onOffControls = Array.from(new Set([...onOffControls, ...parsedSettings.onOffControls]));
+          continue;
+        }
+
+        const parsed = parseQuestionLine(line, overrideFlags || globalFlags);
         if (parsed) {
           items.push({ id: uid(), section: currentSection, ...parsed });
           continue;
         }
+
         if (!trimmed.startsWith("[")) currentSection = trimmed;
       }
 
-      return { globalFlags, items };
+      return { globalFlags, onOffControls, items };
     }
 
-    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }) {
-      const lines = [], gf = [];
+    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls = []) {
+      const lines = [];
+      const gf = [];
       if (globalFlags.open) gf.push("[open]");
       if (globalFlags.random) gf.push("[random]");
       if (globalFlags.choice && globalFlags.randomChoice) gf.push("[random choice]");
       else if (globalFlags.choice) gf.push("[choice]");
       if (globalFlags.number) gf.push("[number]");
       if (gf.length) lines.push(gf.join(" "));
+      if (onOffControls?.length) {
+        lines.push(onOffControls.map(t => `[ONorOFF]([${t}])`).join(" "));
+      }
+
       let lastSection = null;
       for (const item of items || []) {
-        if (item.section && item.section !== lastSection) { lines.push(item.section); lastSection = item.section; }
+        if (item.section && item.section !== lastSection) {
+          lines.push(item.section);
+          lastSection = item.section;
+        }
         let prefix = "";
         if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
         if (item.mode === "number") prefix = "[number] ";
-        if (item.mode === "choice") lines.push(`${prefix}${item.question}=${(item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",")}`);
-        else lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
+        if (item.mode === "choice") {
+          const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
+          lines.push(`${prefix}${item.question}=${opts}`);
+        } else {
+          lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
+        }
       }
       return lines.join("\n");
     }
 
-    const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const shuffle = (arr) => {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
 
-    function setCookie(name, value, days = 3650) { document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`; }
+    function setCookie(name, value, days = 3650) {
+      document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`;
+    }
+
     function getCookie(name) {
       const parts = document.cookie ? document.cookie.split("; ") : [];
       for (const part of parts) {
@@ -1089,51 +1331,94 @@
       }
       return "";
     }
+
     function safeLocalGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
     function safeLocalSet(key, value) { try { localStorage.setItem(key, value); } catch {} }
 
-    function loadMyList() { try { const raw = safeLocalGet(MY_KEY); const list = raw ? JSON.parse(raw) : []; return Array.isArray(list) ? list : []; } catch { return []; } }
+    function loadMyList() {
+      try {
+        const raw = safeLocalGet(MY_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
     function saveMyList(list) { safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50))); }
-    function loadAccessList() { try { const raw = safeLocalGet(ACCESS_KEY); const list = raw ? JSON.parse(raw) : []; return Array.isArray(list) ? list : []; } catch { return []; } }
+
+    function loadAccessList() {
+      try {
+        const raw = safeLocalGet(ACCESS_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+
     function saveAccessList(list) { safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50))); }
 
     function findAccessRecord(id) { return loadAccessList().find(v => v.id === id) || null; }
+
     function rememberAccess(id, key, meta = {}) {
       if (!id || !key) return;
       const list = loadAccessList();
-      const next = { id, key, title: String(meta.title || ""), subtitle: String(meta.subtitle || ""), createdAt: Number(meta.createdAt || Date.now()), updatedAt: Number(meta.updatedAt || Date.now()) };
+      const next = {
+        id,
+        key,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
       const idx = list.findIndex(v => v.id === id);
-      if (idx >= 0) list[idx] = { ...list[idx], ...next }; else list.unshift(next);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       saveAccessList(list);
     }
+
     function removeAccessRecord(id) { saveAccessList(loadAccessList().filter(v => v.id !== id)); }
 
     function upsertMyMeta(meta) {
       const list = loadMyList();
       const id = String(meta?.id || "");
       if (!id) return;
-      const next = { id, title: String(meta.title || ""), subtitle: String(meta.subtitle || ""), createdAt: Number(meta.createdAt || Date.now()), updatedAt: Number(meta.updatedAt || Date.now()) };
+      const next = {
+        id,
+        title: String(meta.title || ""),
+        subtitle: String(meta.subtitle || ""),
+        createdAt: Number(meta.createdAt || Date.now()),
+        updatedAt: Number(meta.updatedAt || Date.now())
+      };
       const idx = list.findIndex(v => v.id === id);
-      if (idx >= 0) list[idx] = { ...list[idx], ...next }; else list.unshift(next);
+      if (idx >= 0) list[idx] = { ...list[idx], ...next };
+      else list.unshift(next);
       list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       saveMyList(list);
     }
+
     function removeMyMeta(id) { saveMyList(loadMyList().filter(v => v.id !== id)); }
 
     function normalizeTs(value) {
       if (typeof value === "number") return value;
       if (!value) return null;
-      if (typeof value.toDate === "function") { const d = value.toDate(); return d instanceof Date ? d.getTime() : null; }
+      if (typeof value.toDate === "function") {
+        const d = value.toDate();
+        return d instanceof Date ? d.getTime() : null;
+      }
       if (typeof value.seconds === "number") return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
       return null;
     }
+
     function formatMinute(value) {
       const ts = normalizeTs(value);
       if (!ts) return "—";
       const d = new Date(ts), pad = n => String(n).padStart(2, "0");
       return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
+
     function formatElapsed(ms) {
       const capped = Math.min(Math.max(0, Math.floor(ms || 0)), 3599990);
       const totalSeconds = Math.floor(capped / 1000);
@@ -1144,13 +1429,22 @@
       return `${pad(minutes)}:${pad(seconds)}:${pad(hundredths)}`;
     }
 
-    function applySystemTheme() { document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)); }
+    function applySystemTheme() {
+      document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
+    }
 
-    function clearResultEnterHandler() { if (resultEnterHandler) { window.removeEventListener("keydown", resultEnterHandler); resultEnterHandler = null; } }
+    function clearResultEnterHandler() {
+      if (resultEnterHandler) {
+        window.removeEventListener("keydown", resultEnterHandler);
+        resultEnterHandler = null;
+      }
+    }
+
     function enableResultEnterHandler() {
       clearResultEnterHandler();
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
+
       resultEnterHandler = (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
@@ -1158,11 +1452,19 @@
         e.preventDefault();
         nextQuestion();
       };
+
       window.addEventListener("keydown", resultEnterHandler);
     }
 
-    const basePath = () => { const p = location.pathname; if (p.endsWith("/")) return p; const i = p.lastIndexOf("/"); return i >= 0 ? p.slice(0, i + 1) : "/"; };
+    const basePath = () => {
+      const p = location.pathname;
+      if (p.endsWith("/")) return p;
+      const i = p.lastIndexOf("/");
+      return i >= 0 ? p.slice(0, i + 1) : "/";
+    };
+
     const prettyLink = (id) => `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
+
     function route() {
       const raw = location.hash.replace(/^#/, "");
       const parts = raw.split("/").filter(Boolean);
@@ -1174,16 +1476,29 @@
 
     function getCommentToken() {
       let token = safeLocalGet(COMMENT_TOKEN_KEY);
-      if (!token) { token = uid(); safeLocalSet(COMMENT_TOKEN_KEY, token); }
+      if (!token) {
+        token = uid();
+        safeLocalSet(COMMENT_TOKEN_KEY, token);
+      }
       return token;
     }
+
     function getCommentName() {
       const n = safeLocalGet(COMMENT_NAME_KEY);
-      if (!n) { safeLocalSet(COMMENT_NAME_KEY, "匿名"); return "匿名"; }
+      if (!n) {
+        safeLocalSet(COMMENT_NAME_KEY, "匿名");
+        return "匿名";
+      }
       return n;
     }
-    const setCommentName = (name) => safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
-    const sortComments = (comments) => (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+
+    function setCommentName(name) {
+      safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
+    }
+
+    function sortComments(comments) {
+      return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+    }
 
     function isPerfectScore() {
       const m = currentScoreMeta();
@@ -1196,6 +1511,7 @@
       if (state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open") return true;
       return comment.authorToken && comment.authorToken === getCommentToken();
     }
+
     function canManageComment(comment) {
       if (!comment || !state.doc) return false;
       if (state.accessMode === "owner") return true;
@@ -1207,36 +1523,53 @@
         state.accessMode = isOwner() ? "owner" : "open";
         return;
       }
-      if (isOwner()) { state.accessMode = "owner"; return; }
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
       const rec = findAccessRecord(id);
-      if (rec && docData.key && rec.key === docData.key) { state.accessMode = "key"; return; }
+      if (rec && docData.key && rec.key === docData.key) {
+        state.accessMode = "key";
+        return;
+      }
       state.accessMode = "none";
     }
-    function isOwner() { return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken); }
+
+    function isOwner() {
+      return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
+    }
+
     function canEdit() {
       if (!state.doc) return false;
       if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return true;
       return state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open";
     }
+
     const canManageQuiz = () => canEdit();
+
     function currentQuestion() {
-      if (!state.doc?.items?.length) return null;
+      if (!state.quiz?.items?.length) return null;
       const idx = state.quiz.order[state.quiz.index];
       if (idx === undefined) return null;
-      return { idx, item: state.doc.items[idx] };
+      return { idx, item: state.quiz.items[idx] };
     }
+
     function currentScoreMeta() {
-      const total = state.quiz.order.length || (state.doc?.items?.length || 0);
+      const total = state.quiz.order.length || (state.quiz.items?.length || 0);
       const correctCount = Object.values(state.quiz.attempts || {}).filter(v => v.correct).length;
       return { correctCount, total, label: `${correctCount}/${total}` };
     }
+
     function makeCommentSuggestionItems() {
       const items = [{ label: "点数", value: "[[SCORE]]" }];
       if (isPerfectScore()) items.push({ label: "時間", value: "[[TIME]]" });
       return items;
     }
 
-    function blankDraft() { return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" }; }
+    function blankDraft() {
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+    }
+
     function openCreate() {
       state.doc = null;
       state.docId = "";
@@ -1246,15 +1579,74 @@
       state.screen = "editor";
       render();
     }
+
     function openEditFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
-        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }),
+        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
       state.screen = "editor";
+      render();
+    }
+
+    function defaultSettingValues(controls, baseFlags) {
+      const out = {};
+      for (const c of controls || []) {
+        out[c] = !!baseFlags?.[c];
+      }
+      return out;
+    }
+
+    function buildActiveFlagsFromSettings() {
+      const out = { ...state.quiz.baseFlags };
+      for (const c of state.quiz.onOffControls || []) {
+        const enabled = !!state.quiz.settingValues?.[c];
+        if (c === "random choice") {
+          out.randomChoice = enabled;
+          if (enabled) out.choice = true;
+        } else if (c === "choice") {
+          out.choice = enabled;
+        } else if (c === "random") {
+          out.random = enabled;
+        } else if (c === "number") {
+          out.number = enabled;
+        }
+      }
+      return out;
+    }
+
+    function applyOnOffDefaultsToQuiz() {
+      state.quiz.settingValues = defaultSettingValues(state.quiz.onOffControls, state.quiz.baseFlags);
+    }
+
+    function beginQuizRun(orderIndices = null, onlyWrong = false) {
+      const activeFlags = buildActiveFlagsFromSettings();
+      const parsed = parseItems(
+        state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
+        activeFlags
+      );
+
+      const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
+      const allIndices = quizItems.map((_, i) => i);
+      const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
+
+      state.quiz.activeFlags = activeFlags;
+      state.quiz.items = quizItems;
+      state.quiz.order = order;
+      state.quiz.index = 0;
+      state.quiz.typedAnswer = "";
+      state.quiz.lastResult = null;
+      state.quiz.attempts = {};
+      state.quiz.onlyWrong = !!onlyWrong;
+      state.quiz.startedAt = Date.now();
+      state.quiz.finishedAt = 0;
+      state.quiz.elapsedMs = 0;
+      state.quiz.phase = "question";
+      state.screen = "quiz";
+      document.title = state.doc?.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       render();
     }
 
@@ -1266,44 +1658,58 @@
       state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
 
       if (state.accessMode === "key") {
-        rememberAccess(id, docData.key, { title: docData.title || "", subtitle: docData.subtitle || "", createdAt: normalizeTs(docData.createdAt) || Date.now(), updatedAt: normalizeTs(docData.updatedAt) || Date.now() });
-      }
-      if (state.accessMode === "owner") {
-        upsertMyMeta({ id, title: docData.title || "", subtitle: docData.subtitle || "", createdAt: normalizeTs(docData.createdAt) || Date.now(), updatedAt: normalizeTs(docData.updatedAt) || Date.now() });
+        rememberAccess(id, docData.key, {
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
       }
 
-      const allIndices = (docData.items || []).map((_, i) => i);
-      const order = Array.isArray(orderIndices) ? orderIndices.slice() : (docData.globalFlags?.random ? shuffle(allIndices) : allIndices);
-      state.quiz = {
-        phase: "question",
-        order,
-        index: 0,
-        typedAnswer: "",
-        lastResult: null,
-        attempts: {},
-        onlyWrong: !!onlyWrong,
-        startedAt: Date.now(),
-        finishedAt: 0,
-        elapsedMs: 0
-      };
-      state.screen = "quiz";
-      document.title = docData.title ? `${docData.title} | 問題作成サイト` : "問題作成サイト";
-      render();
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id,
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
+      state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
+      state.quiz.onOffControls = Array.from(new Set(docData.onOffControls || []));
+      applyOnOffDefaultsToQuiz();
+      state.quiz.pendingOrder = orderIndices || null;
+      state.quiz.pendingOnlyWrong = !!onlyWrong;
+
+      if (state.quiz.onOffControls.length) {
+        state.quiz.phase = "settings";
+        state.screen = "quiz";
+        render();
+      } else {
+        beginQuizRun(orderIndices, onlyWrong);
+      }
     }
 
-    function restartQuiz() { if (!state.doc) return; startQuiz(state.doc, state.docId, state.quiz.onlyWrong ? state.quiz.order : null, state.quiz.onlyWrong); }
+    function restartQuiz() {
+      if (!state.doc) return;
+      beginQuizRun(state.quiz.onlyWrong ? state.quiz.order : null, state.quiz.onlyWrong);
+    }
+
     function startWrongOnlyQuiz() {
       if (!state.doc) return;
       const wrong = state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct);
       if (!wrong.length) return alert("間違えた問題がないよ");
-      startQuiz(state.doc, state.docId, wrong, true);
+      beginQuizRun(wrong, true);
     }
+
     function finalizeQuizTime() {
       if (!state.quiz.finishedAt) {
         state.quiz.finishedAt = Date.now();
         state.quiz.elapsedMs = Math.max(0, state.quiz.finishedAt - (state.quiz.startedAt || state.quiz.finishedAt));
       }
     }
+
     function forceFinishAsWrong() {
       if (!state.doc) return;
       const q = currentQuestion();
@@ -1316,6 +1722,7 @@
       state.quiz.phase = "done";
       render();
     }
+
     function nextQuestion() {
       state.quiz.index += 1;
       state.quiz.typedAnswer = "";
@@ -1362,7 +1769,10 @@
     }
 
     let editorRaf = 0;
-    const scheduleEditorSync = (textarea, gutter) => { cancelAnimationFrame(editorRaf); editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter)); };
+    const scheduleEditorSync = (textarea, gutter) => {
+      cancelAnimationFrame(editorRaf);
+      editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter));
+    };
 
     function caretCoordinates(textarea, pos) {
       const style = getComputedStyle(textarea);
@@ -1407,7 +1817,10 @@
     function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
       if (!host || !textarea || !box) return;
 
-      const hide = () => { box.innerHTML = ""; box.classList.add("hide"); };
+      const hide = () => {
+        box.innerHTML = "";
+        box.classList.add("hide");
+      };
 
       const refresh = () => {
         const pos = textarea.selectionStart ?? 0;
@@ -1415,7 +1828,7 @@
         if (!active) return hide();
 
         box.classList.remove("hide");
-        box.innerHTML = items.map(it => `<button type="button" class="suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
+        box.innerHTML = items.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
 
         const hostRect = host.getBoundingClientRect();
         const taRect = textarea.getBoundingClientRect();
@@ -1453,8 +1866,13 @@
       refresh();
     }
 
-    function isOpenDoc(docData) { return !!(docData?.globalFlags?.open || docData?.keyMode === "open"); }
-    function sortCommentsForPersist(nextComments) { return sortComments(nextComments); }
+    function isOpenDoc(docData) {
+      return !!(docData?.globalFlags?.open || docData?.keyMode === "open");
+    }
+
+    function sortCommentsForPersist(nextComments) {
+      return sortComments(nextComments);
+    }
 
     async function persistComments(nextComments) {
       if (!state.docId) return;
@@ -1463,19 +1881,37 @@
       await setDoc(doc(db, COLLECTION, state.docId), { comments: sorted, updatedAt }, { merge: true });
       state.doc.comments = sorted;
       state.doc.updatedAt = updatedAt;
-      if (state.accessMode === "owner") upsertMyMeta({ id: state.docId, title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt });
-      if (state.accessMode === "key") rememberAccess(state.docId, state.doc.key || "", { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt });
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id: state.docId,
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
+      }
+      if (state.accessMode === "key") {
+        rememberAccess(state.docId, state.doc.key || "", {
+          title: state.doc.title || "",
+          subtitle: state.doc.subtitle || "",
+          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          updatedAt
+        });
+      }
       updateCatalogDocFromState();
       render();
     }
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
+
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
+
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
+
       const btn = document.getElementById("deleteBtn");
       if (btn) btn.disabled = true;
 
@@ -1496,7 +1932,9 @@
         } catch (err) {
           console.error("delete failed:", err);
           alert(`削除で失敗したよ: ${err?.message || err}`);
-        } finally { if (btn) btn.disabled = false; }
+        } finally {
+          if (btn) btn.disabled = false;
+        }
       })();
     }
 
@@ -1541,13 +1979,20 @@
 
     function setupEditorTagSuggestions(host, textarea, box) {
       setupFloatingTriggerSuggestions({
-        host, textarea, box, triggerChar: "#",
+        host,
+        textarea,
+        box,
+        triggerChar: "#",
         items: [
           { label: "[open]", value: "[open]" },
           { label: "[random]", value: "[random]" },
           { label: "[choice]", value: "[choice]" },
           { label: "[random choice]", value: "[random choice]" },
-          { label: "[number]", value: "[number]" }
+          { label: "[number]", value: "[number]" },
+          { label: "[ONorOFF]([random])", value: "[ONorOFF]([random])" },
+          { label: "[ONorOFF]([choice])", value: "[ONorOFF]([choice])" },
+          { label: "[ONorOFF]([random choice])", value: "[ONorOFF]([random choice])" },
+          { label: "[ONorOFF]([number])", value: "[ONorOFF]([number])" }
         ]
       });
     }
@@ -1563,6 +2008,7 @@
 
     async function addComment() {
       if (!state.docId || !state.doc) return;
+
       const name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
       const text = (state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
@@ -1572,7 +2018,9 @@
       const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
       const proofs = {};
       if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()) proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      if (text.includes("[[TIME]]") && isPerfectScore()) {
+        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      }
 
       const comment = {
         id: uid(),
@@ -1662,10 +2110,12 @@
       rebuildPublicOrder();
     }
 
-    function rebuildPublicOrder() { state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id)); }
+    function rebuildPublicOrder() {
+      state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id));
+    }
 
     function normalizeDoc(id, data) {
-      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
+      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
       const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
       const globalFlags = {
         random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
@@ -1681,6 +2131,7 @@
         items,
         rawText: data.rawText || "",
         globalFlags,
+        onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
         keyMode: data.keyMode || "key",
         key: data.key || "",
         ownerToken: data.ownerToken || "",
@@ -1766,7 +2217,11 @@
         const { mine, access } = getLibraryDocs();
         const union = [];
         const seen = new Set();
-        const add = (docData, source) => { if (seen.has(docData.id)) return; seen.add(docData.id); union.push({ ...docData, source }); };
+        const add = (docData, source) => {
+          if (seen.has(docData.id)) return;
+          seen.add(docData.id);
+          union.push({ ...docData, source });
+        };
         searchDocs(mine, query).forEach(d => add(d, "mine"));
         searchDocs(access, query).forEach(d => add(d, "access"));
         return union;
@@ -1774,13 +2229,30 @@
       return searchDocs(getPublicDocs(), query);
     }
 
-    function resetHomePaging(tab) { state.homeVisibleCount[tab] = tab === "public" ? 12 : 20; }
+    function resetHomePaging(tab) {
+      state.homeVisibleCount[tab] = tab === "public" ? 12 : 20;
+    }
+
     const getHomeQuery = () => state.homeQueries[state.homeTab] || "";
-    function setHomeQuery(query) { state.homeQueries[state.homeTab] = query; resetHomePaging(state.homeTab); render(); }
-    function setHomeTab(tab) { state.homeTab = tab; localStorage.setItem("qb_home_tab", tab); resetHomePaging(tab); render(); }
+
+    function setHomeQuery(query) {
+      state.homeQueries[state.homeTab] = query;
+      resetHomePaging(state.homeTab);
+      render();
+    }
+
+    function setHomeTab(tab) {
+      state.homeTab = tab;
+      localStorage.setItem("qb_home_tab", tab);
+      resetHomePaging(tab);
+      render();
+    }
 
     function attachHomeObserver(tab, hasMore) {
-      if (homeObserver) { homeObserver.disconnect(); homeObserver = null; }
+      if (homeObserver) {
+        homeObserver.disconnect();
+        homeObserver = null;
+      }
       const sentinel = document.getElementById("homeSentinel");
       if (!sentinel || !hasMore || !("IntersectionObserver" in window)) return;
       homeObserver = new IntersectionObserver(entries => {
@@ -1792,7 +2264,11 @@
       homeObserver.observe(sentinel);
     }
 
-    async function refreshPublicFeed() { await loadCatalog(true); resetHomePaging("public"); render(); }
+    async function refreshPublicFeed() {
+      await loadCatalog(true);
+      resetHomePaging("public");
+      render();
+    }
 
     function renderDocActions(docData) {
       const canEditHere = canEditDocMeta(docData);
@@ -1905,7 +2381,8 @@
               <p style="margin:12px 0 0;color:var(--muted);line-height:1.8;font-size:16px">
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
                 <b>= なしの行</b> は共通見出しになるよ。<br>
-                1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。
+                1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
+                <b>[ONorOFF]([random])</b> みたいに書くと、開始前にON/OFFを選べるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -1945,28 +2422,54 @@
       const searchBtn = document.getElementById("homeSearchBtn");
       const reloadBtn = document.getElementById("homeReloadBtn");
 
-      if (tabSelect) { tabSelect.value = state.homeTab; tabSelect.addEventListener("change", () => setHomeTab(tabSelect.value)); }
+      if (tabSelect) {
+        tabSelect.value = state.homeTab;
+        tabSelect.addEventListener("change", () => setHomeTab(tabSelect.value));
+      }
+
       if (searchInput) {
         searchInput.value = getHomeQuery();
-        searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); setHomeQuery(searchInput.value.trim()); } });
+        searchInput.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            setHomeQuery(searchInput.value.trim());
+          }
+        });
       }
-      if (searchBtn && searchInput) searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
-      if (reloadBtn) reloadBtn.addEventListener("click", refreshPublicFeed);
 
-      document.querySelectorAll("[data-open-quiz]").forEach(btn => btn.addEventListener("click", () => { location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`; }));
-      document.querySelectorAll("[data-edit-quiz]").forEach(btn => btn.addEventListener("click", () => { location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`; }));
-      document.querySelectorAll("[data-copy-quiz]").forEach(btn => btn.addEventListener("click", async () => {
-        const id = btn.dataset.copyQuiz || "";
-        const link = prettyLink(id);
-        try { await navigator.clipboard.writeText(link); alert("リンクをコピーしたよ"); }
-        catch { prompt("コピーできない環境だったよ。手動でコピーしてね", link); }
-      }));
-      document.querySelectorAll("[data-leave-quiz]").forEach(btn => btn.addEventListener("click", () => {
-        const id = btn.dataset.leaveQuiz || "";
-        if (!confirm("本当に共同編集から脱退しますか？")) return;
-        removeAccessRecord(id);
-        render();
-      }));
+      if (searchBtn && searchInput) {
+        searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
+      }
+
+      if (reloadBtn) {
+        reloadBtn.addEventListener("click", refreshPublicFeed);
+      }
+
+      document.querySelectorAll("[data-open-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+        });
+      });
+
+      document.querySelectorAll("[data-copy-quiz]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.copyQuiz || "";
+          const link = prettyLink(id);
+          try {
+            await navigator.clipboard.writeText(link);
+            alert("リンクをコピーしたよ");
+          } catch {
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
+          }
+        });
+      });
+
       attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
     }
 
@@ -1974,6 +2477,7 @@
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
+
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -2016,7 +2520,8 @@
 日本について
 首都=東京
 [choice] 好きな色=赤,青,!緑
-[number] 123+456=579">${esc(d.rawText)}</textarea>
+[number] 123+456=579
+[ONorOFF]([random])">${esc(d.rawText)}</textarea>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
               </div>
@@ -2025,7 +2530,8 @@
                 <b>= なしの行</b> は共通見出し。<br>
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
-                選択式は <b>!正解</b> または <b>＊正解</b> にしてね。
+                <b>[ONorOFF]([random])</b> みたいに書くと、開始前に設定画面を出せる。<br>
+                問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
           </div>
@@ -2090,6 +2596,7 @@
           const parsed = parseItems(d.rawText);
           const items = parsed.items;
           const globalFlags = parsed.globalFlags;
+          const onOffControls = parsed.onOffControls;
 
           if (!title) return alert("タイトルを入れてね");
           if (!items.length) return alert("問題が1つも読めなかったよ。");
@@ -2124,6 +2631,7 @@
             items,
             rawText: d.rawText,
             globalFlags,
+            onOffControls,
             keyMode: effectiveKeyMode,
             key: effectiveKey,
             ownerToken,
@@ -2156,8 +2664,21 @@
             else state.allDocs.unshift(normalized);
             rebuildPublicOrder();
 
-            if (isOwner() || !isExisting) upsertMyMeta({ id: newId, title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
-            if (state.accessMode === "key") rememberAccess(newId, effectiveKey, { title: payload.title, subtitle: payload.subtitle, createdAt: payload.createdAt, updatedAt: payload.updatedAt });
+            if (isOwner() || !isExisting) upsertMyMeta({
+              id: newId,
+              title: payload.title,
+              subtitle: payload.subtitle,
+              createdAt: payload.createdAt,
+              updatedAt: payload.updatedAt
+            });
+            if (state.accessMode === "key") {
+              rememberAccess(newId, effectiveKey, {
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
 
             location.hash = `#/${encodeURIComponent(newId)}`;
             const link = prettyLink(newId);
@@ -2182,6 +2703,103 @@
       refreshKeyStatus();
       titleInput.focus();
       bindGlobalButtons();
+    }
+
+    function renderSettings() {
+      clearResultEnterHandler();
+      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+      const controls = state.quiz.onOffControls || [];
+      const total = state.doc?.items?.length || 0;
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+              </div>
+              ${helpButtonHtml()}
+            </div>
+            <div class="row">
+              ${topButtonHtml()}
+              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
+            </div>
+          </div>
+
+          <div class="quiz settingsScreen">
+            <div class="card settingHeader">
+              <div class="settingTitle">開始前の設定</div>
+              <div class="settingSub">ON/OFF を切り替えてから始めるよ。複数あるときは、ここに全部出る。</div>
+            </div>
+
+            <div class="card">
+              <div class="progress">
+                <div>${total}問</div>
+                <div>${controls.length}項目</div>
+              </div>
+              <div style="height:12px"></div>
+              <div class="settingList">
+                ${controls.map(target => {
+                  const enabled = !!state.quiz.settingValues?.[target];
+                  return `
+                    <button class="settingRow" type="button" data-toggle-setting="${esc(target)}">
+                      <div class="settingText">
+                        <div class="settingLabel">${esc(CONTROL_LABELS[target] || target)}</div>
+                        <div class="settingHint">${esc(CONTROL_HINTS[target] || "")}</div>
+                      </div>
+                      <div class="toggleSwitch ${enabled ? "on" : ""}" aria-checked="${enabled}">
+                        <div class="toggleKnob"></div>
+                      </div>
+                    </button>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+
+            <div class="actions" style="justify-content:flex-end">
+              <button class="submit" id="startQuizBtn" type="button">はじめる</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      bindGlobalButtons();
+
+      const editBtn = document.getElementById("editBtn");
+      if (editBtn) {
+        editBtn.addEventListener("click", () => {
+          if (canEdit()) return openEditFromDoc();
+          const entered = prompt("Key を入力して編集", "");
+          if (entered === null) return;
+          if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
+          if ((entered || "").trim() === (state.doc.key || "")) {
+            if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
+            rememberAccess(state.docId, (state.doc.key || ""), {
+              title: state.doc.title || "",
+              subtitle: state.doc.subtitle || "",
+              createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+              updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+            });
+            state.accessMode = "key";
+            return openEditFromDoc();
+          }
+          alert("Key が違うよ");
+        });
+      }
+
+      document.querySelectorAll("[data-toggle-setting]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.toggleSetting || "";
+          state.quiz.settingValues[key] = !state.quiz.settingValues[key];
+          render();
+        });
+      });
+
+      const startQuizBtn = document.getElementById("startQuizBtn");
+      if (startQuizBtn) {
+        startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
+      }
     }
 
     function renderQuestion() {
@@ -2211,7 +2829,7 @@
             <div class="card">
               <div class="progress">
                 <div>問題 ${state.quiz.index + 1} / ${state.quiz.order.length}</div>
-                <div>${state.doc.items.length}問中</div>
+                <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
               ${q.item.section ? `<div class="sectionText">${esc(q.item.section)}</div><div style="height:10px"></div>` : ""}
@@ -2239,7 +2857,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -2273,8 +2896,14 @@
           state.quiz.typedAnswer = e.target.value;
         });
         input.addEventListener("keydown", e => {
-          if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) { e.preventDefault(); return; }
-          if (e.key === "Enter") { e.preventDefault(); submitAnswer(); }
+          if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+            return;
+          }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            submitAnswer();
+          }
         });
       }
 
@@ -2284,8 +2913,12 @@
     function renderResult() {
       const r = state.quiz.lastResult;
       if (!r) { state.quiz.phase = "question"; render(); return; }
-      const q = state.doc.items[r.idx];
-      const answerText = q.mode === "choice" ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ") : (q.answers || []).join(" / ");
+
+      const q = state.quiz.items[r.idx];
+      const answerText = q.mode === "choice"
+        ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+        : (q.answers || []).join(" / ");
+
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
       root.innerHTML = `
@@ -2335,7 +2968,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -2344,96 +2982,6 @@
 
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
-    }
-
-    function renderCommentNode(comment, comments, depth = 0) {
-      if (!canViewComment(comment)) return `<div class="commentItem" style="margin-left:${depth * 14}px"><div class="commentMask">🫥</div></div>`;
-      const role = comment.authorRole || "viewer";
-      const roleLabel = commentRoleLabel(role);
-      const roleClass = commentRoleClass(role);
-      const canManage = canManageComment(comment);
-      const parent = comment.parentId ? comments.find(c => c.id === comment.parentId) : null;
-      const children = comments.filter(c => c.parentId === comment.id).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
-      const replyLine = parent ? `<div class="metaLine">↳ ${esc(parent.authorName || "匿名")} への返信</div>` : "";
-
-      return `
-        <div class="commentItem ${roleClass}" style="margin-left:${depth * 14}px">
-          ${replyLine}
-          <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span>${comment.isPrivate ? ` <span class="commentBadge">🫥</span>` : ""}</div>
-          <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
-          <div class="commentBody">${renderCommentBody(comment)}</div>
-          <div class="row" style="justify-content:flex-end;">
-            <button class="ghost miniAction" data-reply-comment="${esc(comment.id)}" type="button">返信</button>
-            ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}" type="button">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
-            ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}" type="button">削除</button>` : ""}
-          </div>
-          ${children.length ? `<div class="reviewList" style="margin-top:8px">${children.map(child => renderCommentNode(child, comments, depth + 1)).join("")}</div>` : ""}
-        </div>
-      `;
-    }
-
-    function renderCommentsPanel(comments) {
-      const visibleComments = comments.filter(c => canViewComment(c));
-      const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      const replyTarget = state.commentDraft.replyTo ? comments.find(c => c.id === state.commentDraft.replyTo) : null;
-      const list = comments.filter(c => !c.parentId || !comments.some(p => p.id === c.parentId)).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0)).map(c => renderCommentNode(c, comments, 0)).join("");
-
-      const scoreBox = state.quiz.onlyWrong
-        ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
-        : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
-
-      return `
-        <div class="commentWrap">
-          <div class="card commentWrap">
-            <div class="commentHeader">
-              <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="commentPrivateNote">🫥 は非公開コメント</div>
-            </div>
-
-            <div class="commentForm">
-              <div>
-                <div class="label">名前（任意）</div>
-                <input id="commentName" class="input" type="text" placeholder="匿名でもOK" value="${esc(state.commentDraft?.name || getCommentName())}">
-              </div>
-
-              ${replyTarget ? `
-                <div class="replyBox">
-                  <div>
-                    <div class="replyLabel">返信先: ${esc(replyTarget.authorName || "匿名")}</div>
-                    <div class="replyHint">${esc(replyTarget.text || "")}</div>
-                  </div>
-                  <button class="ghost miniAction" id="cancelReplyBtn" type="button">解除</button>
-                </div>
-              ` : ""}
-
-              <div class="commentInputHost">
-                <div class="label">コメント</div>
-                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:hidden;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
-                ${scoreBox}
-              </div>
-
-              <div class="row" style="justify-content:space-between;align-items:center;">
-                <label class="row" style="gap:8px;cursor:pointer;">
-                  <input id="commentPrivate" type="checkbox" ${state.commentDraft?.isPrivate ? "checked" : ""} />
-                  <span>非公開にする</span>
-                </label>
-                <button class="primary" id="postCommentBtn" type="button">コメントする</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="commentHeader">
-              <div class="label" style="font-size:14px">コメント一覧</div>
-              <div class="commentToggleRow">
-                <span class="commentBadge">表示 ${visibleComments.length}</span>
-                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
-              </div>
-            </div>
-            <div class="reviewList">${list || `<div class="note">まだコメントはないよ。</div>`}</div>
-          </div>
-        </div>
-      `;
     }
 
     function renderDone() {
@@ -2476,12 +3024,14 @@
             <div class="card">
               <div class="label">全問題と答え</div>
               <div class="reviewList">
-                ${state.doc.items.map((item, i) => {
+                ${state.quiz.items.map((item, i) => {
                   const idx = state.quiz.order[i];
                   const attempt = attempts[idx] || null;
                   const isGood = !!attempt?.correct;
                   const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
-                  const answerText = item.mode === "choice" ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ") : (item.answers || []).join(" / ");
+                  const answerText = item.mode === "choice"
+                    ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+                    : (item.answers || []).join(" / ");
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
@@ -2507,7 +3057,12 @@
         if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           return openEditFromDoc();
         }
@@ -2531,7 +3086,11 @@
 
         if (commentName) commentName.addEventListener("input", e => { state.commentDraft.name = e.target.value; setCommentName(e.target.value.trim() || "匿名"); });
         if (commentText) {
-          commentText.addEventListener("input", e => { state.commentDraft.text = e.target.value; e.target.style.height = "auto"; e.target.style.height = `${Math.max(120, e.target.scrollHeight)}px`; });
+          commentText.addEventListener("input", e => {
+            state.commentDraft.text = e.target.value;
+            e.target.style.height = "auto";
+            e.target.style.height = `${Math.max(120, e.target.scrollHeight)}px`;
+          });
           commentText.style.height = "auto";
           commentText.style.height = `${Math.max(120, commentText.scrollHeight)}px`;
         }
@@ -2567,12 +3126,20 @@
     }
 
     function render() {
-      if (state.screen === "loading") renderLoading();
-      else if (state.screen === "home") renderHome();
-      else if (state.screen === "editor") renderEditor();
-      else if (state.screen === "quiz") {
-        if (!state.doc || !state.doc.items || !state.doc.items.length) { state.screen = "home"; render(); return; }
-        if (state.quiz.phase === "question") renderQuestion();
+      if (state.screen === "loading") {
+        renderLoading();
+      } else if (state.screen === "home") {
+        renderHome();
+      } else if (state.screen === "editor") {
+        renderEditor();
+      } else if (state.screen === "quiz") {
+        if (!state.doc || !state.doc.items || !state.doc.items.length) {
+          state.screen = "home";
+          render();
+          return;
+        }
+        if (state.quiz.phase === "settings") renderSettings();
+        else if (state.quiz.phase === "question") renderQuestion();
         else if (state.quiz.phase === "result") renderResult();
         else if (state.quiz.phase === "done") renderDone();
       }
@@ -2653,27 +3220,27 @@
             <div class="tutorialCard tutorialHero">
               <h2>[random]</h2>
               <p>
-                問題の出る順番をランダムにする。
+                問題の順番をランダムにする。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[choice]</h2>
               <p>
-                すべての問題を選択式として扱う。<br>
+                全体を選択式にする。<br>
                 個別の行に書いたものがあれば、そちらが優先される。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[random choice]</h2>
               <p>
-                すべての問題を選択式にし、選択肢の順番もランダムにする。<br>
-                [choice] より少しだけ強い設定として考えておけば大丈夫。
+                選択式にし、選択肢の順番もランダムにする。<br>
+                [choice] とほぼ同じだけど、こっちは選択肢の並びも変わる。
               </p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[number]</h2>
               <p>
-                すべての問題を数字入力モードにする。<br>
+                数字入力モードにする。<br>
                 数字だけ入れたいときに使う。
               </p>
             </div>
@@ -2723,6 +3290,27 @@
           `
         },
         {
+          title: "ON/OFF選択",
+          subtitle: "開始前に、遊ぶ人が設定を切り替えられる。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2>[ONorOFF]([random])</h2>
+              <p>
+                1行目に書くと、開始前にON/OFFを選べる項目になる。<br>
+                カッコの中に入れるのは <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> のどれか。<br>
+                複数あれば、開始前に全部まとめて表示される。
+              </p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>使いどころ</h2>
+              <p>
+                たとえば、ランダム出題を遊ぶ人に切り替えさせたいときや、数字入力をオンにしたいときに使う。<br>
+                1行目に書いたものは、クイズ開始前の設定画面に出るよ。
+              </p>
+            </div>
+          `
+        },
+        {
           title: "見出しとサブ問題",
           subtitle: "まとまりを作るための書き方。",
           body: `
@@ -2739,6 +3327,20 @@
               <p>
                 1行目にタグがあるときは、見出しを2行目以降に書くと分かりやすい。<br>
                 見出しの下に複数の問題を置けば、まとまりのあるクイズになる。
+              </p>
+            </div>
+          `
+        },
+        {
+          title: "# の候補",
+          subtitle: "問題欄では、入力を少しだけ楽にできる。",
+          body: `
+            <div class="tutorialCard tutorialHero">
+              <h2># で候補が出る</h2>
+              <p>
+                問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。<br>
+                そこからタップすると、そのまま入力できる。<br>
+                <b>[ONorOFF]([random])</b> みたいなものも候補に入ってる。
               </p>
             </div>
           `
@@ -2880,7 +3482,7 @@
         const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()) { state.screen = "home"; render(); return; }
         const data = snap.data() || {};
-        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
+        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
         const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
 
         state.docId = id;
@@ -2896,6 +3498,7 @@
             number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
             open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
           },
+          onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
           keyMode: data.keyMode || "key",
           key: data.key || "",
           ownerToken: data.ownerToken || "",
@@ -2912,7 +3515,12 @@
         if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), { title: state.doc.title || "", subtitle: state.doc.subtitle || "", createdAt: normalizeTs(state.doc.createdAt) || Date.now(), updatedAt: normalizeTs(state.doc.updatedAt) || Date.now() });
+          rememberAccess(state.docId, (state.doc.key || ""), {
+            title: state.doc.title || "",
+            subtitle: state.doc.subtitle || "",
+            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
+          });
           state.accessMode = "key";
           openEditFromDoc();
         } else {
@@ -2951,7 +3559,7 @@
           const snap = await getDoc(doc(db, COLLECTION, r.id));
           if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
           const data = snap.data() || {};
-          const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, items: [] };
+          const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
           const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
           startQuiz(normalizeDoc(r.id, {
             ...data,
@@ -2963,7 +3571,8 @@
               randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
               number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
               open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
-            }
+            },
+            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || []))
           }), r.id);
           maybeAutoOpenTutorial();
         } catch (err) {
