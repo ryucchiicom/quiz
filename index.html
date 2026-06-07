@@ -41,8 +41,8 @@
     }
 
     html, body{ overflow-x:auto; }
+    *{ box-sizing:border-box; }
 
-    *{box-sizing:border-box}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -51,7 +51,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea,select{font:inherit}
+    button,input,textarea,select{ font:inherit; }
     button{
       border:none;
       border-radius:14px;
@@ -329,6 +329,7 @@
       line-height:1.8;
       word-break:break-word;
       color:#2b3241;
+      white-space:pre-wrap;
     }
 
     body.dark .explain{
@@ -399,6 +400,7 @@
       font-weight:900;
       font-size:16px;
       word-break:break-word;
+      white-space:pre-wrap;
     }
 
     .reviewA{
@@ -406,6 +408,7 @@
       color:var(--muted);
       line-height:1.6;
       word-break:break-word;
+      white-space:pre-wrap;
     }
 
     .listGrid{
@@ -969,46 +972,62 @@
 
     .richText{
       white-space:pre-wrap;
-      line-height:1.8;
       word-break:break-word;
+      line-height:inherit;
     }
 
-    .pictureInline{
-      display:inline-block;
-      vertical-align:middle;
-      max-width:min(100%, 320px);
-      margin:4px 2px;
-    }
-
-    .pictureImg{
-      display:block;
-      max-width:100%;
-      width:auto;
-      height:auto;
-      border-radius:14px;
-      box-shadow:0 8px 18px rgba(0,0,0,.12);
-      border:1px solid rgba(127,127,127,.25);
-      background:rgba(127,127,127,.08);
-    }
-
-    .pictureMissing{
+    .pictureTag,
+    .pictureTagBtn{
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap:6px;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px dashed var(--line);
-      color:var(--muted);
-      background:rgba(127,127,127,.06);
-      font-size:13px;
+      vertical-align:middle;
+      margin:2px 2px;
+      padding:4px 8px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(127,127,127,.08);
+      color:var(--text);
       font-weight:800;
+      max-width:100%;
     }
 
-    .pictureTools{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:10px;
+    .pictureTagBtn{
+      cursor:pointer;
+    }
+
+    .pictureTagEmpty{
+      font-size:12px;
+    }
+
+    .pictureTag img{
+      max-width:min(260px, 100%);
+      max-height:180px;
+      object-fit:contain;
+      display:block;
+      border-radius:10px;
+    }
+
+    .editorPreview{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .previewBox{
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(127,127,127,.04);
+      min-height:100px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      line-height:1.8;
+    }
+
+    body.dark .previewBox{
+      background:rgba(255,255,255,.03);
     }
 
     @keyframes tutInRight{
@@ -1060,6 +1079,8 @@
   <div id="app"></div>
   <div id="tutorialLayer"></div>
   <div id="partnerLayer"></div>
+  <input id="pictureUploadInput" type="file" accept="image/*,.heic,.heif" capture="environment"
+         style="position:fixed;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px;" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -1072,12 +1093,6 @@
       deleteDoc,
       collection
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    import {
-      getStorage,
-      ref,
-      uploadBytes,
-      getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -1091,12 +1106,11 @@
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
-    const storage = getStorage(appFirebase);
 
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
-    if (!root) throw new Error("Missing #app");
+    const pictureInput = document.getElementById("pictureUploadInput");
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
@@ -1119,6 +1133,7 @@
       docId: "",
       doc: null,
       draft: null,
+      draftPictures: {},
       accessMode: "none",
       showComments: false,
       allDocs: [],
@@ -1129,8 +1144,6 @@
       publicOrder: [],
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      pendingPictures: {},
-
       quiz: {
         phase: "question",
         order: [],
@@ -1164,6 +1177,7 @@
     let resultEnterHandler = null;
     let homeObserver = null;
     const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+    let pendingPictureTarget = null;
 
     function uid() {
       if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
@@ -1223,28 +1237,127 @@
       return null;
     }
 
-    function extractPictureNumbers(text) {
-      const nums = [];
+    function clonePictureMap(map) {
+      return JSON.parse(JSON.stringify(map || {}));
+    }
+
+    function getPictureMapForEditor() {
+      return state.screen === "editor" ? (state.draftPictures || {}) : (state.doc?.pictures || {});
+    }
+
+    function getNextPictureNumber(text, pictureMap = {}) {
+      let max = 0;
       String(text ?? "").replace(/\[picture\((\d+)\)\]/gi, (_, n) => {
-        nums.push(Number(n));
+        max = Math.max(max, Number(n) || 0);
         return "";
       });
-      return nums;
-    }
-
-    function getKnownPictureNumbers() {
-      const fromDoc = Object.keys(state.doc?.pictureAssets || {}).map(n => Number(n)).filter(n => Number.isFinite(n));
-      const fromPending = Object.keys(state.pendingPictures || {}).map(n => Number(n)).filter(n => Number.isFinite(n));
-      return [...fromDoc, ...fromPending];
-    }
-
-    function nextPictureNumberFromText(text) {
-      const nums = [
-        ...extractPictureNumbers(text),
-        ...getKnownPictureNumbers()
-      ].filter(n => Number.isFinite(n));
-      const max = nums.length ? Math.max(...nums) : 0;
+      Object.keys(pictureMap || {}).forEach(k => {
+        const n = Number(k);
+        if (Number.isFinite(n)) max = Math.max(max, n);
+      });
       return max + 1;
+    }
+
+    function renderRichText(text, pictureMap = {}, interactive = false) {
+      const raw = String(text ?? "");
+      const pieces = raw.split(/(\[picture\(\d+\)\])/gi);
+      return pieces.map(part => {
+        const m = part.match(/^\[picture\((\d+)\)\]$/i);
+        if (m) {
+          const num = String(Number(m[1]) || 0);
+          const pic = pictureMap?.[num];
+          const hasImage = !!pic?.dataUrl;
+          if (interactive && canEdit()) {
+            if (hasImage) {
+              return `<button type="button" class="pictureTagBtn" data-picture-upload="${esc(num)}" title="写真を差し替える">
+                <img src="${esc(pic.dataUrl)}" alt="picture ${esc(num)}">
+              </button>`;
+            }
+            return `<button type="button" class="pictureTagBtn" data-picture-upload="${esc(num)}">[picture(${esc(num)})]</button>`;
+          }
+          if (hasImage) {
+            return `<span class="pictureTag"><img src="${esc(pic.dataUrl)}" alt="picture ${esc(num)}"></span>`;
+          }
+          return `<span class="pictureTag pictureTagEmpty">[picture(${esc(num)})]</span>`;
+        }
+        return esc(part);
+      }).join("");
+    }
+
+    async function fileToDataUrl(file) {
+      const url = URL.createObjectURL(file);
+      try {
+        const img = new Image();
+        const loaded = new Promise((resolve, reject) => {
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("画像を読み込めなかったよ。ブラウザがその形式に対応していないかも。"));
+        });
+        img.src = url;
+        await loaded;
+
+        const maxSide = 1400;
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
+        const w = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
+        const h = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        return canvas.toDataURL("image/jpeg", 0.88);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    async function handlePictureSelection() {
+      if (!pendingPictureTarget) return;
+      const file = pictureInput.files?.[0];
+      const num = pendingPictureTarget.num;
+      pendingPictureTarget = null;
+      pictureInput.value = "";
+      if (!file) return;
+
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        await savePicture(num, {
+          dataUrl,
+          name: file.name || "",
+          mimeType: file.type || "",
+          updatedAt: Date.now()
+        });
+      } catch (err) {
+        console.error(err);
+        alert("写真を読み込めなかったよ。iPhoneの写真形式だと、ブラウザによってはうまく読めないことがある。");
+      }
+    }
+
+    async function savePicture(num, picture) {
+      const key = String(num);
+      if (state.screen === "editor") {
+        state.draftPictures = clonePictureMap(state.draftPictures || {});
+        state.draftPictures[key] = picture;
+        render();
+        return;
+      }
+
+      if (!state.docId || !state.doc) return;
+      state.doc.pictures = clonePictureMap(state.doc.pictures || {});
+      state.doc.pictures[key] = picture;
+
+      const updatedAt = Date.now();
+      try {
+        await setDoc(doc(db, COLLECTION, state.docId), { pictures: state.doc.pictures, updatedAt }, { merge: true });
+        state.doc.updatedAt = updatedAt;
+        updateCatalogDocFromState();
+      } catch (err) {
+        console.error(err);
+        alert("写真の保存で失敗したよ。");
+      }
+      render();
     }
 
     function parseLeadingSettings(line) {
@@ -1266,7 +1379,7 @@
           continue;
         }
 
-        if (TAGS.includes(token)) {
+        if (TAGS.includes(token) || token.startsWith("picture(")) {
           tags.push(token);
           rest = after;
           continue;
@@ -1670,77 +1783,6 @@
       return items;
     }
 
-    function pickImageFile() {
-      return new Promise(resolve => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*,.heic,.heif";
-        input.style.display = "none";
-        document.body.appendChild(input);
-        input.addEventListener("change", () => {
-          const file = input.files && input.files[0] ? input.files[0] : null;
-          input.remove();
-          resolve(file);
-        }, { once: true });
-        input.click();
-      });
-    }
-
-    function picturePath(docId, num, file) {
-      const safeType = String(file?.type || "").toLowerCase();
-      const ext = safeType.includes("png") ? "png"
-        : safeType.includes("webp") ? "webp"
-        : safeType.includes("gif") ? "gif"
-        : safeType.includes("heic") ? "heic"
-        : safeType.includes("heif") ? "heif"
-        : "jpg";
-      return `quizzes/${docId}/pictures/${num}.${ext}`;
-    }
-
-    async function uploadPictureAsset(docId, num, file) {
-      const path = picturePath(docId, num, file);
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, file, {
-        contentType: file.type || "application/octet-stream"
-      });
-      const url = await getDownloadURL(storageRef);
-      return { url, path, contentType: file.type || "", updatedAt: Date.now() };
-    }
-
-    async function savePendingPicturesToDoc(docId) {
-      const entries = Object.entries(state.pendingPictures || {});
-      if (!entries.length) return { ...(state.doc?.pictureAssets || {}) };
-
-      const pictureAssets = { ...(state.doc?.pictureAssets || {}) };
-      for (const [num, file] of entries) {
-        const asset = await uploadPictureAsset(docId, Number(num), file);
-        pictureAssets[String(num)] = asset;
-      }
-      state.pendingPictures = {};
-      return pictureAssets;
-    }
-
-    function renderTextWithPictures(text, pictureAssets = {}) {
-      const raw = String(text ?? "");
-      const re = /\[picture\((\d+)\)\]/gi;
-      let out = "";
-      let last = 0;
-      let m;
-      while ((m = re.exec(raw)) !== null) {
-        out += esc(raw.slice(last, m.index));
-        const n = String(Number(m[1]));
-        const asset = pictureAssets[n];
-        if (asset?.url) {
-          out += `<span class="pictureInline"><img class="pictureImg" src="${esc(asset.url)}" alt="picture ${esc(n)}"></span>`;
-        } else {
-          out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
-        }
-        last = m.index + m[0].length;
-      }
-      out += esc(raw.slice(last));
-      return `<span class="richText">${out}</span>`;
-    }
-
     function blankDraft() {
       return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
     }
@@ -1750,14 +1792,13 @@
       state.docId = "";
       state.accessMode = "none";
       state.draft = blankDraft();
-      state.pendingPictures = {};
+      state.draftPictures = {};
       state.showComments = false;
       state.screen = "editor";
       render();
     }
 
     function openEditFromDoc() {
-      state.pendingPictures = {};
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
@@ -1765,6 +1806,7 @@
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
+      state.draftPictures = clonePictureMap(state.doc?.pictures || {});
       state.screen = "editor";
       render();
     }
@@ -1817,7 +1859,7 @@
     }
 
     function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
-      state.doc = { ...docData, comments: sortComments(docData.comments || []) };
+      state.doc = { ...docData, comments: sortComments(docData.comments || []), pictures: clonePictureMap(docData.pictures || {}) };
       state.docId = id;
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
@@ -2072,7 +2114,6 @@
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
-
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
@@ -2092,6 +2133,7 @@
           state.docId = "";
           state.doc = null;
           state.draft = null;
+          state.draftPictures = {};
           state.accessMode = "none";
           state.showComments = false;
           location.hash = "";
@@ -2140,8 +2182,7 @@
         textarea,
         box,
         triggerChar: "@",
-        items: makeCommentSuggestionItems(),
-        onPick: () => {}
+        items: makeCommentSuggestionItems()
       });
     }
 
@@ -2152,42 +2193,16 @@
         box,
         triggerChar: "#",
         items: () => {
-          const next = nextPictureNumberFromText(textarea.value);
+          const nextPic = getNextPictureNumber((state.draft?.rawText || textarea.value || ""), getPictureMapForEditor());
           return [
+            { label: `[picture(${nextPic})]`, value: `[picture(${nextPic})]` },
             { label: "[open]", value: "[open]" },
             { label: "[random]", value: "[random]" },
             { label: "[choice]", value: "[choice]" },
             { label: "[random choice]", value: "[random choice]" },
             { label: "[number]", value: "[number]" },
-            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-            { label: `[picture(${next})]`, value: `[picture(${next})]` }
+            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" }
           ];
-        },
-        onPick: async (value) => {
-          const match = String(value || "").match(/\[picture\((\d+)\)\]/i);
-          if (!match) return;
-          const num = Number(match[1]);
-          const file = await pickImageFile();
-          if (!file) return;
-
-          if (state.docId) {
-            try {
-              const asset = await uploadPictureAsset(state.docId, num, file);
-              state.doc.pictureAssets = { ...(state.doc.pictureAssets || {}), [String(num)]: asset };
-              await setDoc(doc(db, COLLECTION, state.docId), {
-                pictureAssets: state.doc.pictureAssets,
-                updatedAt: Date.now()
-              }, { merge: true });
-              updateCatalogDocFromState();
-              alert(`写真 ${num} を保存したよ`);
-            } catch (err) {
-              console.error(err);
-              alert(`写真の保存で失敗したよ: ${err?.message || err}`);
-            }
-          } else {
-            state.pendingPictures[String(num)] = file;
-            alert(`写真 ${num} を保存時にアップロードするよ`);
-          }
         }
       });
     }
@@ -2344,7 +2359,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictureAssets: data.pictureAssets || {},
+        pictures: clonePictureMap(data.pictures || {}),
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -2616,6 +2631,32 @@
       if (topBtn) topBtn.onclick = () => { location.hash = ""; };
     }
 
+    function refreshEditorPreview() {
+      const preview = document.getElementById("editorPreview");
+      if (!preview) return;
+      const d = state.draft || blankDraft();
+      const map = state.draftPictures || {};
+      preview.innerHTML = `
+        <div class="label">プレビュー（写真はタップで入れられる）</div>
+        <div class="previewBox richText">${renderRichText(d.rawText || "", map, true)}</div>
+      `;
+    }
+
+    document.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-picture-upload]");
+      if (!t) return;
+      if (!canEdit()) return;
+      const num = t.dataset.pictureUpload;
+      if (!num) return;
+      pendingPictureTarget = { num };
+      pictureInput.value = "";
+      pictureInput.click();
+    });
+
+    if (pictureInput) {
+      pictureInput.addEventListener("change", handlePictureSelection);
+    }
+
     function renderHome() {
       clearResultEnterHandler();
       document.title = "問題作成サイト";
@@ -2638,8 +2679,7 @@
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
-                <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
-                <b>#</b> で <b>[picture(1)]</b> も追加できるよ。
+                <b>#</b> を打つと <b>[picture(1)]</b> も出るよ。番号が同じなら同じ写真になる。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2779,21 +2819,22 @@
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
 [ONorOFF:random]
-# で [picture(1)]">${esc(d.rawText)}</textarea>
+[picture(1)]"> ${esc(d.rawText)} </textarea>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
               </div>
+
+              <div class="editorPreview">
+                <div id="editorPreview"></div>
+              </div>
+
               <div class="help">
                 1行に1つ書くよ。<br>
                 <b>= なしの行</b> は共通見出し。<br>
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
-                問題欄で <b>#</b> を打つと候補が出るよ。<br>
-                <b>[picture(1)]</b> は写真を入れるタグだよ。
-              </div>
-              <div class="pictureTools">
-                <div class="note">写真は <b>[picture(1)]</b> みたいに置くよ。番号が同じなら同じ写真になる。</div>
+                問題欄で <b>#</b> を打つとタグ候補が出るよ。<b>[picture(1)]</b> をタップすると写真を入れられる。
               </div>
             </div>
           </div>
@@ -2834,7 +2875,11 @@
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
-      problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); });
+      problemText.addEventListener("input", e => {
+        d.rawText = e.target.value;
+        scheduleEditorSync(problemText, gutter);
+        refreshEditorPreview();
+      });
 
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
@@ -2886,7 +2931,7 @@
           const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
-          const existingPictureAssets = state.doc?.pictureAssets || {};
+          const picturePayload = state.screen === "editor" ? clonePictureMap(state.draftPictures || {}) : clonePictureMap(state.doc?.pictures || {});
 
           const payload = {
             title: finalTitle,
@@ -2901,8 +2946,8 @@
             slug: newId,
             createdAt: existingCreatedAt,
             updatedAt: Date.now(),
-            comments: existingComments,
-            pictureAssets: existingPictureAssets
+            pictures: picturePayload,
+            comments: existingComments
           };
 
           saveBtn.disabled = true;
@@ -2910,12 +2955,6 @@
 
           try {
             await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
-
-            if (Object.keys(state.pendingPictures || {}).length) {
-              const pictureAssets = await savePendingPicturesToDoc(newId);
-              payload.pictureAssets = pictureAssets;
-              await setDoc(doc(db, COLLECTION, newId), { pictureAssets, updatedAt: Date.now() }, { merge: true });
-            }
 
             if (oldId && oldId !== newId) {
               try { await deleteDoc(doc(db, COLLECTION, oldId)); } catch (_) {}
@@ -2925,7 +2964,7 @@
             }
 
             state.docId = newId;
-            state.doc = { ...payload, items, comments: sortComments(existingComments) };
+            state.doc = { ...payload, items, comments: sortComments(existingComments), pictures: clonePictureMap(picturePayload) };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -2973,6 +3012,7 @@
       refreshKeyStatus();
       titleInput.focus();
       bindGlobalButtons();
+      refreshEditorPreview();
     }
 
     function renderSettings() {
@@ -3102,13 +3142,17 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${q.item.section ? `<div class="sectionText">${renderTextWithPictures(q.item.section, state.doc.pictureAssets || {})}</div><div style="height:10px"></div>` : ""}
-              <div class="question">${renderTextWithPictures(q.item.question, state.doc.pictureAssets || {})}</div>
+              ${q.item.section ? `<div class="sectionText richText">${renderRichText(q.item.section, state.doc.pictures || {}, canEdit())}</div><div style="height:10px"></div>` : ""}
+              <div class="question richText">${renderRichText(q.item.question, state.doc.pictures || {}, canEdit())}</div>
             </div>
 
             <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
-              ${q.item.mode === "choice" ? `<div id="choiceGrid" class="choiceGrid"></div>` : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`}
+              ${
+                q.item.mode === "choice"
+                  ? `<div id="choiceGrid" class="choiceGrid"></div>`
+                  : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`
+              }
               <div class="actions">
                 ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
                 <button class="submit" id="submitBtn" type="button">✅</button>
@@ -3150,7 +3194,7 @@
         const grid = document.getElementById("choiceGrid");
         const options = (q.item.randomChoice ? shuffle(q.item.options || []) : (q.item.options || [])).slice();
         grid.innerHTML = options.map((opt, idx) => `
-          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>
+          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${renderRichText(opt.text, state.doc.pictures || {}, false)}</button>
         `).join("");
         const buttons = [...grid.querySelectorAll(".choiceBtn")];
         buttons.forEach(btn => btn.addEventListener("click", () => {
@@ -3211,15 +3255,15 @@
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
 
             <div class="card">
-              ${q.section ? `<div class="sectionText">${renderTextWithPictures(q.section, state.doc.pictureAssets || {})}</div><div style="height:10px"></div>` : ""}
+              ${q.section ? `<div class="sectionText richText">${renderRichText(q.section, state.doc.pictures || {}, canEdit())}</div><div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${renderTextWithPictures(q.question, state.doc.pictureAssets || {})}</div>
+              <div class="question richText" style="font-size:22px">${renderRichText(q.question, state.doc.pictures || {}, canEdit())}</div>
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${renderTextWithPictures(answerText, state.doc.pictureAssets || {})}</div>
+              <div class="explain richText">${renderRichText(answerText, state.doc.pictures || {}, canEdit())}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${renderTextWithPictures(r.given, state.doc.pictureAssets || {})}</div>
+              <div class="explain richText">${renderRichText(r.given, state.doc.pictures || {}, false)}</div>
             </div>
 
             <div class="actions">
@@ -3399,10 +3443,10 @@
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
-                      ${item.section ? `<div class="reviewSection">${renderTextWithPictures(item.section, state.doc.pictureAssets || {})}</div>` : ""}
-                      <div class="reviewQ">${renderTextWithPictures(item.question, state.doc.pictureAssets || {})}</div>
-                      <div class="reviewA">正解: ${renderTextWithPictures(answerText, state.doc.pictureAssets || {})}</div>
-                      <div class="reviewA">あなたの答え: ${renderTextWithPictures(given, state.doc.pictureAssets || {})}</div>
+                      ${item.section ? `<div class="reviewSection richText">${renderRichText(item.section, state.doc.pictures || {}, canEdit())}</div>` : ""}
+                      <div class="reviewQ richText">${renderRichText(item.question, state.doc.pictures || {}, canEdit())}</div>
+                      <div class="reviewA richText">正解: ${renderRichText(answerText, state.doc.pictures || {}, canEdit())}</div>
+                      <div class="reviewA richText">あなたの答え: ${renderRichText(given, state.doc.pictures || {}, false)}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3540,7 +3584,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>@ と #</h2>
-              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。<br><b>[picture(1)]</b> も追加できる。</p>
+              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、タグや <b>[picture(1)]</b> の候補が出るよ。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>開始前の設定</h2>
@@ -3582,7 +3626,11 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[ONorOFF:random]</h2>
-              <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
+              <p>1行目に書くと、始める前にON/OFFを選べる項目になる。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>[picture(n)]</h2>
+              <p>写真を入れるタグ。<b>#</b> を打つと候補が出る。<br>同じ数字なら同じ写真になる。<br>タップすると写真をアップロードできる。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
@@ -3822,7 +3870,7 @@
           slug: data.slug || id,
           createdAt: data.createdAt || null,
           updatedAt: data.updatedAt || null,
-          pictureAssets: data.pictureAssets || {},
+          pictures: clonePictureMap(data.pictures || {}),
           comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
         };
 
@@ -3891,8 +3939,7 @@
               number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
               open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
             },
-            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
-            pictureAssets: data.pictureAssets || {}
+            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || []))
           }), r.id);
           maybeAutoOpenTutorial();
         } catch (err) {
