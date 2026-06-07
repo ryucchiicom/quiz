@@ -41,7 +41,7 @@
     }
 
     html, body{ overflow-x:auto; }
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -50,7 +50,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea,select{font:inherit}
+    button,input,textarea,select{ font:inherit; }
     button{
       border:none;
       border-radius:14px;
@@ -58,8 +58,8 @@
       cursor:pointer;
     }
 
-    .hide{display:none !important;}
-    .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
+    .hide{ display:none !important; }
+    .page{ max-width:980px; margin:0 auto; padding:16px; min-height:100vh; }
 
     .titleArea{
       display:flex;
@@ -68,7 +68,7 @@
       flex-wrap:wrap;
       min-width:0;
     }
-    .titleBlock{min-width:0}
+    .titleBlock{ min-width:0; }
 
     .topbar{
       display:flex;
@@ -520,13 +520,8 @@
       font-weight:900;
     }
 
-    body.dark .scoreToken{
-      color:#66e08d;
-    }
-
-    body.dark .timeToken{
-      color:#8db2ff;
-    }
+    body.dark .scoreToken{ color:#66e08d; }
+    body.dark .timeToken{ color:#8db2ff; }
 
     .commentItem{
       border:1px solid var(--line);
@@ -670,9 +665,9 @@
       align-items:center;
     }
 
-    .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
-    .replyHint{font-size:12px;color:var(--muted);}
-    .timeOnlyNote{font-size:12px;color:var(--muted);}
+    .replyLabel{ font-size:13px; font-weight:900; color:var(--text); }
+    .replyHint{ font-size:12px; color:var(--muted); }
+    .timeOnlyNote{ font-size:12px; color:var(--muted); }
 
     .settingsScreen{
       display:grid;
@@ -728,13 +723,9 @@
       flex:none;
     }
 
-    body.dark .toggleSwitch{
-      background:#42506a;
-    }
+    body.dark .toggleSwitch{ background:#42506a; }
 
-    .toggleSwitch.on{
-      background:var(--accent);
-    }
+    .toggleSwitch.on{ background:var(--accent); }
 
     .toggleKnob{
       position:absolute;
@@ -748,9 +739,7 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{
-      transform:translateX(24px);
-    }
+    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
 
     .settingHeader{
       display:grid;
@@ -863,10 +852,10 @@
       animation-fill-mode:both;
     }
 
-    .tutorialPage.anim-open{animation-name:tutInOpen;}
-    .tutorialPage.anim-next{animation-name:tutInRight;}
-    .tutorialPage.anim-prev{animation-name:tutInLeft;}
-    .tutorialPage.anim-close{animation-name:tutOutDown;}
+    .tutorialPage.anim-open{ animation-name:tutInOpen; }
+    .tutorialPage.anim-next{ animation-name:tutInRight; }
+    .tutorialPage.anim-prev{ animation-name:tutInLeft; }
+    .tutorialPage.anim-close{ animation-name:tutOutDown; }
 
     .tutorialCard{
       border:1px solid var(--line);
@@ -875,9 +864,7 @@
       background:rgba(127,127,127,.05);
     }
 
-    body.dark .tutorialCard{
-      background:rgba(255,255,255,.03);
-    }
+    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
 
     .tutorialHero{
       display:grid;
@@ -909,9 +896,7 @@
       word-break:break-word;
     }
 
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+    body.dark .tutorialCode{ background:#0a1220; }
 
     .tutorialFooter,
     .partnerFooter{
@@ -933,11 +918,13 @@
     }
 
     .dot{
-      width:8px;height:8px;border-radius:999px;
+      width:8px;
+      height:8px;
+      border-radius:999px;
       background:rgba(127,127,127,.35);
     }
 
-    .dot.active{background:var(--accent);}
+    .dot.active{ background:var(--accent); }
 
     .tutorialNavBtn{
       min-width:110px;
@@ -1025,47 +1012,47 @@
     }
 
     @keyframes tutInRight{
-      from{opacity:0;transform:translateX(28px);}
-      to{opacity:1;transform:translateX(0);}
+      from{ opacity:0; transform:translateX(28px); }
+      to{ opacity:1; transform:translateX(0); }
     }
 
     @keyframes tutInLeft{
-      from{opacity:0;transform:translateX(-28px);}
-      to{opacity:1;transform:translateX(0);}
+      from{ opacity:0; transform:translateX(-28px); }
+      to{ opacity:1; transform:translateX(0); }
     }
 
     @keyframes tutInOpen{
-      from{opacity:0;transform:translateY(14px) scale(.985);}
-      to{opacity:1;transform:translateY(0) scale(1);}
+      from{ opacity:0; transform:translateY(14px) scale(.985); }
+      to{ opacity:1; transform:translateY(0) scale(1); }
     }
 
     @keyframes tutOutDown{
-      from{opacity:1;transform:translateY(0) scale(1);}
-      to{opacity:0;transform:translateY(30px) scale(.98);}
+      from{ opacity:1; transform:translateY(0) scale(1); }
+      to{ opacity:0; transform:translateY(30px) scale(.98); }
     }
 
     @media (max-width:640px){
-      .page{padding:14px}
-      .title{font-size:22px}
-      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
-      .question{font-size:22px}
-      .answer{font-size:16px}
-      .bigBtn{width:100%}
-      .actions{justify-content:stretch}
-      .actions button{flex:1}
-      .topbar{align-items:flex-start}
-      .listItem{align-items:flex-start;flex-direction:column}
-      .listActions{justify-content:flex-start}
-      .tabSelect,.searchInput{min-width:0}
-      .homeTopRow{align-items:stretch}
-      .searchWrap{min-width:0}
-      .tutorialTop,.partnerTop{padding:14px 14px 0}
-      .tutorialBody,.partnerBody{padding:12px 14px 6px}
-      .tutorialFooter,.partnerFooter{padding:0 14px 14px}
-      .tutorialTitle,.partnerTitle{font-size:20px}
-      .tutorialHero h2{font-size:24px}
-      .tutorialNavBtn{min-width:88px}
-      .settingTitle{font-size:22px}
+      .page{ padding:14px; }
+      .title{ font-size:22px; }
+      .gridEditor{ grid-template-columns:52px 1fr; min-height:380px; }
+      .question{ font-size:22px; }
+      .answer{ font-size:16px; }
+      .bigBtn{ width:100%; }
+      .actions{ justify-content:stretch; }
+      .actions button{ flex:1; }
+      .topbar{ align-items:flex-start; }
+      .listItem{ align-items:flex-start; flex-direction:column; }
+      .listActions{ justify-content:flex-start; }
+      .tabSelect,.searchInput{ min-width:0; }
+      .homeTopRow{ align-items:stretch; }
+      .searchWrap{ min-width:0; }
+      .tutorialTop,.partnerTop{ padding:14px 14px 0; }
+      .tutorialBody,.partnerBody{ padding:12px 14px 6px; }
+      .tutorialFooter,.partnerFooter{ padding:0 14px 14px; }
+      .tutorialTitle,.partnerTitle{ font-size:20px; }
+      .tutorialHero h2{ font-size:24px; }
+      .tutorialNavBtn{ min-width:88px; }
+      .settingTitle{ font-size:22px; }
     }
   </style>
 </head>
@@ -1120,13 +1107,8 @@
     const TAGS = ["random", "choice", "random choice", "number", "open"];
     const PICTURE_TAG_RE = /\[picture\((\d+)\)\]/ig;
 
-    const CONTROL_LABELS = {
-      random: "問題順ランダム"
-    };
-
-    const CONTROL_HINTS = {
-      random: "問題の順番をランダムにする"
-    };
+    const CONTROL_LABELS = { random: "問題順ランダム" };
+    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
     const state = {
       screen: "loading",
@@ -1865,42 +1847,32 @@
       render();
     }
 
-    function getAnswerFromCurrentUI(q) {
-      if (!q) return "";
-      if (q.item.mode === "choice") {
-        const selected = document.querySelector("#choiceGrid .choiceBtn.selected");
-        if (selected) return selected.dataset.choiceText || selected.textContent || "";
-        return state.quiz.typedAnswer || "";
-      }
+    function getCurrentTypedAnswer(q) {
       const input = document.getElementById("answerInput");
-      if (input) return input.value || "";
-      return state.quiz.typedAnswer || "";
-    }
-
-    function evaluateAnswer(item, givenRaw) {
-      const given = String(givenRaw ?? "");
-      if (item.mode === "choice") {
-        const normalizedGiven = norm(given).normalize("NFKC");
-        const correctOptions = (item.options || []).filter(o => o.correct).map(o => norm(o.text).normalize("NFKC"));
-        return correctOptions.includes(normalizedGiven);
-      } else if (item.mode === "number") {
-        const clean = s => String(s ?? "").replace(/\D/g, "");
-        const correctAnswers = (item.answers || []).map(clean);
-        return correctAnswers.includes(clean(given));
-      } else {
-        const clean = s => norm(s).normalize("NFKC");
-        return (item.answers || []).map(clean).includes(clean(given));
+      if (input && typeof input.value === "string") return input.value;
+      if (q?.item?.mode === "choice") {
+        const chosen = document.querySelector(".choiceBtn.selected");
+        if (chosen) return chosen.dataset.choiceText || "";
       }
+      return state.quiz.typedAnswer || "";
     }
 
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
-
-      const given = getAnswerFromCurrentUI(q);
+      const given = getCurrentTypedAnswer(q);
       if (!String(given || "").trim()) return alert("答えを入れてね");
 
-      const correct = evaluateAnswer(q.item, given);
+      let correct = false;
+      if (q.item.mode === "choice") {
+        const normalizedGiven = norm(given);
+        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
+        correct = correctOptions.includes(normalizedGiven);
+      } else if (q.item.mode === "number") {
+        correct = (q.item.answers || []).map(v => String(v).replace(/\D/g, "")).includes(String(given).replace(/\D/g, ""));
+      } else {
+        correct = (q.item.answers || []).map(norm).includes(norm(given));
+      }
 
       state.quiz.attempts[q.idx] = { given, correct };
       state.quiz.lastResult = { idx: q.idx, given, correct };
@@ -1966,6 +1938,7 @@
     function nextPictureNumber(text, images = {}) {
       let max = 0;
       const scan = String(text ?? "");
+      PICTURE_TAG_RE.lastIndex = 0;
       let m;
       while ((m = PICTURE_TAG_RE.exec(scan))) max = Math.max(max, Number(m[1]) || 0);
       for (const k of Object.keys(images || {})) max = Math.max(max, Number(k) || 0);
@@ -1988,8 +1961,7 @@
             const ctx = canvas.getContext("2d");
             if (!ctx) throw new Error("Canvas context unavailable");
             ctx.drawImage(img, 0, 0, targetW, targetH);
-            const type = "image/jpeg";
-            const dataUrl = canvas.toDataURL(type, quality);
+            const dataUrl = canvas.toDataURL("image/jpeg", quality);
             URL.revokeObjectURL(url);
             resolve(dataUrl);
           } catch (err) {
@@ -2152,22 +2124,6 @@
       }
       updateCatalogDocFromState();
       render();
-    }
-
-    async function refreshCommentsFromServer() {
-      if (!state.docId) return;
-      try {
-        const snap = await getDoc(doc(db, COLLECTION, state.docId));
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        state.doc.comments = sortComments(Array.isArray(data.comments) ? data.comments : []);
-        state.doc.updatedAt = data.updatedAt || state.doc.updatedAt || Date.now();
-        updateCatalogDocFromState();
-        render();
-      } catch (err) {
-        console.error(err);
-        alert(`コメント更新で失敗したよ: ${err?.message || err}`);
-      }
     }
 
     function openDeleteConfirmThenDelete() {
@@ -2350,6 +2306,23 @@
       await persistComments(state.doc.comments.filter(c => c.id !== commentId && c.parentId !== commentId));
       state.showComments = true;
       render();
+    }
+
+    async function refreshCommentsFromServer() {
+      if (!state.docId) return;
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, state.docId));
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        const comments = sortComments(Array.isArray(data.comments) ? data.comments : []);
+        state.doc.comments = comments;
+        state.doc.updatedAt = normalizeTs(data.updatedAt) || state.doc.updatedAt;
+        updateCatalogDocFromState();
+        render();
+      } catch (err) {
+        console.error(err);
+        alert(`更新で失敗したよ: ${err?.message || err}`);
+      }
     }
 
     const quizCommentsToggleLabel = (comments) => {
@@ -3389,7 +3362,10 @@
           <div class="card commentWrap">
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+              <div class="row" style="gap:8px">
+                <button class="ghost miniAction" id="refreshCommentsBtn" type="button">↻</button>
+                <div class="commentPrivateNote">🫥 は非公開コメント</div>
+              </div>
             </div>
 
             <div class="commentForm">
@@ -3427,12 +3403,9 @@
           <div class="card">
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
-              <div class="row" style="gap:8px;align-items:center;">
-                <div class="commentToggleRow">
-                  <span class="commentBadge">表示 ${visibleComments.length}</span>
-                  ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
-                </div>
-                <button class="ghost miniAction" id="refreshCommentsBtn" type="button" title="コメントを最新にする">↻</button>
+              <div class="commentToggleRow">
+                <span class="commentBadge">表示 ${visibleComments.length}</span>
+                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
               </div>
             </div>
             <div class="reviewList">${list || `<div class="note">まだコメントはないよ。</div>`}</div>
