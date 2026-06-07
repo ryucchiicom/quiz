@@ -1298,6 +1298,16 @@
       return { mode: "text", randomChoice: false };
     }
 
+    function normalizeItem(item) {
+      if (!item || typeof item !== "object") return item;
+      return {
+        ...item,
+        pictures: Array.isArray(item.pictures) ? item.pictures.map(v => String(Number(v))).filter(Boolean)
+                 : Array.isArray(item.localPictures) ? item.localPictures.map(v => String(Number(v))).filter(Boolean)
+                 : []
+      };
+    }
+
     function parseQuestionLine(line, globalFlags) {
       const meta = parseLeadingMeta(line);
       const raw = meta.rest.trim();
@@ -1320,18 +1330,43 @@
         }).filter(o => o.text);
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return { type: "question", mode: "choice", question, options, randomChoice, localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
+        return {
+          type: "question",
+          mode: "choice",
+          question,
+          options,
+          randomChoice,
+          pictures: meta.pictures,
+          localTags: meta.tags,
+          localOnOffControls: meta.onOffControls
+        };
       }
 
       if (mode === "number") {
         const answerText = parts.slice(1).join("=").trim();
         if (!answerText) return null;
-        return { type: "question", mode: "number", question, answers: [answerText], localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
+        return {
+          type: "question",
+          mode: "number",
+          question,
+          answers: [answerText],
+          pictures: meta.pictures,
+          localTags: meta.tags,
+          localOnOffControls: meta.onOffControls
+        };
       }
 
       const answers = splitAnswers(parts.slice(1).join("=").trim());
       if (!answers.length) return null;
-      return { type: "question", mode: "text", question, answers, localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
+      return {
+        type: "question",
+        mode: "text",
+        question,
+        answers,
+        pictures: meta.pictures,
+        localTags: meta.tags,
+        localOnOffControls: meta.onOffControls
+      };
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1374,7 +1409,7 @@
 
         const parsed = parseQuestionLine(line, overrideFlags || globalFlags);
         if (parsed) {
-          items.push({ id: uid(), section: currentSection, ...parsed });
+          items.push(normalizeItem({ id: uid(), section: currentSection, ...parsed }));
           continue;
         }
 
@@ -1397,20 +1432,21 @@
 
       let lastSection = null;
       for (const item of items || []) {
-        if (item.section && item.section !== lastSection) {
-          lines.push(item.section);
-          lastSection = item.section;
+        const cur = normalizeItem(item);
+        if (cur.section && cur.section !== lastSection) {
+          lines.push(cur.section);
+          lastSection = cur.section;
         }
-        const picPrefix = (item.pictures || []).map(n => `[picture(${n})]`).join(" ");
+        const picPrefix = (cur.pictures || []).map(n => `[picture(${n})]`).join(" ");
         let prefix = "";
-        if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
-        if (item.mode === "number") prefix = "[number] ";
+        if (cur.mode === "choice") prefix = cur.randomChoice ? "[random choice] " : "[choice] ";
+        if (cur.mode === "number") prefix = "[number] ";
         const allPrefix = [picPrefix, prefix.trim()].filter(Boolean).join(" ");
-        if (item.mode === "choice") {
-          const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
-          lines.push(`${allPrefix ? allPrefix + " " : ""}${item.question}=${opts}`);
+        if (cur.mode === "choice") {
+          const opts = (cur.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
+          lines.push(`${allPrefix ? allPrefix + " " : ""}${cur.question}=${opts}`);
         } else {
-          lines.push(`${allPrefix ? allPrefix + " " : ""}${item.question}=${(item.answers || []).join(",")}`);
+          lines.push(`${allPrefix ? allPrefix + " " : ""}${cur.question}=${(cur.answers || []).join(",")}`);
         }
       }
       return lines.join("\n");
@@ -1744,7 +1780,7 @@
     }
 
     function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
-      state.doc = { ...docData, comments: sortComments(docData.comments || []) };
+      state.doc = { ...docData, comments: sortComments(docData.comments || []), images: docData.images || {} };
       state.docId = id;
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
@@ -2332,7 +2368,7 @@
 
     function normalizeDoc(id, data) {
       const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-      const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+      const items = Array.isArray(data.items) && data.items.length ? data.items.map(normalizeItem) : parsed.items.map(normalizeItem);
       const globalFlags = {
         random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
         choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
@@ -3823,7 +3859,7 @@
         if (!snap.exists()) { state.screen = "home"; render(); return; }
         const data = snap.data() || {};
         const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-        const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+        const items = Array.isArray(data.items) && data.items.length ? data.items.map(normalizeItem) : parsed.items.map(normalizeItem);
 
         state.docId = id;
         state.doc = {
@@ -3902,7 +3938,7 @@
           if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
           const data = snap.data() || {};
           const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-          const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+          const items = Array.isArray(data.items) && data.items.length ? data.items.map(normalizeItem) : parsed.items.map(normalizeItem);
           startQuiz(normalizeDoc(r.id, {
             ...data,
             items,
@@ -3914,7 +3950,8 @@
               number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
               open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
             },
-            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || []))
+            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
+            images: data.images || {}
           }), r.id);
           maybeAutoOpenTutorial();
         } catch (err) {
