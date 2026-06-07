@@ -1865,22 +1865,42 @@
       render();
     }
 
+    function getAnswerFromCurrentUI(q) {
+      if (!q) return "";
+      if (q.item.mode === "choice") {
+        const selected = document.querySelector("#choiceGrid .choiceBtn.selected");
+        if (selected) return selected.dataset.choiceText || selected.textContent || "";
+        return state.quiz.typedAnswer || "";
+      }
+      const input = document.getElementById("answerInput");
+      if (input) return input.value || "";
+      return state.quiz.typedAnswer || "";
+    }
+
+    function evaluateAnswer(item, givenRaw) {
+      const given = String(givenRaw ?? "");
+      if (item.mode === "choice") {
+        const normalizedGiven = norm(given).normalize("NFKC");
+        const correctOptions = (item.options || []).filter(o => o.correct).map(o => norm(o.text).normalize("NFKC"));
+        return correctOptions.includes(normalizedGiven);
+      } else if (item.mode === "number") {
+        const clean = s => String(s ?? "").replace(/\D/g, "");
+        const correctAnswers = (item.answers || []).map(clean);
+        return correctAnswers.includes(clean(given));
+      } else {
+        const clean = s => norm(s).normalize("NFKC");
+        return (item.answers || []).map(clean).includes(clean(given));
+      }
+    }
+
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
-      const given = state.quiz.typedAnswer;
+
+      const given = getAnswerFromCurrentUI(q);
       if (!String(given || "").trim()) return alert("答えを入れてね");
 
-      let correct = false;
-      if (q.item.mode === "choice") {
-        const normalizedGiven = norm(given);
-        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
-        correct = correctOptions.includes(normalizedGiven);
-      } else if (q.item.mode === "number") {
-        correct = (q.item.answers || []).map(v => String(v).replace(/\D/g, "")).includes(String(given).replace(/\D/g, ""));
-      } else {
-        correct = (q.item.answers || []).map(norm).includes(norm(given));
-      }
+      const correct = evaluateAnswer(q.item, given);
 
       state.quiz.attempts[q.idx] = { given, correct };
       state.quiz.lastResult = { idx: q.idx, given, correct };
@@ -2132,6 +2152,22 @@
       }
       updateCatalogDocFromState();
       render();
+    }
+
+    async function refreshCommentsFromServer() {
+      if (!state.docId) return;
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, state.docId));
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        state.doc.comments = sortComments(Array.isArray(data.comments) ? data.comments : []);
+        state.doc.updatedAt = data.updatedAt || state.doc.updatedAt || Date.now();
+        updateCatalogDocFromState();
+        render();
+      } catch (err) {
+        console.error(err);
+        alert(`コメント更新で失敗したよ: ${err?.message || err}`);
+      }
     }
 
     function openDeleteConfirmThenDelete() {
@@ -3391,9 +3427,12 @@
           <div class="card">
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
-              <div class="commentToggleRow">
-                <span class="commentBadge">表示 ${visibleComments.length}</span>
-                ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+              <div class="row" style="gap:8px;align-items:center;">
+                <div class="commentToggleRow">
+                  <span class="commentBadge">表示 ${visibleComments.length}</span>
+                  ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
+                </div>
+                <button class="ghost miniAction" id="refreshCommentsBtn" type="button" title="コメントを最新にする">↻</button>
               </div>
             </div>
             <div class="reviewList">${list || `<div class="note">まだコメントはないよ。</div>`}</div>
@@ -3502,6 +3541,7 @@
         const scoreSuggestBox = document.getElementById("scoreSuggestBox");
         const commentHost = document.querySelector(".commentInputHost");
         const cancelReplyBtn = document.getElementById("cancelReplyBtn");
+        const refreshCommentsBtn = document.getElementById("refreshCommentsBtn");
 
         if (commentName) commentName.addEventListener("input", e => { state.commentDraft.name = e.target.value; setCommentName(e.target.value.trim() || "匿名"); });
         if (commentText) {
@@ -3517,6 +3557,7 @@
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
+        if (refreshCommentsBtn) refreshCommentsBtn.addEventListener("click", refreshCommentsFromServer);
 
         document.querySelectorAll("[data-toggle-comment]").forEach(btn => btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || "")));
         document.querySelectorAll("[data-delete-comment]").forEach(btn => btn.addEventListener("click", () => deleteComment(btn.dataset.deleteComment || "")));
