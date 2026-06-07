@@ -1860,8 +1860,8 @@
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
+
       const given = getCurrentTypedAnswer(q);
-      if (!String(given || "").trim()) return alert("答えを入れてね");
 
       let correct = false;
       if (q.item.mode === "choice") {
