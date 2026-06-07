@@ -41,7 +41,6 @@
     }
 
     html, body{ overflow-x:auto; }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -1121,13 +1120,8 @@
     const TAGS = ["random", "choice", "random choice", "number", "open"];
     const PICTURE_TAG_RE = /\[picture\((\d+)\)\]/ig;
 
-    const CONTROL_LABELS = {
-      random: "問題順ランダム"
-    };
-
-    const CONTROL_HINTS = {
-      random: "問題の順番をランダムにする"
-    };
+    const CONTROL_LABELS = { random: "問題順ランダム" };
+    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
     const state = {
       screen: "loading",
@@ -1231,14 +1225,14 @@
         .filter(Boolean);
     }
 
+    function safeDecode(v) {
+      try { return decodeURIComponent(v); } catch { return v; }
+    }
+
     function normalizeOnOffTarget(raw) {
       const t = String(raw ?? "").trim().toLowerCase();
       if (t === "random") return t;
       return null;
-    }
-
-    function safeDecodeHashPart(part) {
-      try { return decodeURIComponent(part); } catch { return part; }
     }
 
     function parseLeadingMeta(line) {
@@ -1614,8 +1608,8 @@
       const parts = raw.split("/").filter(Boolean);
       if (!parts.length) return { name: "home" };
       if (parts[0] === "create") return { name: "create" };
-      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: safeDecodeHashPart(parts[1]) };
-      return { name: "quiz", id: safeDecodeHashPart(parts[0]) };
+      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: safeDecode(parts[1]) };
+      return { name: "quiz", id: safeDecode(parts[0]) };
     }
 
     function getCommentToken() {
@@ -1870,35 +1864,38 @@
       render();
     }
 
-    function getCorrectAnswers(item) {
-      if (!item) return [];
-      if ((item.mode || "") === "choice") return (item.options || []).filter(o => o.correct).map(o => String(o.text ?? ""));
-      return Array.isArray(item.answers) ? item.answers.map(v => String(v ?? "")) : [];
-    }
-
-    function evaluateAnswer(item, given) {
-      const mode = item?.mode || "text";
-      const answers = getCorrectAnswers(item);
-      const g = String(given ?? "");
-
-      if (mode === "choice") {
-        return answers.map(norm).includes(norm(g));
-      }
-
-      if (mode === "number") {
-        return answers.map(v => String(v).replace(/\D/g, "")).includes(String(g).replace(/\D/g, ""));
-      }
-
-      return answers.map(norm).includes(norm(g));
-    }
-
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
-      const given = state.quiz.typedAnswer ?? "";
-      const correct = evaluateAnswer(q.item, given);
-      state.quiz.attempts[q.idx] = { given, correct };
-      state.quiz.lastResult = { idx: q.idx, given, correct };
+
+      let given = state.quiz.typedAnswer;
+      if (q.item.mode === "choice") {
+        const selected = document.querySelector(".choiceBtn.selected");
+        if (!String(given || "").trim() && selected) given = selected.dataset.choiceText || "";
+      } else {
+        const input = document.getElementById("answerInput");
+        if (input && typeof input.value === "string") given = input.value;
+      }
+
+      given = String(given ?? "");
+      const trimmed = given.trim();
+
+      let correct = false;
+      if (q.item.mode === "choice") {
+        const normalizedGiven = norm(given);
+        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
+        correct = correctOptions.includes(normalizedGiven);
+      } else if (q.item.mode === "number") {
+        const normalizedGiven = String(given).replace(/\D/g, "");
+        const normalizedAnswers = (q.item.answers || []).map(v => String(v).replace(/\D/g, ""));
+        correct = normalizedAnswers.includes(normalizedGiven);
+      } else {
+        correct = (q.item.answers || []).map(norm).includes(norm(given));
+      }
+
+      state.quiz.typedAnswer = given;
+      state.quiz.attempts[q.idx] = { given: trimmed ? given : "", correct };
+      state.quiz.lastResult = { idx: q.idx, given: trimmed ? given : "", correct };
       state.quiz.phase = "result";
       render();
     }
@@ -2260,28 +2257,6 @@
       if (idx >= 0) state.allDocs[idx] = normalized;
       else state.allDocs.unshift(normalized);
       rebuildPublicOrder();
-    }
-
-    async function refreshCurrentDoc() {
-      if (!state.docId) return;
-      try {
-        const snap = await getDoc(doc(db, COLLECTION, state.docId));
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-        const items = Array.isArray(data.items) && data.items.length ? data.items.map(normalizeItem) : parsed.items.map(normalizeItem);
-        state.doc = normalizeDoc(state.docId, {
-          ...data,
-          items,
-          images: data.images || {}
-        });
-        state.showComments = true;
-        setAccessModeForDoc(state.doc, state.docId);
-        render();
-      } catch (err) {
-        console.error(err);
-        alert(`更新で失敗したよ: ${err?.message || err}`);
-      }
     }
 
     function latestCommentNameConflict(name) {
@@ -3275,7 +3250,9 @@
       if (!r) { state.quiz.phase = "question"; render(); return; }
 
       const q = state.quiz.items[r.idx];
-      const answerText = getCorrectAnswers(q).join(" / ");
+      const answerText = q.mode === "choice"
+        ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+        : (q.answers || []).join(" / ");
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
@@ -3308,7 +3285,7 @@
               <div class="explain">${esc(answerText)}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${esc(String(r.given ?? "") === "" ? "（空欄）" : r.given)}</div>
+              <div class="explain">${esc(r.given)}</div>
             </div>
 
             <div class="actions">
@@ -3388,8 +3365,8 @@
           <div class="card commentWrap">
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="row" style="gap:8px">
-                <button class="ghost miniAction" id="refreshCommentsBtn" type="button">↻</button>
+              <div class="row">
+                <button class="ghost miniAction" id="refreshCommentsBtn" type="button" title="最新にする">↻</button>
                 <div class="commentPrivateNote">🫥 は非公開コメント</div>
               </div>
             </div>
@@ -3485,7 +3462,9 @@
                   const attempt = attempts[idx] || null;
                   const isGood = !!attempt?.correct;
                   const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
-                  const answerText = getCorrectAnswers(item).join(" / ");
+                  const answerText = item.mode === "choice"
+                    ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
+                    : (item.answers || []).join(" / ");
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
@@ -3493,7 +3472,7 @@
                       ${renderPictureHTML(item.pictures || [], state.doc.images || {})}
                       <div class="reviewQ">${esc(item.question)}</div>
                       <div class="reviewA">正解: ${esc(answerText)}</div>
-                      <div class="reviewA">あなたの答え: ${esc(String(given ?? "") === "" ? "（空欄）" : given)}</div>
+                      <div class="reviewA">あなたの答え: ${esc(given)}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3554,7 +3533,19 @@
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
-        if (refreshCommentsBtn) refreshCommentsBtn.addEventListener("click", refreshCurrentDoc);
+        if (refreshCommentsBtn) refreshCommentsBtn.addEventListener("click", async () => {
+          if (!state.docId) return;
+          try {
+            const snap = await getDoc(doc(db, COLLECTION, state.docId));
+            if (!snap.exists()) return;
+            const data = snap.data() || {};
+            state.doc.comments = sortComments(Array.isArray(data.comments) ? data.comments : []);
+            render();
+          } catch (err) {
+            console.error(err);
+            alert(`更新に失敗したよ: ${err?.message || err}`);
+          }
+        });
 
         document.querySelectorAll("[data-toggle-comment]").forEach(btn => btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || "")));
         document.querySelectorAll("[data-delete-comment]").forEach(btn => btn.addEventListener("click", () => deleteComment(btn.dataset.deleteComment || "")));
