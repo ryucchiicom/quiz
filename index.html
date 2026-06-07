@@ -41,7 +41,8 @@
     }
 
     html, body{ overflow-x:auto; }
-    *{ box-sizing:border-box; }
+
+    *{box-sizing:border-box}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -50,7 +51,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea,select{ font:inherit; }
+    button,input,textarea,select{font:inherit}
     button{
       border:none;
       border-radius:14px;
@@ -58,8 +59,8 @@
       cursor:pointer;
     }
 
-    .hide{ display:none !important; }
-    .page{ max-width:980px; margin:0 auto; padding:16px; min-height:100vh; }
+    .hide{display:none !important;}
+    .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
 
     .titleArea{
       display:flex;
@@ -68,7 +69,7 @@
       flex-wrap:wrap;
       min-width:0;
     }
-    .titleBlock{ min-width:0; }
+    .titleBlock{min-width:0}
 
     .topbar{
       display:flex;
@@ -520,8 +521,13 @@
       font-weight:900;
     }
 
-    body.dark .scoreToken{ color:#66e08d; }
-    body.dark .timeToken{ color:#8db2ff; }
+    body.dark .scoreToken{
+      color:#66e08d;
+    }
+
+    body.dark .timeToken{
+      color:#8db2ff;
+    }
 
     .commentItem{
       border:1px solid var(--line);
@@ -665,9 +671,9 @@
       align-items:center;
     }
 
-    .replyLabel{ font-size:13px; font-weight:900; color:var(--text); }
-    .replyHint{ font-size:12px; color:var(--muted); }
-    .timeOnlyNote{ font-size:12px; color:var(--muted); }
+    .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
+    .replyHint{font-size:12px;color:var(--muted);}
+    .timeOnlyNote{font-size:12px;color:var(--muted);}
 
     .settingsScreen{
       display:grid;
@@ -723,9 +729,13 @@
       flex:none;
     }
 
-    body.dark .toggleSwitch{ background:#42506a; }
+    body.dark .toggleSwitch{
+      background:#42506a;
+    }
 
-    .toggleSwitch.on{ background:var(--accent); }
+    .toggleSwitch.on{
+      background:var(--accent);
+    }
 
     .toggleKnob{
       position:absolute;
@@ -739,7 +749,9 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
+    .toggleSwitch.on .toggleKnob{
+      transform:translateX(24px);
+    }
 
     .settingHeader{
       display:grid;
@@ -852,10 +864,10 @@
       animation-fill-mode:both;
     }
 
-    .tutorialPage.anim-open{ animation-name:tutInOpen; }
-    .tutorialPage.anim-next{ animation-name:tutInRight; }
-    .tutorialPage.anim-prev{ animation-name:tutInLeft; }
-    .tutorialPage.anim-close{ animation-name:tutOutDown; }
+    .tutorialPage.anim-open{animation-name:tutInOpen;}
+    .tutorialPage.anim-next{animation-name:tutInRight;}
+    .tutorialPage.anim-prev{animation-name:tutInLeft;}
+    .tutorialPage.anim-close{animation-name:tutOutDown;}
 
     .tutorialCard{
       border:1px solid var(--line);
@@ -864,7 +876,9 @@
       background:rgba(127,127,127,.05);
     }
 
-    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
+    body.dark .tutorialCard{
+      background:rgba(255,255,255,.03);
+    }
 
     .tutorialHero{
       display:grid;
@@ -896,7 +910,9 @@
       word-break:break-word;
     }
 
-    body.dark .tutorialCode{ background:#0a1220; }
+    body.dark .tutorialCode{
+      background:#0a1220;
+    }
 
     .tutorialFooter,
     .partnerFooter{
@@ -918,13 +934,11 @@
     }
 
     .dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
+      width:8px;height:8px;border-radius:999px;
       background:rgba(127,127,127,.35);
     }
 
-    .dot.active{ background:var(--accent); }
+    .dot.active{background:var(--accent);}
 
     .tutorialNavBtn{
       min-width:110px;
@@ -1012,47 +1026,47 @@
     }
 
     @keyframes tutInRight{
-      from{ opacity:0; transform:translateX(28px); }
-      to{ opacity:1; transform:translateX(0); }
+      from{opacity:0;transform:translateX(28px);}
+      to{opacity:1;transform:translateX(0);}
     }
 
     @keyframes tutInLeft{
-      from{ opacity:0; transform:translateX(-28px); }
-      to{ opacity:1; transform:translateX(0); }
+      from{opacity:0;transform:translateX(-28px);}
+      to{opacity:1;transform:translateX(0);}
     }
 
     @keyframes tutInOpen{
-      from{ opacity:0; transform:translateY(14px) scale(.985); }
-      to{ opacity:1; transform:translateY(0) scale(1); }
+      from{opacity:0;transform:translateY(14px) scale(.985);}
+      to{opacity:1;transform:translateY(0) scale(1);}
     }
 
     @keyframes tutOutDown{
-      from{ opacity:1; transform:translateY(0) scale(1); }
-      to{ opacity:0; transform:translateY(30px) scale(.98); }
+      from{opacity:1;transform:translateY(0) scale(1);}
+      to{opacity:0;transform:translateY(30px) scale(.98);}
     }
 
     @media (max-width:640px){
-      .page{ padding:14px; }
-      .title{ font-size:22px; }
-      .gridEditor{ grid-template-columns:52px 1fr; min-height:380px; }
-      .question{ font-size:22px; }
-      .answer{ font-size:16px; }
-      .bigBtn{ width:100%; }
-      .actions{ justify-content:stretch; }
-      .actions button{ flex:1; }
-      .topbar{ align-items:flex-start; }
-      .listItem{ align-items:flex-start; flex-direction:column; }
-      .listActions{ justify-content:flex-start; }
-      .tabSelect,.searchInput{ min-width:0; }
-      .homeTopRow{ align-items:stretch; }
-      .searchWrap{ min-width:0; }
-      .tutorialTop,.partnerTop{ padding:14px 14px 0; }
-      .tutorialBody,.partnerBody{ padding:12px 14px 6px; }
-      .tutorialFooter,.partnerFooter{ padding:0 14px 14px; }
-      .tutorialTitle,.partnerTitle{ font-size:20px; }
-      .tutorialHero h2{ font-size:24px; }
-      .tutorialNavBtn{ min-width:88px; }
-      .settingTitle{ font-size:22px; }
+      .page{padding:14px}
+      .title{font-size:22px}
+      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
+      .question{font-size:22px}
+      .answer{font-size:16px}
+      .bigBtn{width:100%}
+      .actions{justify-content:stretch}
+      .actions button{flex:1}
+      .topbar{align-items:flex-start}
+      .listItem{align-items:flex-start;flex-direction:column}
+      .listActions{justify-content:flex-start}
+      .tabSelect,.searchInput{min-width:0}
+      .homeTopRow{align-items:stretch}
+      .searchWrap{min-width:0}
+      .tutorialTop,.partnerTop{padding:14px 14px 0}
+      .tutorialBody,.partnerBody{padding:12px 14px 6px}
+      .tutorialFooter,.partnerFooter{padding:0 14px 14px}
+      .tutorialTitle,.partnerTitle{font-size:20px}
+      .tutorialHero h2{font-size:24px}
+      .tutorialNavBtn{min-width:88px}
+      .settingTitle{font-size:22px}
     }
   </style>
 </head>
@@ -1107,8 +1121,13 @@
     const TAGS = ["random", "choice", "random choice", "number", "open"];
     const PICTURE_TAG_RE = /\[picture\((\d+)\)\]/ig;
 
-    const CONTROL_LABELS = { random: "問題順ランダム" };
-    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
+    const CONTROL_LABELS = {
+      random: "問題順ランダム"
+    };
+
+    const CONTROL_HINTS = {
+      random: "問題の順番をランダムにする"
+    };
 
     const state = {
       screen: "loading",
@@ -1216,6 +1235,10 @@
       const t = String(raw ?? "").trim().toLowerCase();
       if (t === "random") return t;
       return null;
+    }
+
+    function safeDecodeHashPart(part) {
+      try { return decodeURIComponent(part); } catch { return part; }
     }
 
     function parseLeadingMeta(line) {
@@ -1584,15 +1607,15 @@
       return i >= 0 ? p.slice(0, i + 1) : "/";
     };
 
-    const prettyLink = (id) => `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
+    const prettyLink = (id) => `${location.origin}${basePath()}#/${id}`;
 
     function route() {
       const raw = location.hash.replace(/^#/, "");
       const parts = raw.split("/").filter(Boolean);
       if (!parts.length) return { name: "home" };
       if (parts[0] === "create") return { name: "create" };
-      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: decodeURIComponent(parts[1]) };
-      return { name: "quiz", id: decodeURIComponent(parts[0]) };
+      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: safeDecodeHashPart(parts[1]) };
+      return { name: "quiz", id: safeDecodeHashPart(parts[0]) };
     }
 
     function getCommentToken() {
@@ -1847,33 +1870,33 @@
       render();
     }
 
-    function getCurrentTypedAnswer(q) {
-      const input = document.getElementById("answerInput");
-      if (input && typeof input.value === "string") return input.value;
-      if (q?.item?.mode === "choice") {
-        const chosen = document.querySelector(".choiceBtn.selected");
-        if (chosen) return chosen.dataset.choiceText || "";
+    function getCorrectAnswers(item) {
+      if (!item) return [];
+      if ((item.mode || "") === "choice") return (item.options || []).filter(o => o.correct).map(o => String(o.text ?? ""));
+      return Array.isArray(item.answers) ? item.answers.map(v => String(v ?? "")) : [];
+    }
+
+    function evaluateAnswer(item, given) {
+      const mode = item?.mode || "text";
+      const answers = getCorrectAnswers(item);
+      const g = String(given ?? "");
+
+      if (mode === "choice") {
+        return answers.map(norm).includes(norm(g));
       }
-      return state.quiz.typedAnswer || "";
+
+      if (mode === "number") {
+        return answers.map(v => String(v).replace(/\D/g, "")).includes(String(g).replace(/\D/g, ""));
+      }
+
+      return answers.map(norm).includes(norm(g));
     }
 
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
-
-      const given = getCurrentTypedAnswer(q);
-
-      let correct = false;
-      if (q.item.mode === "choice") {
-        const normalizedGiven = norm(given);
-        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
-        correct = correctOptions.includes(normalizedGiven);
-      } else if (q.item.mode === "number") {
-        correct = (q.item.answers || []).map(v => String(v).replace(/\D/g, "")).includes(String(given).replace(/\D/g, ""));
-      } else {
-        correct = (q.item.answers || []).map(norm).includes(norm(given));
-      }
-
+      const given = state.quiz.typedAnswer ?? "";
+      const correct = evaluateAnswer(q.item, given);
       state.quiz.attempts[q.idx] = { given, correct };
       state.quiz.lastResult = { idx: q.idx, given, correct };
       state.quiz.phase = "result";
@@ -1938,7 +1961,6 @@
     function nextPictureNumber(text, images = {}) {
       let max = 0;
       const scan = String(text ?? "");
-      PICTURE_TAG_RE.lastIndex = 0;
       let m;
       while ((m = PICTURE_TAG_RE.exec(scan))) max = Math.max(max, Number(m[1]) || 0);
       for (const k of Object.keys(images || {})) max = Math.max(max, Number(k) || 0);
@@ -1961,7 +1983,8 @@
             const ctx = canvas.getContext("2d");
             if (!ctx) throw new Error("Canvas context unavailable");
             ctx.drawImage(img, 0, 0, targetW, targetH);
-            const dataUrl = canvas.toDataURL("image/jpeg", quality);
+            const type = "image/jpeg";
+            const dataUrl = canvas.toDataURL(type, quality);
             URL.revokeObjectURL(url);
             resolve(dataUrl);
           } catch (err) {
@@ -2239,6 +2262,28 @@
       rebuildPublicOrder();
     }
 
+    async function refreshCurrentDoc() {
+      if (!state.docId) return;
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, state.docId));
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
+        const items = Array.isArray(data.items) && data.items.length ? data.items.map(normalizeItem) : parsed.items.map(normalizeItem);
+        state.doc = normalizeDoc(state.docId, {
+          ...data,
+          items,
+          images: data.images || {}
+        });
+        state.showComments = true;
+        setAccessModeForDoc(state.doc, state.docId);
+        render();
+      } catch (err) {
+        console.error(err);
+        alert(`更新で失敗したよ: ${err?.message || err}`);
+      }
+    }
+
     function latestCommentNameConflict(name) {
       const clean = String(name || "").trim();
       if (!clean || clean === "匿名") return false;
@@ -2306,23 +2351,6 @@
       await persistComments(state.doc.comments.filter(c => c.id !== commentId && c.parentId !== commentId));
       state.showComments = true;
       render();
-    }
-
-    async function refreshCommentsFromServer() {
-      if (!state.docId) return;
-      try {
-        const snap = await getDoc(doc(db, COLLECTION, state.docId));
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        const comments = sortComments(Array.isArray(data.comments) ? data.comments : []);
-        state.doc.comments = comments;
-        state.doc.updatedAt = normalizeTs(data.updatedAt) || state.doc.updatedAt;
-        updateCatalogDocFromState();
-        render();
-      } catch (err) {
-        console.error(err);
-        alert(`更新で失敗したよ: ${err?.message || err}`);
-      }
     }
 
     const quizCommentsToggleLabel = (comments) => {
@@ -2759,13 +2787,13 @@
 
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+          location.hash = `#/${btn.dataset.openQuiz || ""}`;
         });
       });
 
       document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+          location.hash = `#/edit/${btn.dataset.editQuiz || ""}`;
         });
       });
 
@@ -3009,7 +3037,7 @@
               });
             }
 
-            location.hash = `#/${encodeURIComponent(newId)}`;
+            location.hash = `#/${newId}`;
             const link = prettyLink(newId);
             navigator.clipboard?.writeText(link).catch(() => {});
             alert(`保存したよ！\n\n${link}`);
@@ -3247,9 +3275,7 @@
       if (!r) { state.quiz.phase = "question"; render(); return; }
 
       const q = state.quiz.items[r.idx];
-      const answerText = q.mode === "choice"
-        ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-        : (q.answers || []).join(" / ");
+      const answerText = getCorrectAnswers(q).join(" / ");
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
@@ -3282,7 +3308,7 @@
               <div class="explain">${esc(answerText)}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${esc(r.given)}</div>
+              <div class="explain">${esc(String(r.given ?? "") === "" ? "（空欄）" : r.given)}</div>
             </div>
 
             <div class="actions">
@@ -3459,9 +3485,7 @@
                   const attempt = attempts[idx] || null;
                   const isGood = !!attempt?.correct;
                   const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
-                  const answerText = item.mode === "choice"
-                    ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-                    : (item.answers || []).join(" / ");
+                  const answerText = getCorrectAnswers(item).join(" / ");
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
@@ -3469,7 +3493,7 @@
                       ${renderPictureHTML(item.pictures || [], state.doc.images || {})}
                       <div class="reviewQ">${esc(item.question)}</div>
                       <div class="reviewA">正解: ${esc(answerText)}</div>
-                      <div class="reviewA">あなたの答え: ${esc(given)}</div>
+                      <div class="reviewA">あなたの答え: ${esc(String(given ?? "") === "" ? "（空欄）" : given)}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3530,7 +3554,7 @@
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
-        if (refreshCommentsBtn) refreshCommentsBtn.addEventListener("click", refreshCommentsFromServer);
+        if (refreshCommentsBtn) refreshCommentsBtn.addEventListener("click", refreshCurrentDoc);
 
         document.querySelectorAll("[data-toggle-comment]").forEach(btn => btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || "")));
         document.querySelectorAll("[data-delete-comment]").forEach(btn => btn.addEventListener("click", () => deleteComment(btn.dataset.deleteComment || "")));
@@ -3903,7 +3927,7 @@
         if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") { openEditFromDoc(); return; }
 
         const entered = prompt("Key を入力して編集", "");
-        if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
+        if (entered === null) { location.hash = `#/${id}`; return; }
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
           rememberAccess(state.docId, (state.doc.key || ""), {
@@ -3916,7 +3940,7 @@
           openEditFromDoc();
         } else {
           alert("Key が違うよ");
-          location.hash = `#/${encodeURIComponent(id)}`;
+          location.hash = `#/${id}`;
         }
       } catch (err) {
         console.error(err);
