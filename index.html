@@ -1864,24 +1864,20 @@
       render();
     }
 
-    function collectCurrentAnswer(q) {
-      if (!q) return "";
-      if (q.item.mode === "choice") {
-        const selected = document.querySelector(".choiceBtn.selected");
-        if (selected) return String(selected.dataset.choiceText || "");
-        return String(state.quiz.typedAnswer || "");
-      }
-
-      const input = document.getElementById("answerInput");
-      if (input && typeof input.value === "string") return input.value;
-      return String(state.quiz.typedAnswer || "");
-    }
-
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
 
-      const given = collectCurrentAnswer(q);
+      let given = state.quiz.typedAnswer ?? "";
+      if (q.item.mode === "choice") {
+        const selected = document.querySelector(".choiceBtn.selected");
+        if (!String(given || "").trim() && selected) given = selected.dataset.choiceText || "";
+      } else {
+        const input = document.getElementById("answerInput");
+        if (input && typeof input.value === "string") given = input.value;
+      }
+
+      given = String(given ?? "");
       let correct = false;
 
       if (q.item.mode === "choice") {
@@ -1889,16 +1885,14 @@
         const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
         correct = correctOptions.includes(normalizedGiven);
       } else if (q.item.mode === "number") {
-        const normalizedGiven = String(given).replace(/\D/g, "");
-        const normalizedAnswers = (q.item.answers || []).map(v => String(v).replace(/\D/g, ""));
-        correct = normalizedAnswers.includes(normalizedGiven);
+        correct = (q.item.answers || []).map(v => String(v).replace(/\D/g, "")).includes(String(given).replace(/\D/g, ""));
       } else {
         correct = (q.item.answers || []).map(norm).includes(norm(given));
       }
 
       state.quiz.typedAnswer = given;
-      state.quiz.attempts[q.idx] = { given: String(given ?? ""), correct };
-      state.quiz.lastResult = { idx: q.idx, given: String(given ?? ""), correct };
+      state.quiz.attempts[q.idx] = { given, correct };
+      state.quiz.lastResult = { idx: q.idx, given, correct };
       state.quiz.phase = "result";
       render();
     }
@@ -2835,7 +2829,7 @@
                   <div id="gutter" class="gutter"></div>
                   <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
 [open] [random]
-[picture(1)] 日本について
+日本について
 首都=東京
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
@@ -3174,14 +3168,14 @@
               <div class="question">${esc(q.item.question)}</div>
             </div>
 
-            <form id="answerForm" class="card" style="display:grid;gap:10px">
+            <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
               ${q.item.mode === "choice" ? `<div id="choiceGrid" class="choiceGrid"></div>` : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`}
               <div class="actions">
                 ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
-                <button class="submit" id="submitBtn" type="submit">✅</button>
+                <button class="submit" id="submitBtn" type="button">✅</button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       `;
@@ -3207,14 +3201,6 @@
         alert("Key が違うよ");
       });
 
-      const answerForm = document.getElementById("answerForm");
-      if (answerForm) {
-        answerForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-          submitAnswer();
-        });
-      }
-
       const forceEndBtn = document.getElementById("forceEndBtn");
       if (forceEndBtn) {
         forceEndBtn.addEventListener("click", () => {
@@ -3228,6 +3214,7 @@
         grid.innerHTML = options.map((opt, idx) => `
           <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>
         `).join("");
+
         const buttons = [...grid.querySelectorAll(".choiceBtn")];
         buttons.forEach(btn => btn.addEventListener("click", () => {
           buttons.forEach(b => b.classList.remove("selected"));
@@ -3252,6 +3239,8 @@
           }
         });
       }
+
+      document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
 
     function renderResult() {
