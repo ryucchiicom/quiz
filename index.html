@@ -41,6 +41,7 @@
     }
 
     html, body{ overflow-x:auto; }
+
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -96,8 +97,6 @@
       margin-top:4px;
       color:var(--muted);
       font-size:13px;
-      line-height:1.6;
-      word-break:break-word;
     }
 
     .card{
@@ -968,62 +967,6 @@
       border-color:transparent;
     }
 
-    .pictureWrap{
-      display:grid;
-      gap:10px;
-      margin:8px 0 12px;
-    }
-
-    .quizPicture{
-      width:100%;
-      max-width:100%;
-      border-radius:16px;
-      display:block;
-      object-fit:contain;
-      background:rgba(127,127,127,.08);
-      border:1px solid var(--line);
-    }
-
-    .pictureMissing{
-      border:1px dashed var(--line);
-      border-radius:16px;
-      padding:12px 14px;
-      color:var(--muted);
-      font-size:13px;
-      background:rgba(127,127,127,.06);
-    }
-
-    .pictureThumbGrid{
-      display:grid;
-      gap:10px;
-      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-      margin-top:10px;
-    }
-
-    .pictureThumb{
-      display:grid;
-      gap:6px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      overflow:hidden;
-      background:var(--panel);
-    }
-
-    .pictureThumb img{
-      width:100%;
-      aspect-ratio:1 / 1;
-      object-fit:cover;
-      display:block;
-      background:rgba(127,127,127,.08);
-    }
-
-    .pictureThumbLabel{
-      padding:0 10px 10px;
-      font-size:12px;
-      color:var(--muted);
-      word-break:break-word;
-    }
-
     @keyframes tutInRight{
       from{opacity:0;transform:translateX(28px);}
       to{opacity:1;transform:translateX(0);}
@@ -1073,7 +1016,6 @@
   <div id="app"></div>
   <div id="tutorialLayer"></div>
   <div id="partnerLayer"></div>
-  <input id="pictureInput" type="file" accept="image/*" class="hide" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -1103,7 +1045,6 @@
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
-    const pictureInput = document.getElementById("pictureInput");
     if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
@@ -1118,15 +1059,9 @@
     const SETTINGS_COLLECTION = "siteSettings";
     const SETTINGS_DOC_ID = "main";
     const TAGS = ["random", "choice", "random choice", "number", "open"];
-    const PICTURE_TAG_RE = /\[picture\((\d+)\)\]/ig;
 
-    const CONTROL_LABELS = {
-      random: "問題順ランダム"
-    };
-
-    const CONTROL_HINTS = {
-      random: "問題の順番をランダムにする"
-    };
+    const CONTROL_LABELS = { random: "問題順ランダム" };
+    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
     const state = {
       screen: "loading",
@@ -1170,8 +1105,7 @@
         closing: false,
         motion: "open"
       },
-      partnerModal: { open: false },
-      pictureUploadNumber: null
+      partnerModal: { open: false }
     };
 
     let resultEnterHandler = null;
@@ -1236,20 +1170,12 @@
       return null;
     }
 
-    function parseLeadingMeta(line) {
+    function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
       const onOffControls = [];
-      const pictures = [];
 
       while (rest.startsWith("[")) {
-        const picMatch = rest.match(/^\[picture\((\d+)\)\]/i);
-        if (picMatch) {
-          pictures.push(String(Number(picMatch[1])));
-          rest = rest.slice(picMatch[0].length).trimStart();
-          continue;
-        }
-
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
 
@@ -1272,7 +1198,7 @@
         break;
       }
 
-      return { tags, onOffControls: Array.from(new Set(onOffControls)), pictures, rest };
+      return { tags, onOffControls: Array.from(new Set(onOffControls)), rest };
     }
 
     function mergeFlags(base, tags) {
@@ -1299,14 +1225,14 @@
     }
 
     function parseQuestionLine(line, globalFlags) {
-      const meta = parseLeadingMeta(line);
-      const raw = meta.rest.trim();
+      const { tags, onOffControls, rest } = parseLeadingSettings(line);
+      const raw = rest.trim();
       if (!raw) return null;
       const parts = raw.split(/[=＝]/);
       if (parts.length < 2) return null;
       const question = parts[0].trim();
       if (!question) return null;
-      const { mode, randomChoice } = pickMode(globalFlags, meta.tags);
+      const { mode, randomChoice } = pickMode(globalFlags, tags);
 
       if (mode === "choice") {
         const rawOptions = splitAnswers(parts.slice(1).join("=").trim());
@@ -1320,18 +1246,18 @@
         }).filter(o => o.text);
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return { type: "question", mode: "choice", question, options, randomChoice, localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
+        return { type: "question", mode: "choice", question, options, randomChoice, localTags: tags, localOnOffControls: onOffControls };
       }
 
       if (mode === "number") {
         const answerText = parts.slice(1).join("=").trim();
         if (!answerText) return null;
-        return { type: "question", mode: "number", question, answers: [answerText], localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
+        return { type: "question", mode: "number", question, answers: [answerText], localTags: tags, localOnOffControls: onOffControls };
       }
 
       const answers = splitAnswers(parts.slice(1).join("=").trim());
       if (!answers.length) return null;
-      return { type: "question", mode: "text", question, answers, localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
+      return { type: "question", mode: "text", question, answers, localTags: tags, localOnOffControls: onOffControls };
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1348,7 +1274,7 @@
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
 
-        const parsed = parseLeadingMeta(raw);
+        const parsed = parseLeadingSettings(raw);
         if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
           onOffControls = Array.from(new Set([...onOffControls, ...parsed.onOffControls]));
@@ -1365,7 +1291,7 @@
         const trimmed = line.trim();
         if (!trimmed) continue;
 
-        const parsedSettings = parseLeadingMeta(line);
+        const parsedSettings = parseLeadingSettings(line);
         if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length)) {
           globalFlags = mergeFlags(globalFlags, parsedSettings.tags);
           onOffControls = Array.from(new Set([...onOffControls, ...parsedSettings.onOffControls]));
@@ -1401,16 +1327,14 @@
           lines.push(item.section);
           lastSection = item.section;
         }
-        const picPrefix = (item.pictures || []).map(n => `[picture(${n})]`).join(" ");
         let prefix = "";
         if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
         if (item.mode === "number") prefix = "[number] ";
-        const allPrefix = [picPrefix, prefix.trim()].filter(Boolean).join(" ");
         if (item.mode === "choice") {
           const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
-          lines.push(`${allPrefix ? allPrefix + " " : ""}${item.question}=${opts}`);
+          lines.push(`${prefix}${item.question}=${opts}`);
         } else {
-          lines.push(`${allPrefix ? allPrefix + " " : ""}${item.question}=${(item.answers || []).join(",")}`);
+          lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
         }
       }
       return lines.join("\n");
@@ -1670,7 +1594,7 @@
     }
 
     function blankDraft() {
-      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "", images: {} };
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
     }
 
     function openCreate() {
@@ -1689,8 +1613,7 @@
         subtitle: state.doc?.subtitle || "",
         rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
         keyMode: state.doc?.keyMode || "key",
-        key: state.doc?.key || "",
-        images: { ...(state.doc?.images || {}) }
+        key: state.doc?.key || ""
       };
       state.screen = "editor";
       render();
@@ -1907,106 +1830,6 @@
       textarea.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
-    function nextPictureNumber(text, images = {}) {
-      let max = 0;
-      const scan = String(text ?? "");
-      let m;
-      while ((m = PICTURE_TAG_RE.exec(scan))) max = Math.max(max, Number(m[1]) || 0);
-      for (const k of Object.keys(images || {})) max = Math.max(max, Number(k) || 0);
-      return max + 1;
-    }
-
-    function resizeImageFile(file, maxSide = 1280, quality = 0.82) {
-      return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = async () => {
-          try {
-            const { width, height } = img;
-            const scale = Math.min(1, maxSide / Math.max(width, height));
-            const targetW = Math.max(1, Math.round(width * scale));
-            const targetH = Math.max(1, Math.round(height * scale));
-            const canvas = document.createElement("canvas");
-            canvas.width = targetW;
-            canvas.height = targetH;
-            const ctx = canvas.getContext("2d");
-            if (!ctx) throw new Error("Canvas context unavailable");
-            ctx.drawImage(img, 0, 0, targetW, targetH);
-            const type = "image/jpeg";
-            const dataUrl = canvas.toDataURL(type, quality);
-            URL.revokeObjectURL(url);
-            resolve(dataUrl);
-          } catch (err) {
-            URL.revokeObjectURL(url);
-            reject(err);
-          }
-        };
-        img.onerror = () => {
-          URL.revokeObjectURL(url);
-          reject(new Error("画像の読み込みに失敗したよ"));
-        };
-        img.src = url;
-      });
-    }
-
-    function openPicturePicker(number) {
-      state.pictureUploadNumber = String(number);
-      if (!pictureInput) return;
-      pictureInput.value = "";
-      pictureInput.click();
-    }
-
-    async function handlePictureInputChange() {
-      const num = state.pictureUploadNumber;
-      const file = pictureInput?.files?.[0];
-      if (!num || !file || !state.draft) return;
-      try {
-        const dataUrl = await resizeImageFile(file);
-        state.draft.images = { ...(state.draft.images || {}), [num]: dataUrl };
-        renderEditor();
-      } catch (err) {
-        console.error(err);
-        alert(`画像の読み込みで失敗したよ: ${err?.message || err}`);
-      } finally {
-        state.pictureUploadNumber = null;
-      }
-    }
-
-    function renderPictureHTML(numbers = [], images = {}) {
-      const nums = Array.from(new Set((numbers || []).map(n => String(Number(n))).filter(Boolean)));
-      if (!nums.length) return "";
-      return `
-        <div class="pictureWrap">
-          ${nums.map(n => {
-            const src = images?.[n];
-            return src
-              ? `<img class="quizPicture" src="${esc(src)}" alt="picture ${esc(n)}" loading="lazy">`
-              : `<div class="pictureMissing">[picture(${esc(n)})] の画像がまだないよ</div>`;
-          }).join("")}
-        </div>
-      `;
-    }
-
-    function renderRichTextWithPictures(text, images = {}) {
-      const source = String(text ?? "");
-      let html = "";
-      let last = 0;
-      const regex = /\[picture\((\d+)\)\]/ig;
-      let m;
-      while ((m = regex.exec(source))) {
-        const before = source.slice(last, m.index);
-        html += esc(before).replace(/\n/g, "<br>");
-        const n = String(Number(m[1]));
-        const src = images?.[n];
-        html += src
-          ? `<img class="quizPicture" src="${esc(src)}" alt="picture ${esc(n)}" loading="lazy">`
-          : `<div class="pictureMissing">[picture(${esc(n)})] の画像がまだないよ</div>`;
-        last = m.index + m[0].length;
-      }
-      html += esc(source.slice(last)).replace(/\n/g, "<br>");
-      return html;
-    }
-
     function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
       if (!host || !textarea || !box) return;
 
@@ -2015,16 +1838,13 @@
         box.classList.add("hide");
       };
 
-      const getItems = () => typeof items === "function" ? items() : items;
-
       const refresh = () => {
         const pos = textarea.selectionStart ?? 0;
         const active = pos > 0 && textarea.value[pos - 1] === triggerChar;
         if (!active) return hide();
 
-        const list = getItems() || [];
         box.classList.remove("hide");
-        box.innerHTML = list.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
+        box.innerHTML = items.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
 
         const hostRect = host.getBoundingClientRect();
         const taRect = textarea.getBoundingClientRect();
@@ -2179,26 +1999,14 @@
         textarea,
         box,
         triggerChar: "#",
-        items: () => {
-          const nextNum = nextPictureNumber(textarea.value, state.draft?.images || {});
-          return [
-            { label: `[picture(${nextNum})]`, value: `[picture(${nextNum})]` },
-            { label: "[open]", value: "[open]" },
-            { label: "[random]", value: "[random]" },
-            { label: "[choice]", value: "[choice]" },
-            { label: "[random choice]", value: "[random choice]" },
-            { label: "[number]", value: "[number]" },
-            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" }
-          ];
-        },
-        onPick: (value) => {
-          const m = String(value || "").match(/^\[picture\((\d+)\)\]$/i);
-          if (m) {
-            const num = String(Number(m[1]));
-            const images = state.draft?.images || {};
-            if (!images[num]) openPicturePicker(num);
-          }
-        }
+        items: [
+          { label: "[open]", value: "[open]" },
+          { label: "[random]", value: "[random]" },
+          { label: "[choice]", value: "[choice]" },
+          { label: "[random choice]", value: "[random choice]" },
+          { label: "[number]", value: "[number]" },
+          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" }
+        ]
       });
     }
 
@@ -2354,8 +2162,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        comments: sortComments(Array.isArray(data.comments) ? data.comments : []),
-        images: data.images || {}
+        comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
 
@@ -2506,7 +2313,7 @@
               ${sourceLabel ? `<span class="publicBadge">${esc(sourceLabel)}</span>` : ""}
               ${isOpenDoc(docData) ? `<span class="publicBadge">公開</span>` : ""}
             </div>
-            <div class="reviewA">${renderRichTextWithPictures(docData.subtitle || "", docData.images || {})}</div>
+            <div class="reviewA">${esc(docData.subtitle || "")}</div>
             <div class="metaLine">作成: ${esc(created)}</div>
             <div class="metaLine">最終編集: ${esc(updated)}</div>
           </div>
@@ -2648,8 +2455,7 @@
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
-                <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
-                <b>[picture(1)]</b> で画像を入れられるよ。
+                <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2784,7 +2590,7 @@
                   <div id="gutter" class="gutter"></div>
                   <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
 [open] [random]
-[picture(1)] 日本について
+日本について
 首都=東京
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
@@ -2798,11 +2604,8 @@
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
-                問題欄で <b>#</b> を打つと候補が出るよ。<br>
-                <b>[picture(1)]</b> は画像をつけるよ。
+                問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
-
-              <div id="picturePreview" class="pictureThumbGrid"></div>
             </div>
           </div>
         </div>
@@ -2819,18 +2622,6 @@
       const editorInfo = document.getElementById("editorInfo");
       const tagSuggestBox = document.getElementById("tagSuggestBox");
       const editorHost = document.querySelector(".editorHost");
-      const picturePreview = document.getElementById("picturePreview");
-
-      function renderPicturePreview() {
-        const images = d.images || {};
-        const keys = Object.keys(images).sort((a, b) => Number(a) - Number(b));
-        picturePreview.innerHTML = keys.length ? keys.map(n => `
-          <div class="pictureThumb">
-            <img src="${esc(images[n])}" alt="picture ${esc(n)}">
-            <div class="pictureThumbLabel">picture(${esc(n)})</div>
-          </div>
-        `).join("") : `<div class="note">まだ画像はないよ。</div>`;
-      }
 
       function refreshKeyStatus() {
         if (!state.doc) {
@@ -2854,7 +2645,7 @@
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
-      problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); renderPicturePreview(); });
+      problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); });
 
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
@@ -2906,7 +2697,6 @@
           const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
-          const images = { ...(d.images || {}) };
 
           const payload = {
             title: finalTitle,
@@ -2921,8 +2711,7 @@
             slug: newId,
             createdAt: existingCreatedAt,
             updatedAt: Date.now(),
-            comments: existingComments,
-            images
+            comments: existingComments
           };
 
           saveBtn.disabled = true;
@@ -2939,7 +2728,7 @@
             }
 
             state.docId = newId;
-            state.doc = { ...payload, items, comments: sortComments(existingComments), images };
+            state.doc = { ...payload, items, comments: sortComments(existingComments) };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -2985,7 +2774,6 @@
       scheduleEditorSync(problemText, gutter);
       setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox);
       refreshKeyStatus();
-      renderPicturePreview();
       titleInput.focus();
       bindGlobalButtons();
     }
@@ -3002,7 +2790,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichTextWithPictures(state.doc.subtitle || "", state.doc.images || {})}</div>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3093,7 +2881,6 @@
       if (!q) { state.quiz.phase = "done"; render(); return; }
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
-      const pictureHtml = renderPictureHTML(q.item.pictures || [], state.doc.images || {});
 
       root.innerHTML = `
         <div class="page">
@@ -3101,7 +2888,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichTextWithPictures(state.doc.subtitle || "", state.doc.images || {})}</div>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3118,7 +2905,6 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${pictureHtml}
               ${q.item.section ? `<div class="sectionText">${esc(q.item.section)}</div><div style="height:10px"></div>` : ""}
               <div class="question">${esc(q.item.question)}</div>
             </div>
@@ -3214,7 +3000,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichTextWithPictures(state.doc.subtitle || "", state.doc.images || {})}</div>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3229,7 +3015,6 @@
 
             <div class="card">
               ${q.section ? `<div class="sectionText">${esc(q.section)}</div><div style="height:10px"></div>` : ""}
-              ${renderPictureHTML(q.item.pictures || [], state.doc.images || {})}
               <div class="label">問題</div>
               <div class="question" style="font-size:22px">${esc(q.question)}</div>
               <div style="height:12px"></div>
@@ -3379,7 +3164,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichTextWithPictures(state.doc.subtitle || "", state.doc.images || {})}</div>
+                <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3418,7 +3203,6 @@
                   return `
                     <div class="reviewItem ${cls}">
                       ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
-                      ${renderPictureHTML(item.pictures || [], state.doc.images || {})}
                       <div class="reviewQ">${esc(item.question)}</div>
                       <div class="reviewA">正解: ${esc(answerText)}</div>
                       <div class="reviewA">あなたの答え: ${esc(given)}</div>
@@ -3559,7 +3343,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>@ と #</h2>
-              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグや <b>[picture(n)]</b> の候補が出るよ。</p>
+              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>開始前の設定</h2>
@@ -3578,10 +3362,6 @@
             <div class="tutorialCard tutorialHero">
               <h2>1行目に書くタグ</h2>
               <p>1行目の先頭に書く。<br>複数あるときは半角スペースで区切る。<br>1行目に書いたタグは、その下の全部の問題に効く。</p>
-            </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>[picture(1)]</h2>
-              <p>画像をつける。<br>同じ番号なら同じ画像が表示される。<br>問題文の前に置いて使う。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[random]</h2>
@@ -3845,8 +3625,7 @@
           slug: data.slug || id,
           createdAt: data.createdAt || null,
           updatedAt: data.updatedAt || null,
-          comments: sortComments(Array.isArray(data.comments) ? data.comments : []),
-          images: data.images || {}
+          comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
         };
 
         setAccessModeForDoc(state.doc, id);
@@ -3924,10 +3703,6 @@
           maybeAutoOpenTutorial();
         }
       }
-    }
-
-    if (pictureInput) {
-      pictureInput.addEventListener("change", handlePictureInputChange);
     }
 
     if (systemDark) {
