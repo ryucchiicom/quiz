@@ -40,7 +40,9 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{ overflow-x:auto; }
+    html, body{
+      overflow-x:auto;
+    }
 
     *{box-sizing:border-box}
     body{
@@ -256,6 +258,7 @@
       font-weight:900;
       line-height:1.4;
       word-break:break-word;
+      white-space:normal;
     }
 
     .answer{
@@ -267,6 +270,11 @@
       outline:none;
       background:var(--panel);
       color:var(--text);
+    }
+
+    .answerFields{
+      display:grid;
+      gap:10px;
     }
 
     .actions{
@@ -562,10 +570,18 @@
       width:100%;
     }
 
-    .selected{
+    .choiceBtn.selected{
       background:#dfe9ff !important;
       border-color:#9ab8ff !important;
       box-shadow:0 0 0 4px rgba(47,111,237,.08);
+      color:#173a88 !important;
+    }
+
+    body.dark .choiceBtn.selected{
+      background:#31445f !important;
+      border-color:#6b92ff !important;
+      box-shadow:0 0 0 4px rgba(91,140,255,.15);
+      color:#f3f7ff !important;
     }
 
     .homeControls{
@@ -1083,6 +1099,7 @@
         order: [],
         index: 0,
         typedAnswer: "",
+        typedAnswers: [],
         lastResult: null,
         attempts: {},
         onlyWrong: false,
@@ -1170,6 +1187,68 @@
       return null;
     }
 
+    function splitAnswerFields(text) {
+      return String(text ?? "")
+        .replace(/\s*\\n\s*/g, "\n")
+        .replace(/\s*↵\s*/g, "\n")
+        .replace(/\s*↩︎\s*/g, "\n")
+        .split("\n")
+        .map(v => v.trim());
+    }
+
+    function renderRichText(text, { allowColor = true } = {}) {
+      let s = String(text ?? "");
+      s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
+
+      let out = "";
+      let color = null;
+      let buf = "";
+
+      const flush = () => {
+        if (!buf) return;
+        const safe = esc(buf);
+        out += color ? `<span style="color:${color}">${safe}</span>` : safe;
+        buf = "";
+      };
+
+      for (let i = 0; i < s.length;) {
+        if (allowColor) {
+          const m = s.slice(i).match(/^\[color\((#[0-9a-fA-F]{3,8})\)\]/);
+          if (m) {
+            flush();
+            color = m[1];
+            i += m[0].length;
+            continue;
+          }
+        }
+        const ch = s[i];
+        if (ch === "\n") {
+          flush();
+          out += "<br>";
+          color = null;
+          i++;
+          continue;
+        }
+        if (ch === " ") {
+          flush();
+          out += " ";
+          color = null;
+          i++;
+          continue;
+        }
+        buf += ch;
+        i++;
+      }
+      flush();
+      return out;
+    }
+
+    function renderAnswerText(answerGroups) {
+      const groups = Array.isArray(answerGroups) ? answerGroups : [];
+      if (!groups.length) return "";
+      return groups.map(group => group.join(" / ")).join(" ↵ ");
+    }
+
     function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
@@ -1251,13 +1330,15 @@
 
       if (mode === "number") {
         const answerText = parts.slice(1).join("=").trim();
-        if (!answerText) return null;
-        return { type: "question", mode: "number", question, answers: [answerText], localTags: tags, localOnOffControls: onOffControls };
+        const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
+        if (!answerGroups.some(g => g.some(Boolean))) return null;
+        return { type: "question", mode: "number", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls };
       }
 
-      const answers = splitAnswers(parts.slice(1).join("=").trim());
-      if (!answers.length) return null;
-      return { type: "question", mode: "text", question, answers, localTags: tags, localOnOffControls: onOffControls };
+      const answerText = parts.slice(1).join("=").trim();
+      const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
+      if (!answerGroups.some(g => g.some(Boolean))) return null;
+      return { type: "question", mode: "text", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls };
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1334,7 +1415,10 @@
           const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
           lines.push(`${prefix}${item.question}=${opts}`);
         } else {
-          lines.push(`${prefix}${item.question}=${(item.answers || []).join(",")}`);
+          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
+            ? item.answerGroups.map(group => group.join(",")).join("↵")
+            : (item.answers || []).join(",");
+          lines.push(`${prefix}${item.question}=${answerText}`);
         }
       }
       return lines.join("\n");
@@ -1654,6 +1738,7 @@
       state.quiz.order = order;
       state.quiz.index = 0;
       state.quiz.typedAnswer = "";
+      state.quiz.typedAnswers = [];
       state.quiz.lastResult = null;
       state.quiz.attempts = {};
       state.quiz.onlyWrong = !!onlyWrong;
@@ -1742,6 +1827,7 @@
     function nextQuestion() {
       state.quiz.index += 1;
       state.quiz.typedAnswer = "";
+      state.quiz.typedAnswers = [];
       state.quiz.lastResult = null;
       if (state.quiz.index >= state.quiz.order.length) {
         finalizeQuizTime();
@@ -1752,25 +1838,42 @@
       render();
     }
 
+    function normalizeForMode(v, mode) {
+      if (mode === "number") return String(v ?? "").replace(/[^\d.-]/g, "").trim();
+      return norm(v);
+    }
+
+    function isCorrectByGroups(givenFields, answerGroups, mode) {
+      const groups = Array.isArray(answerGroups) ? answerGroups : [];
+      if (!groups.length) return false;
+      if (groups.length === 1 && (givenFields.length === 1)) {
+        return (groups[0] || []).map(v => normalizeForMode(v, mode)).includes(normalizeForMode(givenFields[0], mode));
+      }
+      if (givenFields.length !== groups.length) return false;
+      return groups.every((group, i) => (group || []).map(v => normalizeForMode(v, mode)).includes(normalizeForMode(givenFields[i], mode)));
+    }
+
     function submitAnswer() {
       const q = currentQuestion();
       if (!q) return;
-      const given = state.quiz.typedAnswer;
-      if (!String(given || "").trim()) return alert("答えを入れてね");
 
-      let correct = false;
       if (q.item.mode === "choice") {
-        const normalizedGiven = norm(given);
+        const given = state.quiz.typedAnswer ?? "";
         const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
-        correct = correctOptions.includes(normalizedGiven);
-      } else if (q.item.mode === "number") {
-        correct = (q.item.answers || []).map(v => String(v).replace(/\D/g, "")).includes(String(given).replace(/\D/g, ""));
-      } else {
-        correct = (q.item.answers || []).map(norm).includes(norm(given));
+        const correct = correctOptions.includes(norm(given));
+        state.quiz.attempts[q.idx] = { given, correct };
+        state.quiz.lastResult = { idx: q.idx, given, correct };
+        state.quiz.phase = "result";
+        render();
+        return;
       }
 
-      state.quiz.attempts[q.idx] = { given, correct };
-      state.quiz.lastResult = { idx: q.idx, given, correct };
+      const fieldCount = Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
+      const givenFields = Array.from({ length: fieldCount }, (_, i) => String(state.quiz.typedAnswers?.[i] ?? ""));
+      const correct = isCorrectByGroups(givenFields, q.item.answerGroups || [q.item.answers || []], q.item.mode);
+      const givenDisplay = fieldCount > 1 ? givenFields : (givenFields[0] || "");
+      state.quiz.attempts[q.idx] = { given: givenDisplay, givenFields, correct };
+      state.quiz.lastResult = { idx: q.idx, given: givenDisplay, givenFields, correct };
       state.quiz.phase = "result";
       render();
     }
@@ -1975,7 +2078,7 @@
           const v = comment?.proofs?.timeLabel;
           return v ? `<span class="timeToken">${esc(v)}</span>` : esc(part);
         }
-        return esc(part);
+        return renderRichText(part, { allowColor: true });
       }).join("");
     }
 
@@ -2096,7 +2199,7 @@
     };
 
     const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
+    const homeButtonsHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
 
     const editorActionHtml = () => {
       const buttons = [];
@@ -2173,7 +2276,12 @@
         if (item.section) parts.push(item.section);
         parts.push(item.question || "");
         if (item.mode === "choice") parts.push((item.options || []).map(o => o.text).join(" "));
-        else parts.push((item.answers || []).join(" "));
+        else {
+          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
+            ? item.answerGroups.map(group => group.join(" ")).join(" ")
+            : (item.answers || []).join(" ");
+          parts.push(answerText);
+        }
       }
       return parts.join(" ").toLowerCase();
     }
@@ -2444,7 +2552,7 @@
                 <h1 class="title">問題作成サイト</h1>
                 <div class="sub">作って、そのまま遊べる</div>
               </div>
-              ${helpButtonHtml()}
+              ${homeButtonsHtml()}
             </div>
           </div>
 
@@ -2455,7 +2563,8 @@
                 1行ごとに <b>問題=答え</b> を入れるだけ。<br>
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
-                <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。
+                <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
+                <b>[picture(1)]</b> みたいな画像タグや、<b>[color(#ff0000)]</b> みたいな色つき文字も使えるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2538,7 +2647,7 @@
             await navigator.clipboard.writeText(link);
             alert("リンクをコピーしたよ");
           } catch {
-            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
+            prompt("コピーできない環境だったよ。手動でコピーしてね", decodeURIComponent(link));
           }
         });
       });
@@ -2559,7 +2668,6 @@
                 <h1 class="title">作成 / 編集</h1>
                 <div class="sub">タイトルの右に Key ボタン</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">${topButtonHtml()}</div>
           </div>
@@ -2594,7 +2702,10 @@
 首都=東京
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
-[ONorOFF:random]">${esc(d.rawText)}</textarea>
+[ONorOFF:random]
+あい[color(#ff0000)]うえ お=こたえ
+1+1=2↵2
+">${esc(d.rawText)}</textarea>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
               </div>
@@ -2604,6 +2715,9 @@
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
+                問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
+                答え側にそれらを入れると、答える枠を増やせる。<br>
+                <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
@@ -2755,8 +2869,8 @@
 
             location.hash = `#/${encodeURIComponent(newId)}`;
             const link = prettyLink(newId);
-            navigator.clipboard?.writeText(link).catch(() => {});
-            alert(`保存したよ！\n\n${link}`);
+            navigator.clipboard?.writeText(decodeURIComponent(link)).catch(() => {});
+            alert(`保存したよ！\n\n${decodeURIComponent(link)}`);
             startQuiz(state.doc, newId);
           } catch (err) {
             console.error("save failed:", err);
@@ -2792,7 +2906,6 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -2881,6 +2994,10 @@
       if (!q) { state.quiz.phase = "done"; render(); return; }
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
+      const fieldCount = q.item.mode === "choice" ? 1 : Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
+      if (!Array.isArray(state.quiz.typedAnswers) || state.quiz.typedAnswers.length !== fieldCount) {
+        state.quiz.typedAnswers = Array.from({ length: fieldCount }, () => "");
+      }
 
       root.innerHTML = `
         <div class="page">
@@ -2888,9 +3005,8 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -2905,13 +3021,30 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${q.item.section ? `<div class="sectionText">${esc(q.item.section)}</div><div style="height:10px"></div>` : ""}
-              <div class="question">${esc(q.item.question)}</div>
+              ${q.item.section ? `<div class="sectionText">${renderRichText(q.item.section)}</div><div style="height:10px"></div>` : ""}
+              <div class="question">${renderRichText(q.item.question)}</div>
             </div>
 
             <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
-              ${q.item.mode === "choice" ? `<div id="choiceGrid" class="choiceGrid"></div>` : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`}
+              ${q.item.mode === "choice" ? `
+                <div id="choiceGrid" class="choiceGrid"></div>
+              ` : `
+                <div class="answerFields" style="grid-template-columns:repeat(${Math.max(1, fieldCount)}, minmax(0, 1fr));">
+                  ${Array.from({ length: fieldCount }, (_, i) => `
+                    <input
+                      id="answerInput${i}"
+                      class="answer"
+                      type="text"
+                      placeholder="ここに入力"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                      ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}
+                    >
+                  `).join("")}
+                </div>
+              `}
               <div class="actions">
                 ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
                 <button class="submit" id="submitBtn" type="button">✅</button>
@@ -2962,22 +3095,29 @@
           state.quiz.typedAnswer = btn.dataset.choiceText || "";
         }));
       } else {
-        const input = document.getElementById("answerInput");
-        input.focus();
-        input.addEventListener("input", e => {
-          if (q.item.mode === "number") e.target.value = e.target.value.replace(/\D/g, "");
-          state.quiz.typedAnswer = e.target.value;
+        const inputs = [...document.querySelectorAll('[id^="answerInput"]')];
+        inputs.forEach((input, i) => {
+          input.value = state.quiz.typedAnswers[i] || "";
+          input.addEventListener("input", e => {
+            if (q.item.mode === "number") e.target.value = e.target.value.replace(/\D/g, "");
+            state.quiz.typedAnswers[i] = e.target.value;
+          });
+          input.addEventListener("keydown", e => {
+            if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
+              e.preventDefault();
+              return;
+            }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (i < inputs.length - 1) {
+                inputs[i + 1].focus();
+              } else {
+                submitAnswer();
+              }
+            }
+          });
         });
-        input.addEventListener("keydown", e => {
-          if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
-            e.preventDefault();
-            return;
-          }
-          if (e.key === "Enter") {
-            e.preventDefault();
-            submitAnswer();
-          }
-        });
+        if (inputs[0]) inputs[0].focus();
       }
 
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
@@ -2990,7 +3130,7 @@
       const q = state.quiz.items[r.idx];
       const answerText = q.mode === "choice"
         ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-        : (q.answers || []).join(" / ");
+        : renderAnswerText(q.answerGroups || [q.answers || []]);
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
@@ -3000,9 +3140,8 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3014,15 +3153,15 @@
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
 
             <div class="card">
-              ${q.section ? `<div class="sectionText">${esc(q.section)}</div><div style="height:10px"></div>` : ""}
+              ${q.section ? `<div class="sectionText">${renderRichText(q.section)}</div><div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${esc(q.question)}</div>
+              <div class="question" style="font-size:22px">${renderRichText(q.question)}</div>
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${esc(answerText)}</div>
+              <div class="explain">${renderRichText(answerText)}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${esc(r.given)}</div>
+              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(String(v))).join("<br>") : renderRichText(String(r.given ?? ""))}</div>
             </div>
 
             <div class="actions">
@@ -3164,9 +3303,8 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3198,14 +3336,14 @@
                   const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
                   const answerText = item.mode === "choice"
                     ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-                    : (item.answers || []).join(" / ");
+                    : renderAnswerText(item.answerGroups || [item.answers || []]);
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
-                      ${item.section ? `<div class="reviewSection">${esc(item.section)}</div>` : ""}
-                      <div class="reviewQ">${esc(item.question)}</div>
-                      <div class="reviewA">正解: ${esc(answerText)}</div>
-                      <div class="reviewA">あなたの答え: ${esc(given)}</div>
+                      ${item.section ? `<div class="reviewSection">${renderRichText(item.section)}</div>` : ""}
+                      <div class="reviewQ">${renderRichText(item.question)}</div>
+                      <div class="reviewA">正解: ${renderRichText(answerText)}</div>
+                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(String(v))).join("<br>") : renderRichText(String(given))}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3390,6 +3528,10 @@
             <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
               <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>改行・色・答えの枠</h2>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。</p>
             </div>
           `
         },
