@@ -968,6 +968,31 @@
       border-color:transparent;
     }
 
+    .pictureWrap{
+      display:grid;
+      gap:10px;
+      margin:8px 0 12px;
+    }
+
+    .quizPicture{
+      width:100%;
+      max-width:100%;
+      border-radius:16px;
+      display:block;
+      object-fit:contain;
+      background:rgba(127,127,127,.08);
+      border:1px solid var(--line);
+    }
+
+    .pictureMissing{
+      border:1px dashed var(--line);
+      border-radius:16px;
+      padding:12px 14px;
+      color:var(--muted);
+      font-size:13px;
+      background:rgba(127,127,127,.06);
+    }
+
     .pictureThumbGrid{
       display:grid;
       gap:10px;
@@ -997,33 +1022,6 @@
       font-size:12px;
       color:var(--muted);
       word-break:break-word;
-    }
-
-    .quizPicture{
-      width:100%;
-      max-width:100%;
-      border-radius:16px;
-      display:block;
-      object-fit:contain;
-      background:rgba(127,127,127,.08);
-      border:1px solid var(--line);
-      margin:0 0 10px 0;
-    }
-
-    .pictureMissing{
-      border:1px dashed var(--line);
-      border-radius:16px;
-      padding:12px 14px;
-      color:var(--muted);
-      font-size:13px;
-      background:rgba(127,127,127,.06);
-      margin:0 0 10px 0;
-    }
-
-    .pictureWrap{
-      display:grid;
-      gap:10px;
-      margin:8px 0 12px;
     }
 
     @keyframes tutInRight{
@@ -1120,9 +1118,15 @@
     const SETTINGS_COLLECTION = "siteSettings";
     const SETTINGS_DOC_ID = "main";
     const TAGS = ["random", "choice", "random choice", "number", "open"];
+    const PICTURE_TAG_RE = /\[picture\((\d+)\)\]/ig;
 
-    const CONTROL_LABELS = { random: "問題順ランダム" };
-    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
+    const CONTROL_LABELS = {
+      random: "問題順ランダム"
+    };
+
+    const CONTROL_HINTS = {
+      random: "問題の順番をランダムにする"
+    };
 
     const state = {
       screen: "loading",
@@ -1209,14 +1213,6 @@
         .trim()
         .replace(/\s+/g, " ")
         .toLowerCase();
-    }
-
-    function stripPictureTags(text) {
-      return String(text ?? "").replace(/\[picture\(\d+\)\]/ig, "");
-    }
-
-    function compareText(text) {
-      return norm(stripPictureTags(text));
     }
 
     function splitAnswers(text) {
@@ -1324,18 +1320,18 @@
         }).filter(o => o.text);
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return { type: "question", mode: "choice", question, options, randomChoice, pictures: meta.pictures, localTags: meta.tags, localOnOffControls: meta.onOffControls };
+        return { type: "question", mode: "choice", question, options, randomChoice, localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
       }
 
       if (mode === "number") {
         const answerText = parts.slice(1).join("=").trim();
         if (!answerText) return null;
-        return { type: "question", mode: "number", question, answers: [answerText], pictures: meta.pictures, localTags: meta.tags, localOnOffControls: meta.onOffControls };
+        return { type: "question", mode: "number", question, answers: [answerText], localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
       }
 
       const answers = splitAnswers(parts.slice(1).join("=").trim());
       if (!answers.length) return null;
-      return { type: "question", mode: "text", question, answers, pictures: meta.pictures, localTags: meta.tags, localOnOffControls: meta.onOffControls };
+      return { type: "question", mode: "text", question, answers, localTags: meta.tags, localPictures: meta.pictures, localOnOffControls: meta.onOffControls };
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1359,6 +1355,7 @@
           i++;
           continue;
         }
+
         break;
       }
 
@@ -1840,14 +1837,13 @@
 
       let correct = false;
       if (q.item.mode === "choice") {
-        const normalizedGiven = compareText(given);
-        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => compareText(o.text));
+        const normalizedGiven = norm(given);
+        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
         correct = correctOptions.includes(normalizedGiven);
       } else if (q.item.mode === "number") {
-        const givenNum = String(stripPictureTags(given)).replace(/\D/g, "");
-        correct = (q.item.answers || []).map(v => String(stripPictureTags(v)).replace(/\D/g, "")).includes(givenNum);
+        correct = (q.item.answers || []).map(v => String(v).replace(/\D/g, "")).includes(String(given).replace(/\D/g, ""));
       } else {
-        correct = (q.item.answers || []).map(compareText).includes(compareText(given));
+        correct = (q.item.answers || []).map(norm).includes(norm(given));
       }
 
       state.quiz.attempts[q.idx] = { given, correct };
@@ -1912,11 +1908,10 @@
     }
 
     function nextPictureNumber(text, images = {}) {
-      const rx = /\[picture\((\d+)\)\]/ig;
       let max = 0;
       const scan = String(text ?? "");
       let m;
-      while ((m = rx.exec(scan))) max = Math.max(max, Number(m[1]) || 0);
+      while ((m = PICTURE_TAG_RE.exec(scan))) max = Math.max(max, Number(m[1]) || 0);
       for (const k of Object.keys(images || {})) max = Math.max(max, Number(k) || 0);
       return max + 1;
     }
