@@ -247,6 +247,7 @@
       line-height:1.35;
       color:#334155;
       word-break:break-word;
+      white-space:normal;
     }
 
     body.dark .sectionText{
@@ -1391,6 +1392,75 @@
       return { globalFlags, onOffControls, items };
     }
 
+    function packItemForFirestore(item) {
+      if (!item || typeof item !== "object") return item;
+      if (item.mode === "choice") {
+        return {
+          id: item.id || uid(),
+          section: item.section || "",
+          type: item.type || "question",
+          mode: "choice",
+          question: String(item.question || ""),
+          options: (item.options || []).map(o => ({
+            text: String(o?.text || ""),
+            correct: !!o?.correct
+          })).filter(o => o.text),
+          randomChoice: !!item.randomChoice,
+          localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
+          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : []
+        };
+      }
+
+      const groups = Array.isArray(item.answerGroups) ? item.answerGroups : [];
+      return {
+        id: item.id || uid(),
+        section: item.section || "",
+        type: item.type || "question",
+        mode: item.mode === "number" ? "number" : "text",
+        question: String(item.question || ""),
+        answerGroupsText: groups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")).join(",") : String(group ?? "")),
+        localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
+        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : []
+      };
+    }
+
+    function unpackItemFromFirestore(item) {
+      if (!item || typeof item !== "object") return item;
+
+      if (item.mode === "choice") {
+        return {
+          ...item,
+          options: Array.isArray(item.options)
+            ? item.options.map(o => ({
+                text: String(o?.text || ""),
+                correct: !!o?.correct
+              })).filter(o => o.text)
+            : [],
+          randomChoice: !!item.randomChoice,
+          localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
+          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : []
+        };
+      }
+
+      const groupsSource =
+        Array.isArray(item.answerGroupsText) && item.answerGroupsText.length
+          ? item.answerGroupsText.map(txt => splitAnswers(txt))
+          : Array.isArray(item.answerGroups) && item.answerGroups.length
+            ? item.answerGroups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")) : splitAnswers(String(group ?? "")))
+            : (item.answers ? [splitAnswers(Array.isArray(item.answers) ? item.answers.join(",") : String(item.answers))] : [[]]);
+
+      const answerGroups = groupsSource.map(group => group.filter(Boolean)).filter(group => group.length > 0);
+
+      return {
+        ...item,
+        mode: item.mode === "number" ? "number" : "text",
+        answerGroups,
+        answers: answerGroups[0] || [],
+        localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
+        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : []
+      };
+    }
+
     function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls = []) {
       const lines = [];
       const gf = [];
@@ -2199,7 +2269,8 @@
     };
 
     const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const homeButtonsHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
+    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
+    const homeButtonsHtml = () => helpButtonHtml();
 
     const editorActionHtml = () => {
       const buttons = [];
@@ -2243,7 +2314,9 @@
 
     function normalizeDoc(id, data) {
       const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-      const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
+      const items = Array.isArray(data.items) && data.items.length
+        ? data.items.map(unpackItemFromFirestore).filter(Boolean)
+        : parsed.items;
       const globalFlags = {
         random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
         choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
@@ -2564,7 +2637,8 @@
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
-                <b>[picture(1)]</b> みたいな画像タグや、<b>[color(#ff0000)]</b> みたいな色つき文字も使えるよ。
+                <b>[color(#ff0000)]</b> で文字色を変えられる。<br>
+                <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2644,7 +2718,7 @@
           const id = btn.dataset.copyQuiz || "";
           const link = prettyLink(id);
           try {
-            await navigator.clipboard.writeText(link);
+            await navigator.clipboard.writeText(decodeURIComponent(link));
             alert("リンクをコピーしたよ");
           } catch {
             prompt("コピーできない環境だったよ。手動でコピーしてね", decodeURIComponent(link));
@@ -2668,6 +2742,7 @@
                 <h1 class="title">作成 / 編集</h1>
                 <div class="sub">タイトルの右に Key ボタン</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">${topButtonHtml()}</div>
           </div>
@@ -2704,8 +2779,7 @@
 [number] 123+456=579
 [ONorOFF:random]
 あい[color(#ff0000)]うえ お=こたえ
-1+1=2↵2
-">${esc(d.rawText)}</textarea>
+1+1=2↵2">${esc(d.rawText)}</textarea>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
               </div>
@@ -2716,7 +2790,7 @@
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
                 問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
-                答え側にそれらを入れると、答える枠を増やせる。<br>
+                答え側にそれらを入れると、答える枠を複数にできる。<br>
                 <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
@@ -2815,7 +2889,7 @@
           const payload = {
             title: finalTitle,
             subtitle,
-            items,
+            items: items.map(packItemForFirestore),
             rawText: d.rawText,
             globalFlags,
             onOffControls,
@@ -2906,6 +2980,7 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3007,6 +3082,7 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3142,6 +3218,7 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3305,6 +3382,7 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3744,34 +3822,14 @@
         const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()) { state.screen = "home"; render(); return; }
         const data = snap.data() || {};
-        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-        const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
-
         state.docId = id;
-        state.doc = {
-          title: data.title || "問題",
-          subtitle: data.subtitle || "",
-          items,
-          rawText: data.rawText || "",
-          globalFlags: {
-            random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
-            choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
-            randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
-            number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
-            open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
-          },
-          onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
-          keyMode: data.keyMode || "key",
-          key: data.key || "",
-          ownerToken: data.ownerToken || "",
-          slug: data.slug || id,
-          createdAt: data.createdAt || null,
-          updatedAt: data.updatedAt || null,
-          comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
-        };
-
+        state.doc = normalizeDoc(id, data);
         setAccessModeForDoc(state.doc, id);
-        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") { openEditFromDoc(); return; }
+
+        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") {
+          openEditFromDoc();
+          return;
+        }
 
         const entered = prompt("Key を入力して編集", "");
         if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
@@ -3822,21 +3880,7 @@
           const snap = await getDoc(doc(db, COLLECTION, r.id));
           if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
           const data = snap.data() || {};
-          const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-          const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
-          startQuiz(normalizeDoc(r.id, {
-            ...data,
-            items,
-            rawText: data.rawText || "",
-            globalFlags: {
-              random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
-              choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
-              randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
-              number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
-              open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
-            },
-            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || []))
-          }), r.id);
+          startQuiz(normalizeDoc(r.id, data), r.id);
           maybeAutoOpenTutorial();
         } catch (err) {
           console.error(err);
