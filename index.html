@@ -527,13 +527,8 @@
       font-weight:900;
     }
 
-    body.dark .scoreToken{
-      color:#66e08d;
-    }
-
-    body.dark .timeToken{
-      color:#8db2ff;
-    }
+    body.dark .scoreToken{ color:#66e08d; }
+    body.dark .timeToken{ color:#8db2ff; }
 
     .commentItem{
       border:1px solid var(--line);
@@ -743,13 +738,8 @@
       flex:none;
     }
 
-    body.dark .toggleSwitch{
-      background:#42506a;
-    }
-
-    .toggleSwitch.on{
-      background:var(--accent);
-    }
+    body.dark .toggleSwitch{ background:#42506a; }
+    .toggleSwitch.on{ background:var(--accent); }
 
     .toggleKnob{
       position:absolute;
@@ -763,9 +753,7 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{
-      transform:translateX(24px);
-    }
+    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
 
     .settingHeader{
       display:grid;
@@ -785,16 +773,14 @@
       line-height:1.6;
     }
 
-    #tutorialLayer,
-    #partnerLayer{
+    #tutorialLayer,#partnerLayer{
       position:fixed;
       inset:0;
       z-index:1000;
       pointer-events:none;
     }
 
-    .tutorialOverlay,
-    .partnerOverlay{
+    .tutorialOverlay,.partnerOverlay{
       position:fixed;
       inset:0;
       pointer-events:auto;
@@ -807,14 +793,12 @@
       transition:opacity .22s ease, transform .22s ease;
     }
 
-    .tutorialOverlay.closing,
-    .partnerOverlay.closing{
+    .tutorialOverlay.closing,.partnerOverlay.closing{
       opacity:0;
       transform:translateY(18px);
     }
 
-    .tutorialPanel,
-    .partnerPanel{
+    .tutorialPanel,.partnerPanel{
       width:min(860px, 100%);
       max-height:min(86vh, 860px);
       overflow:hidden;
@@ -827,8 +811,7 @@
       grid-template-rows:auto 1fr auto;
     }
 
-    .tutorialTop,
-    .partnerTop{
+    .tutorialTop,.partnerTop{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
@@ -836,24 +819,21 @@
       padding:16px 18px 0;
     }
 
-    .tutorialTitle,
-    .partnerTitle{
+    .tutorialTitle,.partnerTitle{
       font-size:24px;
       font-weight:1000;
       line-height:1.1;
       margin:0;
     }
 
-    .tutorialSub,
-    .partnerSub{
+    .tutorialSub,.partnerSub{
       margin-top:6px;
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    .tutorialClose,
-    .partnerClose{
+    .tutorialClose,.partnerClose{
       width:44px;
       height:44px;
       border-radius:14px;
@@ -864,8 +844,7 @@
       font-weight:900;
     }
 
-    .tutorialBody,
-    .partnerBody{
+    .tutorialBody,.partnerBody{
       padding:14px 18px 6px;
       overflow:auto;
     }
@@ -890,9 +869,7 @@
       background:rgba(127,127,127,.05);
     }
 
-    body.dark .tutorialCard{
-      background:rgba(255,255,255,.03);
-    }
+    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
 
     .tutorialHero{
       display:grid;
@@ -924,12 +901,9 @@
       word-break:break-word;
     }
 
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+    body.dark .tutorialCode{ background:#0a1220; }
 
-    .tutorialFooter,
-    .partnerFooter{
+    .tutorialFooter,.partnerFooter{
       display:flex;
       justify-content:space-between;
       gap:10px;
@@ -952,7 +926,7 @@
       background:rgba(127,127,127,.35);
     }
 
-    .dot.active{background:var(--accent);}
+    .dot.active{ background:var(--accent); }
 
     .tutorialNavBtn{
       min-width:110px;
@@ -981,6 +955,27 @@
       background:var(--accent);
       color:#fff;
       border-color:transparent;
+    }
+
+    .inlinePicture{
+      display:inline-block;
+      max-width:min(100%, 280px);
+      max-height:180px;
+      vertical-align:middle;
+      object-fit:contain;
+      border-radius:12px;
+      margin:2px 0;
+      box-shadow:0 8px 18px rgba(0,0,0,.10);
+    }
+
+    .pictureMissing{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      background:rgba(127,127,127,.10);
+      color:var(--muted);
+      font-size:.9em;
+      vertical-align:middle;
     }
 
     @keyframes tutInRight{
@@ -1075,6 +1070,7 @@
     const SETTINGS_COLLECTION = "siteSettings";
     const SETTINGS_DOC_ID = "main";
     const TAGS = ["random", "choice", "random choice", "number", "open"];
+    const LOCAL_GUTTER_KEY = "qb_editor_gutter_mode";
 
     const CONTROL_LABELS = { random: "問題順ランダム" };
     const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
@@ -1084,6 +1080,7 @@
       docId: "",
       doc: null,
       draft: null,
+      draftPictures: {},
       accessMode: "none",
       showComments: false,
       allDocs: [],
@@ -1092,6 +1089,7 @@
       homeQueries: { library: "", public: "" },
       homeVisibleCount: { library: 20, public: 12 },
       publicOrder: [],
+      editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
       quiz: {
@@ -1196,26 +1194,39 @@
         .map(v => v.trim());
     }
 
-    function renderRichText(text, { allowColor = true } = {}) {
+    function normalizePictures(obj) {
+      const out = {};
+      if (!obj || typeof obj !== "object") return out;
+      for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === "string" && v.startsWith("data:image/")) out[String(k)] = v;
+      }
+      return out;
+    }
+
+    function getPictureMap() {
+      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
+    }
+
+    function getNextPictureNumber(text, pictures) {
+      const nums = [];
+      String(text || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => { nums.push(Number(n)); return ""; });
+      for (const k of Object.keys(pictures || {})) nums.push(Number(k));
+      const max = nums.length ? Math.max(...nums.filter(n => Number.isFinite(n))) : 0;
+      return max + 1;
+    }
+
+    function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
       let s = String(text ?? "");
       s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
 
       let out = "";
       let color = null;
-      let bold = false;
       let buf = "";
 
       const flush = () => {
         if (!buf) return;
         const safe = esc(buf);
-        if (color || bold) {
-          const styles = [];
-          if (color) styles.push(`color:${color}`);
-          if (bold) styles.push(`font-weight:900`);
-          out += `<span style="${styles.join(";")}">${safe}</span>`;
-        } else {
-          out += safe;
-        }
+        out += color ? `<span style="color:${color}">${safe}</span>` : safe;
         buf = "";
       };
 
@@ -1230,11 +1241,17 @@
           }
         }
 
-        const b = s.slice(i).match(/^\[bold\]/i);
-        if (b) {
+        const pm = s.slice(i).match(/^\[picture\((\d+)\)\]/);
+        if (pm) {
           flush();
-          bold = true;
-          i += b[0].length;
+          const n = pm[1];
+          const src = pictureMap[String(n)];
+          if (src) {
+            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          } else {
+            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          }
+          i += pm[0].length;
           continue;
         }
 
@@ -1243,7 +1260,6 @@
           flush();
           out += "<br>";
           color = null;
-          bold = false;
           i++;
           continue;
         }
@@ -1251,7 +1267,6 @@
           flush();
           out += " ";
           color = null;
-          bold = false;
           i++;
           continue;
         }
@@ -1662,7 +1677,7 @@
       return i >= 0 ? p.slice(0, i + 1) : "/";
     };
 
-    const prettyLink = (id) => `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
+    const prettyLink = (id) => `${location.origin}${basePath()}#/${id}`;
 
     function route() {
       const raw = location.hash.replace(/^#/, "");
@@ -1774,6 +1789,7 @@
       state.docId = "";
       state.accessMode = "none";
       state.draft = blankDraft();
+      state.draftPictures = {};
       state.showComments = false;
       state.screen = "editor";
       render();
@@ -1787,6 +1803,7 @@
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
+      state.draftPictures = { ...(state.doc?.pictures || {}) };
       state.screen = "editor";
       render();
     }
@@ -1966,13 +1983,52 @@
       render();
     }
 
+    function buildEditorGutterLabels(text, mode) {
+      const lines = String(text ?? "").split(/\r?\n/);
+      if (mode === "question") {
+        const labels = [];
+        let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
+        let q = 0;
+
+        let i = 0;
+        while (i < lines.length && !String(lines[i]).trim()) { labels.push(""); i++; }
+        while (i < lines.length) {
+          const line = String(lines[i] ?? "");
+          const trimmed = line.trim();
+          if (!trimmed) { labels.push(""); i++; continue; }
+
+          const parsed = parseLeadingSettings(line);
+          if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length)) {
+            globalFlags = mergeFlags(globalFlags, parsed.tags);
+            labels.push("");
+            i++;
+            continue;
+          }
+
+          const qline = parseQuestionLine(line, globalFlags);
+          if (qline) {
+            q += 1;
+            labels.push(String(q));
+          } else {
+            labels.push("");
+          }
+          i++;
+        }
+        while (labels.length < lines.length) labels.push("");
+        return labels;
+      }
+
+      return Array.from({ length: lines.length }, (_, i) => String(i + 1));
+    }
+
     function syncEditorArea(textarea, gutter) {
       textarea.style.height = "auto";
       const next = Math.max(420, textarea.scrollHeight);
       textarea.style.height = `${next}px`;
       gutter.style.height = `${next}px`;
-      const count = Math.max(1, textarea.value.split(/\r?\n/).length);
-      gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
+
+      const labels = buildEditorGutterLabels(textarea.value, state.editorGutterMode);
+      gutter.textContent = labels.length ? labels.join("\n") : "1";
     }
 
     let editorRaf = 0;
@@ -2034,8 +2090,10 @@
         const active = pos > 0 && textarea.value[pos - 1] === triggerChar;
         if (!active) return hide();
 
+        const list = typeof items === "function" ? items() : items;
+
         box.classList.remove("hide");
-        box.innerHTML = items.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
+        box.innerHTML = list.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
 
         const hostRect = host.getBoundingClientRect();
         const taRect = textarea.getBoundingClientRect();
@@ -2060,6 +2118,8 @@
             replaceTriggerAtCaret(textarea, triggerChar, value);
             if (typeof onPick === "function") onPick(value);
             hide();
+            textarea.focus();
+            textarea.dispatchEvent(new Event("keyup", { bubbles: true }));
           });
         });
       };
@@ -2071,6 +2131,76 @@
       textarea.addEventListener("scroll", refresh);
       textarea.addEventListener("blur", () => setTimeout(hide, 120));
       refresh();
+    }
+
+    async function fileToWebpDataUrl(file) {
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await new Promise((resolve, reject) => {
+          const el = new Image();
+          el.onload = () => resolve(el);
+          el.onerror = reject;
+          el.src = url;
+        });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("canvas context unavailable");
+        ctx.drawImage(img, 0, 0);
+
+        try {
+          const webp = canvas.toDataURL("image/webp", 0.9);
+          if (webp.startsWith("data:image/webp")) return webp;
+        } catch {}
+
+        const fallback = await new Promise(resolve => {
+          canvas.toBlob(blob => {
+            if (!blob) return resolve("");
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.readAsDataURL(blob);
+          }, "image/png");
+        });
+        return fallback || "";
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    async function pickPictureAndStore(number) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.style.display = "none";
+      document.body.appendChild(input);
+
+      const result = await new Promise(resolve => {
+        input.addEventListener("change", async () => {
+          const file = input.files && input.files[0];
+          if (!file) {
+            resolve(null);
+            return;
+          }
+          try {
+            const dataUrl = await fileToWebpDataUrl(file);
+            resolve(dataUrl || null);
+          } catch (err) {
+            console.error(err);
+            resolve(null);
+          }
+        }, { once: true });
+
+        input.click();
+      });
+
+      input.remove();
+
+      if (result) {
+        state.draftPictures[String(number)] = result;
+        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
+      }
     }
 
     function isOpenDoc(docData) {
@@ -2131,6 +2261,7 @@
           state.docId = "";
           state.doc = null;
           state.draft = null;
+          state.draftPictures = {};
           state.accessMode = "none";
           state.showComments = false;
           location.hash = "";
@@ -2166,7 +2297,7 @@
           const v = comment?.proofs?.timeLabel;
           return v ? `<span class="timeToken">${esc(v)}</span>` : esc(part);
         }
-        return renderRichText(part, { allowColor: true });
+        return esc(part);
       }).join("");
     }
 
@@ -2190,16 +2321,22 @@
         textarea,
         box,
         triggerChar: "#",
-        items: [
-          { label: "[open]", value: "[open]" },
-          { label: "[random]", value: "[random]" },
-          { label: "[choice]", value: "[choice]" },
-          { label: "[random choice]", value: "[random choice]" },
-          { label: "[number]", value: "[number]" },
-          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-          { label: "[bold]", value: "[bold]" },
-          { label: "[color(#ff0000)]", value: "[color(#ff0000)]" }
-        ]
+        items: () => {
+          const next = getNextPictureNumber(textarea.value, state.draftPictures);
+          return [
+            { label: "[open]", value: "[open]" },
+            { label: "[random]", value: "[random]" },
+            { label: "[choice]", value: "[choice]" },
+            { label: "[random choice]", value: "[random choice]" },
+            { label: "[number]", value: "[number]" },
+            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
+            { label: `[picture(${next})]`, value: `[picture(${next})]` }
+          ];
+        },
+        onPick: (value) => {
+          const m = String(value || "").match(/^\[picture\((\d+)\)\]$/);
+          if (m) void pickPictureAndStore(m[1]);
+        }
       });
     }
 
@@ -2358,6 +2495,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
+        pictures: normalizePictures(data.pictures || {}),
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -2657,8 +2795,9 @@
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
-                <b>[color(#ff0000)]</b> や <b>[bold]</b> で文字を目立たせられる。<br>
-                <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。
+                <b>[color(#ff0000)]</b> で文字色を変えられる。<br>
+                <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。<br>
+                <b>[picture(1)]</b> で画像も入れられるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2723,13 +2862,13 @@
 
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+          location.hash = `#/${btn.dataset.openQuiz || ""}`;
         });
       });
 
       document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+          location.hash = `#/edit/${btn.dataset.editQuiz || ""}`;
         });
       });
 
@@ -2738,10 +2877,10 @@
           const id = btn.dataset.copyQuiz || "";
           const link = prettyLink(id);
           try {
-            await navigator.clipboard.writeText(decodeURIComponent(link));
+            await navigator.clipboard.writeText(link);
             alert("リンクをコピーしたよ");
           } catch {
-            prompt("コピーできない環境だったよ。手動でコピーしてね", decodeURIComponent(link));
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
           }
         });
       });
@@ -2782,7 +2921,13 @@
 
             <div class="row" style="justify-content:space-between;align-items:center;">
               <div id="editorInfo" class="note"></div>
-              <div class="row" style="justify-content:flex-end;">${editorActionHtml()}</div>
+              <div class="row" style="justify-content:flex-end;align-items:center;">
+                <select id="gutterModeSelect" class="input tabSelect" style="height:44px;min-width:160px;max-width:180px">
+                  <option value="line">行数</option>
+                  <option value="question">問題数</option>
+                </select>
+                ${editorActionHtml()}
+              </div>
             </div>
 
             <div>
@@ -2810,7 +2955,8 @@
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
                 問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
                 答え側にそれらを入れると、答える枠を複数にできる。<br>
-                <b>[color(#ff0000)]</b> や <b>[bold]</b> で、文字を目立たせられる。<br>
+                <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
+                <b>[picture(1)]</b> で画像を入れられる。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
@@ -2829,6 +2975,7 @@
       const editorInfo = document.getElementById("editorInfo");
       const tagSuggestBox = document.getElementById("tagSuggestBox");
       const editorHost = document.querySelector(".editorHost");
+      const gutterModeSelect = document.getElementById("gutterModeSelect");
 
       function refreshKeyStatus() {
         if (!state.doc) {
@@ -2853,6 +3000,15 @@
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
       problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); });
+
+      if (gutterModeSelect) {
+        gutterModeSelect.value = state.editorGutterMode;
+        gutterModeSelect.addEventListener("change", () => {
+          state.editorGutterMode = gutterModeSelect.value;
+          localStorage.setItem(LOCAL_GUTTER_KEY, state.editorGutterMode);
+          syncEditorArea(problemText, gutter);
+        });
+      }
 
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
@@ -2918,6 +3074,7 @@
             slug: newId,
             createdAt: existingCreatedAt,
             updatedAt: Date.now(),
+            pictures: normalizePictures(state.draftPictures || {}),
             comments: existingComments
           };
 
@@ -2960,10 +3117,10 @@
               });
             }
 
-            location.hash = `#/${encodeURIComponent(newId)}`;
+            location.hash = `#/${newId}`;
             const link = prettyLink(newId);
-            navigator.clipboard?.writeText(decodeURIComponent(link)).catch(() => {});
-            alert(`保存したよ！\n\n${decodeURIComponent(link)}`);
+            navigator.clipboard?.writeText(link).catch(() => {});
+            alert(`保存したよ！\n\n${link}`);
             startQuiz(state.doc, newId);
           } catch (err) {
             console.error("save failed:", err);
@@ -2997,7 +3154,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${esc(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: getPictureMap() })}</div>
               </div>
             </div>
             <div class="row">
@@ -3086,6 +3243,7 @@
       const q = currentQuestion();
       if (!q) { state.quiz.phase = "done"; render(); return; }
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+      const pics = getPictureMap();
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
       const fieldCount = q.item.mode === "choice" ? 1 : Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
       if (!Array.isArray(state.quiz.typedAnswers) || state.quiz.typedAnswers.length !== fieldCount) {
@@ -3098,8 +3256,9 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: pics })}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3114,8 +3273,8 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${q.item.section ? `<div class="sectionText">${renderRichText(q.item.section)}</div><div style="height:10px"></div>` : ""}
-              <div class="question">${renderRichText(q.item.question)}</div>
+              ${q.item.section ? `<div class="sectionText">${renderRichText(q.item.section, { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
+              <div class="question">${renderRichText(q.item.question, { pictureMap: pics })}</div>
             </div>
 
             <div class="card" style="display:grid;gap:10px">
@@ -3123,7 +3282,7 @@
               ${q.item.mode === "choice" ? `
                 <div id="choiceGrid" class="choiceGrid"></div>
               ` : `
-                <div class="answerFields">
+                <div class="answerFields" style="grid-template-columns:1fr;">
                   ${Array.from({ length: fieldCount }, (_, i) => `
                     <input
                       id="answerInput${i}"
@@ -3221,6 +3380,7 @@
       if (!r) { state.quiz.phase = "question"; render(); return; }
 
       const q = state.quiz.items[r.idx];
+      const pics = getPictureMap();
       const answerText = q.mode === "choice"
         ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
         : renderAnswerText(q.answerGroups || [q.answers || []]);
@@ -3233,8 +3393,9 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: pics })}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3246,15 +3407,15 @@
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
 
             <div class="card">
-              ${q.section ? `<div class="sectionText">${renderRichText(q.section)}</div><div style="height:10px"></div>` : ""}
+              ${q.section ? `<div class="sectionText">${renderRichText(q.section, { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${renderRichText(q.question)}</div>
+              <div class="question" style="font-size:22px">${renderRichText(q.question, { pictureMap: pics })}</div>
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${renderRichText(answerText)}</div>
+              <div class="explain">${renderRichText(answerText, { pictureMap: pics })}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(String(v))).join("<br>") : renderRichText(String(r.given ?? ""))}</div>
+              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(String(v), { pictureMap: pics })).join("<br>") : renderRichText(String(r.given ?? ""), { pictureMap: pics })}</div>
             </div>
 
             <div class="actions">
@@ -3388,6 +3549,7 @@
       const { correctCount, total } = currentScoreMeta();
       const comments = sortComments(state.doc.comments || []);
       const attempts = state.quiz.attempts || {};
+      const pics = getPictureMap();
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
       root.innerHTML = `
@@ -3396,8 +3558,9 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: pics })}</div>
               </div>
+              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3433,10 +3596,10 @@
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
-                      ${item.section ? `<div class="reviewSection">${renderRichText(item.section)}</div>` : ""}
-                      <div class="reviewQ">${renderRichText(item.question)}</div>
-                      <div class="reviewA">正解: ${renderRichText(answerText)}</div>
-                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(String(v))).join("<br>") : renderRichText(String(given))}</div>
+                      ${item.section ? `<div class="reviewSection">${renderRichText(item.section, { pictureMap: pics })}</div>` : ""}
+                      <div class="reviewQ">${renderRichText(item.question, { pictureMap: pics })}</div>
+                      <div class="reviewA">正解: ${renderRichText(answerText, { pictureMap: pics })}</div>
+                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(String(v), { pictureMap: pics })).join("<br>") : renderRichText(String(given), { pictureMap: pics })}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3574,7 +3737,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>@ と #</h2>
-              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。</p>
+              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグや画像の候補が出るよ。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>開始前の設定</h2>
@@ -3619,16 +3782,12 @@
               <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>[bold] と [color(...)]</h2>
-              <p><b>[bold]</b> で太字にできる。<br><b>[color(#ff0000)]</b> で色をつけられる。<br>どちらも、そのあとに続く文字に効くよ。</p>
-            </div>
-            <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
               <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>改行・色・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> や <b>[bold]</b> で、文字を目立たせられる。</p>
+              <h2>改行・色・画像・答えの枠</h2>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。</p>
             </div>
           `
         },
@@ -3851,7 +4010,7 @@
         }
 
         const entered = prompt("Key を入力して編集", "");
-        if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
+        if (entered === null) { location.hash = `#/${id}`; return; }
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
           rememberAccess(state.docId, (state.doc.key || ""), {
@@ -3864,7 +4023,7 @@
           openEditFromDoc();
         } else {
           alert("Key が違うよ");
-          location.hash = `#/${encodeURIComponent(id)}`;
+          location.hash = `#/${id}`;
         }
       } catch (err) {
         console.error(err);
