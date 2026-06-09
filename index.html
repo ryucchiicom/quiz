@@ -40,9 +40,7 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
+    html, body{ overflow-x:auto; }
 
     *{box-sizing:border-box}
     body{
@@ -276,6 +274,7 @@
     .answerFields{
       display:grid;
       gap:10px;
+      grid-template-columns:1fr;
     }
 
     .actions{
@@ -1203,12 +1202,20 @@
 
       let out = "";
       let color = null;
+      let bold = false;
       let buf = "";
 
       const flush = () => {
         if (!buf) return;
         const safe = esc(buf);
-        out += color ? `<span style="color:${color}">${safe}</span>` : safe;
+        if (color || bold) {
+          const styles = [];
+          if (color) styles.push(`color:${color}`);
+          if (bold) styles.push(`font-weight:900`);
+          out += `<span style="${styles.join(";")}">${safe}</span>`;
+        } else {
+          out += safe;
+        }
         buf = "";
       };
 
@@ -1222,11 +1229,21 @@
             continue;
           }
         }
+
+        const b = s.slice(i).match(/^\[bold\]/i);
+        if (b) {
+          flush();
+          bold = true;
+          i += b[0].length;
+          continue;
+        }
+
         const ch = s[i];
         if (ch === "\n") {
           flush();
           out += "<br>";
           color = null;
+          bold = false;
           i++;
           continue;
         }
@@ -1234,6 +1251,7 @@
           flush();
           out += " ";
           color = null;
+          bold = false;
           i++;
           continue;
         }
@@ -2178,7 +2196,9 @@
           { label: "[choice]", value: "[choice]" },
           { label: "[random choice]", value: "[random choice]" },
           { label: "[number]", value: "[number]" },
-          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" }
+          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
+          { label: "[bold]", value: "[bold]" },
+          { label: "[color(#ff0000)]", value: "[color(#ff0000)]" }
         ]
       });
     }
@@ -2637,7 +2657,7 @@
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
-                <b>[color(#ff0000)]</b> で文字色を変えられる。<br>
+                <b>[color(#ff0000)]</b> や <b>[bold]</b> で文字を目立たせられる。<br>
                 <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。
               </p>
               <div style="height:14px"></div>
@@ -2742,7 +2762,6 @@
                 <h1 class="title">作成 / 編集</h1>
                 <div class="sub">タイトルの右に Key ボタン</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">${topButtonHtml()}</div>
           </div>
@@ -2791,7 +2810,7 @@
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
                 問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
                 答え側にそれらを入れると、答える枠を複数にできる。<br>
-                <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
+                <b>[color(#ff0000)]</b> や <b>[bold]</b> で、文字を目立たせられる。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
@@ -2980,7 +2999,6 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${esc(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3082,7 +3100,6 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3106,7 +3123,7 @@
               ${q.item.mode === "choice" ? `
                 <div id="choiceGrid" class="choiceGrid"></div>
               ` : `
-                <div class="answerFields" style="grid-template-columns:repeat(${Math.max(1, fieldCount)}, minmax(0, 1fr));">
+                <div class="answerFields">
                   ${Array.from({ length: fieldCount }, (_, i) => `
                     <input
                       id="answerInput${i}"
@@ -3218,7 +3235,6 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3382,7 +3398,6 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
               </div>
-              ${helpButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3604,12 +3619,16 @@
               <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
             </div>
             <div class="tutorialCard tutorialHero">
+              <h2>[bold] と [color(...)]</h2>
+              <p><b>[bold]</b> で太字にできる。<br><b>[color(#ff0000)]</b> で色をつけられる。<br>どちらも、そのあとに続く文字に効くよ。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
               <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>改行・色・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。</p>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> や <b>[bold]</b> で、文字を目立たせられる。</p>
             </div>
           `
         },
