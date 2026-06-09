@@ -40,10 +40,7 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
-
+    html, body{overflow-x:auto;}
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -99,6 +96,8 @@
       margin-top:4px;
       color:var(--muted);
       font-size:13px;
+      line-height:1.5;
+      word-break:break-word;
     }
 
     .card{
@@ -128,7 +127,6 @@
       border:1px solid #d7e2ff;
       font-weight:700;
     }
-
     body.dark .ghost{
       background:#182133;
       color:#d7e5ff;
@@ -141,7 +139,6 @@
       border:1px solid #ffc7c7;
       font-weight:800;
     }
-
     body.dark .danger{
       background:#2a1620;
       color:#ffaaaa;
@@ -248,17 +245,13 @@
       color:#334155;
       word-break:break-word;
     }
-
-    body.dark .sectionText{
-      color:#d7def0;
-    }
+    body.dark .sectionText{color:#d7def0;}
 
     .question{
       font-size:clamp(22px,4vw,32px);
       font-weight:900;
       line-height:1.4;
       word-break:break-word;
-      white-space:normal;
     }
 
     .answer{
@@ -270,11 +263,6 @@
       outline:none;
       background:var(--panel);
       color:var(--text);
-    }
-
-    .answerFields{
-      display:grid;
-      gap:10px;
     }
 
     .actions{
@@ -312,7 +300,6 @@
       font-weight:900;
       font-size:18px;
     }
-
     body.dark .good{
       border-color:rgba(91,140,255,.35);
       background:#13264a;
@@ -338,7 +325,6 @@
       word-break:break-word;
       color:#2b3241;
     }
-
     body.dark .explain{
       background:#182133;
       border-color:#2d3a4f;
@@ -376,17 +362,14 @@
       border-color:rgba(47,111,237,.35);
       background:rgba(47,111,237,.06);
     }
-
     .reviewItem.reviewBad{
       border-color:rgba(211,60,60,.35);
       background:rgba(211,60,60,.06);
     }
-
     body.dark .reviewItem.reviewGood{
       border-color:rgba(91,140,255,.40);
       background:rgba(91,140,255,.10);
     }
-
     body.dark .reviewItem.reviewBad{
       border-color:rgba(255,118,118,.35);
       background:rgba(255,118,118,.08);
@@ -398,10 +381,7 @@
       color:#334155;
       line-height:1.4;
     }
-
-    body.dark .reviewSection{
-      color:#d7def0;
-    }
+    body.dark .reviewSection{color:#d7def0;}
 
     .reviewQ{
       font-weight:900;
@@ -521,19 +501,12 @@
       color:#14994a;
       font-weight:900;
     }
-
     .timeToken{
       color:#2f6fed;
       font-weight:900;
     }
-
-    body.dark .scoreToken{
-      color:#66e08d;
-    }
-
-    body.dark .timeToken{
-      color:#8db2ff;
-    }
+    body.dark .scoreToken{color:#66e08d;}
+    body.dark .timeToken{color:#8db2ff;}
 
     .commentItem{
       border:1px solid var(--line);
@@ -568,20 +541,19 @@
     .choiceBtn{
       text-align:center;
       width:100%;
+      color:inherit;
     }
 
-    .choiceBtn.selected{
+    .selected{
       background:#dfe9ff !important;
       border-color:#9ab8ff !important;
       box-shadow:0 0 0 4px rgba(47,111,237,.08);
-      color:#173a88 !important;
+      color:#0f172a !important;
     }
-
-    body.dark .choiceBtn.selected{
-      background:#31445f !important;
-      border-color:#6b92ff !important;
-      box-shadow:0 0 0 4px rgba(91,140,255,.15);
-      color:#f3f7ff !important;
+    body.dark .selected{
+      background:#26467f !important;
+      border-color:#6992ff !important;
+      color:#fff !important;
     }
 
     .homeControls{
@@ -641,7 +613,6 @@
       border-radius:999px;
       white-space:nowrap;
     }
-
     body.dark .publicBadge{
       color:#a9c0ff;
       border-color:rgba(91,140,255,.28);
@@ -742,14 +713,8 @@
       transition:.2s background;
       flex:none;
     }
-
-    body.dark .toggleSwitch{
-      background:#42506a;
-    }
-
-    .toggleSwitch.on{
-      background:var(--accent);
-    }
+    body.dark .toggleSwitch{background:#42506a;}
+    .toggleSwitch.on{background:var(--accent);}
 
     .toggleKnob{
       position:absolute;
@@ -763,9 +728,7 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{
-      transform:translateX(24px);
-    }
+    .toggleSwitch.on .toggleKnob{transform:translateX(24px);}
 
     .settingHeader{
       display:grid;
@@ -889,10 +852,7 @@
       padding:16px;
       background:rgba(127,127,127,.05);
     }
-
-    body.dark .tutorialCard{
-      background:rgba(255,255,255,.03);
-    }
+    body.dark .tutorialCard{background:rgba(255,255,255,.03);}
 
     .tutorialHero{
       display:grid;
@@ -923,10 +883,7 @@
       white-space:pre-wrap;
       word-break:break-word;
     }
-
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+    body.dark .tutorialCode{background:#0a1220;}
 
     .tutorialFooter,
     .partnerFooter{
@@ -987,20 +944,58 @@
       from{opacity:0;transform:translateX(28px);}
       to{opacity:1;transform:translateX(0);}
     }
-
     @keyframes tutInLeft{
       from{opacity:0;transform:translateX(-28px);}
       to{opacity:1;transform:translateX(0);}
     }
-
     @keyframes tutInOpen{
       from{opacity:0;transform:translateY(14px) scale(.985);}
       to{opacity:1;transform:translateY(0) scale(1);}
     }
-
     @keyframes tutOutDown{
       from{opacity:1;transform:translateY(0) scale(1);}
       to{opacity:0;transform:translateY(30px) scale(.98);}
+    }
+
+    .richText{white-space:pre-wrap;word-break:break-word;line-height:1.8;}
+    .richPicture{
+      max-width:min(100%,420px);
+      border-radius:14px;
+      vertical-align:middle;
+      display:block;
+      margin:6px 0;
+    }
+    .richInlinePicture{
+      max-width:1.2em;
+      max-height:1.2em;
+      display:inline-block;
+      vertical-align:middle;
+      margin:0 .15em;
+      border-radius:6px;
+    }
+    .richColor{
+      font-weight:900;
+    }
+
+    .answerBoxGrid{
+      display:grid;
+      gap:10px;
+    }
+    .answerBox{
+      width:100%;
+      font-size:18px;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      outline:none;
+      background:var(--panel);
+      color:var(--text);
+    }
+
+    .filePickHint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
     }
 
     @media (max-width:640px){
@@ -1032,6 +1027,7 @@
   <div id="app"></div>
   <div id="tutorialLayer"></div>
   <div id="partnerLayer"></div>
+  <input id="hiddenFileInput" type="file" accept="image/*,.heic,.heif" class="hide" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -1046,13 +1042,12 @@
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
-      authDomain: "quiz-f46d6.firebaseapp.com",
-      projectId: "quiz-f46d6",
-      storageBucket: "quiz-f46d6.firebasestorage.app",
-      messagingSenderId: "75573053604",
-      appId: "1:75573053604:web:6b20006ca68e685e18fe31",
-      measurementId: "G-KQVMD2YYDP"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const appFirebase = initializeApp(firebaseConfig);
@@ -1061,6 +1056,7 @@
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
+    const hiddenFileInput = document.getElementById("hiddenFileInput");
     if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
@@ -1074,55 +1070,53 @@
     const PARTNER_LINK_LOCAL_KEY = "qb_partner_link";
     const SETTINGS_COLLECTION = "siteSettings";
     const SETTINGS_DOC_ID = "main";
+    const MAX_PUBLIC_ITEMS = 12;
+    const MAX_LIBRARY_ITEMS = 20;
+
     const TAGS = ["random", "choice", "random choice", "number", "open"];
 
-    const CONTROL_LABELS = { random: "問題順ランダム" };
-    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
-
     const state = {
-      screen: "loading",
-      docId: "",
-      doc: null,
-      draft: null,
-      accessMode: "none",
-      showComments: false,
-      allDocs: [],
-      catalogLoaded: false,
+      screen:"loading",
+      docId:"",
+      doc:null,
+      draft:null,
+      accessMode:"none",
+      showComments:false,
+      allDocs:[],
+      catalogLoaded:false,
       homeTab: localStorage.getItem("qb_home_tab") || "library",
-      homeQueries: { library: "", public: "" },
-      homeVisibleCount: { library: 20, public: 12 },
-      publicOrder: [],
-      commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
+      homeQueries:{library:"", public:""},
+      homeVisibleCount:{library:MAX_LIBRARY_ITEMS, public:MAX_PUBLIC_ITEMS},
+      publicOrder:[],
+      commentDraft:{name:"", text:"", isPrivate:false, replyTo:""},
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      quiz: {
-        phase: "question",
-        order: [],
-        index: 0,
-        typedAnswer: "",
-        typedAnswers: [],
-        lastResult: null,
-        attempts: {},
-        onlyWrong: false,
-        startedAt: 0,
-        finishedAt: 0,
-        elapsedMs: 0,
-        baseFlags: {},
-        activeFlags: {},
-        settingValues: {},
-        onOffControls: [],
-        items: [],
-        pendingOrder: null,
-        pendingOnlyWrong: false
+      quiz:{
+        phase:"question",
+        order:[],
+        index:0,
+        typedAnswers:[],
+        lastResult:null,
+        attempts:{},
+        onlyWrong:false,
+        startedAt:0,
+        finishedAt:0,
+        elapsedMs:0,
+        baseFlags:{},
+        onOffControls:[],
+        settingValues:{},
+        items:[],
+        pendingOrder:null,
+        pendingOnlyWrong:false
       },
-      tutorial: {
-        open: false,
-        page: 0,
-        seen: false,
-        autoShown: false,
-        closing: false,
-        motion: "open"
+      tutorial:{
+        open:false,
+        page:0,
+        seen:false,
+        autoShown:false,
+        closing:false,
+        motion:"open"
       },
-      partnerModal: { open: false }
+      partnerModal:{open:false}
     };
 
     let resultEnterHandler = null;
@@ -1181,103 +1175,104 @@
         .filter(Boolean);
     }
 
-    function normalizeOnOffTarget(raw) {
-      const t = String(raw ?? "").trim().toLowerCase();
-      if (t === "random") return t;
+    function safeLocalGet(key) {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
+    function safeLocalSet(key, value) {
+      try { localStorage.setItem(key, value); } catch {}
+    }
+
+    function setCookie(name, value, days = 3650) {
+      document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+      const parts = document.cookie ? document.cookie.split("; ") : [];
+      for (const part of parts) {
+        const idx = part.indexOf("=");
+        const key = idx >= 0 ? part.slice(0, idx) : part;
+        if (key === name) return decodeURIComponent(idx >= 0 ? part.slice(idx + 1) : "");
+      }
+      return "";
+    }
+
+    function normalizeTs(value) {
+      if (typeof value === "number") return value;
+      if (!value) return null;
+      if (typeof value.toDate === "function") {
+        const d = value.toDate();
+        return d instanceof Date ? d.getTime() : null;
+      }
+      if (typeof value.seconds === "number") return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
       return null;
     }
 
-    function splitAnswerFields(text) {
-      return String(text ?? "")
+    function formatMinute(value) {
+      const ts = normalizeTs(value);
+      if (!ts) return "—";
+      const d = new Date(ts), pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function formatElapsed(ms) {
+      const capped = Math.min(Math.max(0, Math.floor(ms || 0)), 3599990);
+      const totalSeconds = Math.floor(capped / 1000);
+      const minutes = Math.min(59, Math.floor(totalSeconds / 60));
+      const seconds = Math.min(59, totalSeconds % 60);
+      const hundredths = Math.min(99, Math.floor((capped % 1000) / 10));
+      const pad = n => String(n).padStart(2, "0");
+      return `${pad(minutes)}:${pad(seconds)}:${pad(hundredths)}`;
+    }
+
+    function normalizeSpecialNewlines(s) {
+      return String(s ?? "")
         .replace(/\s*\\n\s*/g, "\n")
-        .replace(/\s*↵\s*/g, "\n")
-        .replace(/\s*↩︎\s*/g, "\n")
-        .split("\n")
-        .map(v => v.trim());
+        .replace(/↵|↩︎/g, "\n");
     }
 
-    function renderRichText(text, { allowColor = true } = {}) {
-      let s = String(text ?? "");
-      s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
+    function splitAnswersByLine(text) {
+      const normalized = normalizeSpecialNewlines(text);
+      if (!normalized.includes("\n")) return [normalized];
+      return normalized.split("\n").map(v => v.trim()).filter(v => v.length > 0 || normalized.includes("\n"));
+    }
 
-      let out = "";
-      let color = null;
-      let buf = "";
-
-      const flush = () => {
-        if (!buf) return;
-        const safe = esc(buf);
-        out += color ? `<span style="color:${color}">${safe}</span>` : safe;
-        buf = "";
-      };
-
-      for (let i = 0; i < s.length;) {
-        if (allowColor) {
-          const m = s.slice(i).match(/^\[color\((#[0-9a-fA-F]{3,8})\)\]/);
-          if (m) {
-            flush();
-            color = m[1];
-            i += m[0].length;
-            continue;
-          }
-        }
-        const ch = s[i];
-        if (ch === "\n") {
-          flush();
-          out += "<br>";
-          color = null;
-          i++;
-          continue;
-        }
-        if (ch === " ") {
-          flush();
-          out += " ";
-          color = null;
-          i++;
-          continue;
-        }
-        buf += ch;
-        i++;
+    function parseAnswerSpec(answerText) {
+      const normalized = normalizeSpecialNewlines(answerText).replace(/\r/g, "");
+      const lines = normalized.split("\n");
+      if (lines.length === 1) {
+        return [splitAnswers(lines[0])];
       }
-      flush();
-      return out;
+      return lines.map(line => splitAnswers(line));
     }
 
-    function renderAnswerText(answerGroups) {
-      const groups = Array.isArray(answerGroups) ? answerGroups : [];
-      if (!groups.length) return "";
-      return groups.map(group => group.join(" / ")).join(" ↵ ");
+    function answerSpecLabel(spec) {
+      if (!spec?.length) return [];
+      return spec.map(group => group.join(" / "));
     }
 
     function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
       const onOffControls = [];
-
       while (rest.startsWith("[")) {
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
-
         const token = tagMatch[1].trim().toLowerCase();
         const after = rest.slice(tagMatch[0].length).trimStart();
-
         if (token.startsWith("onoroff:")) {
-          const target = normalizeOnOffTarget(token.slice("onoroff:".length));
+          const target = token.slice("onoroff:".length).trim().toLowerCase();
           if (target) onOffControls.push(target);
           rest = after;
           continue;
         }
-
         if (TAGS.includes(token)) {
           tags.push(token);
           rest = after;
           continue;
         }
-
         break;
       }
-
-      return { tags, onOffControls: Array.from(new Set(onOffControls)), rest };
+      return { tags, onOffControls:Array.from(new Set(onOffControls)), rest };
     }
 
     function mergeFlags(base, tags) {
@@ -1296,16 +1291,16 @@
       const localNumber = localTags.includes("number");
       const localChoice = localTags.includes("choice") || localTags.includes("random choice");
       const localRandomChoice = localTags.includes("random choice");
-      if (localNumber) return { mode: "number", randomChoice: false };
-      if (localChoice) return { mode: "choice", randomChoice: localRandomChoice || !!globalFlags.randomChoice };
-      if (globalFlags.number) return { mode: "number", randomChoice: false };
-      if (globalFlags.choice || globalFlags.randomChoice) return { mode: "choice", randomChoice: !!globalFlags.randomChoice };
-      return { mode: "text", randomChoice: false };
+      if (localNumber) return { mode:"number", randomChoice:false };
+      if (localChoice) return { mode:"choice", randomChoice:localRandomChoice || !!globalFlags.randomChoice };
+      if (globalFlags.number) return { mode:"number", randomChoice:false };
+      if (globalFlags.choice || globalFlags.randomChoice) return { mode:"choice", randomChoice:!!globalFlags.randomChoice };
+      return { mode:"text", randomChoice:false };
     }
 
     function parseQuestionLine(line, globalFlags) {
       const { tags, onOffControls, rest } = parseLeadingSettings(line);
-      const raw = rest.trim();
+      const raw = normalizeSpecialNewlines(rest.trim());
       if (!raw) return null;
       const parts = raw.split(/[=＝]/);
       if (parts.length < 2) return null;
@@ -1325,26 +1320,25 @@
         }).filter(o => o.text);
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return { type: "question", mode: "choice", question, options, randomChoice, localTags: tags, localOnOffControls: onOffControls };
+        return { type:"question", mode:"choice", question, options, randomChoice, localTags:tags, localOnOffControls:onOffControls };
       }
 
       if (mode === "number") {
         const answerText = parts.slice(1).join("=").trim();
-        const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
-        if (!answerGroups.some(g => g.some(Boolean))) return null;
-        return { type: "question", mode: "number", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls };
+        if (!answerText) return null;
+        return { type:"question", mode:"number", question, answerSpec: parseAnswerSpec(answerText), localTags:tags, localOnOffControls:onOffControls };
       }
 
       const answerText = parts.slice(1).join("=").trim();
-      const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
-      if (!answerGroups.some(g => g.some(Boolean))) return null;
-      return { type: "question", mode: "text", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls };
+      const answerSpec = parseAnswerSpec(answerText);
+      if (!answerSpec.length) return null;
+      return { type:"question", mode:"text", question, answerSpec, localTags:tags, localOnOffControls:onOffControls };
     }
 
     function parseItems(text, overrideFlags = null) {
       const lines = String(text ?? "").split(/\r?\n/);
       const items = [];
-      let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
+      let globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false };
       let onOffControls = [];
 
       let i = 0;
@@ -1362,7 +1356,6 @@
           i++;
           continue;
         }
-
         break;
       }
 
@@ -1391,7 +1384,7 @@
       return { globalFlags, onOffControls, items };
     }
 
-    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls = []) {
+    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls = [], pictures = {}) {
       const lines = [];
       const gf = [];
       if (globalFlags.open) gf.push("[open]");
@@ -1411,15 +1404,10 @@
         let prefix = "";
         if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
         if (item.mode === "number") prefix = "[number] ";
-        if (item.mode === "choice") {
-          const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
-          lines.push(`${prefix}${item.question}=${opts}`);
-        } else {
-          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => group.join(",")).join("↵")
-            : (item.answers || []).join(",");
-          lines.push(`${prefix}${item.question}=${answerText}`);
-        }
+        const p = item.mode === "choice"
+          ? (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",")
+          : (item.answerSpec || []).map(group => group.join(",")).join("\n");
+        lines.push(`${prefix}${item.question}=${p}`);
       }
       return lines.join("\n");
     }
@@ -1432,23 +1420,6 @@
       }
       return a;
     };
-
-    function setCookie(name, value, days = 3650) {
-      document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`;
-    }
-
-    function getCookie(name) {
-      const parts = document.cookie ? document.cookie.split("; ") : [];
-      for (const part of parts) {
-        const idx = part.indexOf("=");
-        const key = idx >= 0 ? part.slice(0, idx) : part;
-        if (key === name) return decodeURIComponent(idx >= 0 ? part.slice(idx + 1) : "");
-      }
-      return "";
-    }
-
-    function safeLocalGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
-    function safeLocalSet(key, value) { try { localStorage.setItem(key, value); } catch {} }
 
     function loadMyList() {
       try {
@@ -1512,34 +1483,6 @@
 
     function removeMyMeta(id) { saveMyList(loadMyList().filter(v => v.id !== id)); }
 
-    function normalizeTs(value) {
-      if (typeof value === "number") return value;
-      if (!value) return null;
-      if (typeof value.toDate === "function") {
-        const d = value.toDate();
-        return d instanceof Date ? d.getTime() : null;
-      }
-      if (typeof value.seconds === "number") return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
-      return null;
-    }
-
-    function formatMinute(value) {
-      const ts = normalizeTs(value);
-      if (!ts) return "—";
-      const d = new Date(ts), pad = n => String(n).padStart(2, "0");
-      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-
-    function formatElapsed(ms) {
-      const capped = Math.min(Math.max(0, Math.floor(ms || 0)), 3599990);
-      const totalSeconds = Math.floor(capped / 1000);
-      const minutes = Math.min(59, Math.floor(totalSeconds / 60));
-      const seconds = Math.min(59, totalSeconds % 60);
-      const hundredths = Math.min(99, Math.floor((capped % 1000) / 10));
-      const pad = n => String(n).padStart(2, "0");
-      return `${pad(minutes)}:${pad(seconds)}:${pad(hundredths)}`;
-    }
-
     function applySystemTheme() {
       document.body.classList.toggle("dark", !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
     }
@@ -1563,7 +1506,6 @@
         e.preventDefault();
         nextQuestion();
       };
-
       window.addEventListener("keydown", resultEnterHandler);
     }
 
@@ -1574,15 +1516,15 @@
       return i >= 0 ? p.slice(0, i + 1) : "/";
     };
 
-    const prettyLink = (id) => `${location.origin}${basePath()}#/${encodeURIComponent(id)}`;
+    const prettyLink = (id) => `${location.origin}${basePath()}#/${id}`;
 
     function route() {
       const raw = location.hash.replace(/^#/, "");
       const parts = raw.split("/").filter(Boolean);
-      if (!parts.length) return { name: "home" };
-      if (parts[0] === "create") return { name: "create" };
-      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: decodeURIComponent(parts[1]) };
-      return { name: "quiz", id: decodeURIComponent(parts[0]) };
+      if (!parts.length) return { name:"home" };
+      if (parts[0] === "create") return { name:"create" };
+      if (parts[0] === "edit" && parts[1]) return { name:"edit", id:decodeURIComponent(parts[1]) };
+      return { name:"quiz", id:decodeURIComponent(parts[0]) };
     }
 
     function getCommentToken() {
@@ -1629,23 +1571,6 @@
       return comment.authorToken && comment.authorToken === getCommentToken();
     }
 
-    function setAccessModeForDoc(docData, id) {
-      if (docData.keyMode === "open" || docData.globalFlags?.open) {
-        state.accessMode = isOwner() ? "owner" : "open";
-        return;
-      }
-      if (isOwner()) {
-        state.accessMode = "owner";
-        return;
-      }
-      const rec = findAccessRecord(id);
-      if (rec && docData.key && rec.key === docData.key) {
-        state.accessMode = "key";
-        return;
-      }
-      state.accessMode = "none";
-    }
-
     function isOwner() {
       return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
     }
@@ -1655,8 +1580,6 @@
       if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return true;
       return state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open";
     }
-
-    const canManageQuiz = () => canEdit();
 
     function currentQuestion() {
       if (!state.quiz?.items?.length) return null;
@@ -1672,13 +1595,13 @@
     }
 
     function makeCommentSuggestionItems() {
-      const items = [{ label: "点数", value: "[[SCORE]]" }];
-      if (isPerfectScore()) items.push({ label: "時間", value: "[[TIME]]" });
+      const items = [{ label:"点数", value:"[[SCORE]]" }];
+      if (isPerfectScore()) items.push({ label:"時間", value:"[[TIME]]" });
       return items;
     }
 
     function blankDraft() {
-      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+      return { title:"", subtitle:"", rawText:"", keyMode:"key", key:"", pictures:{} };
     }
 
     function openCreate() {
@@ -1695,9 +1618,10 @@
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
-        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
+        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || [], state.doc?.pictures || {}),
         keyMode: state.doc?.keyMode || "key",
-        key: state.doc?.key || ""
+        key: state.doc?.key || "",
+        pictures: { ...(state.doc?.pictures || {}) }
       };
       state.screen = "editor";
       render();
@@ -1722,176 +1646,151 @@
       state.quiz.settingValues = defaultSettingValues(state.quiz.onOffControls, state.quiz.baseFlags);
     }
 
-    function beginQuizRun(orderIndices = null, onlyWrong = false) {
-      const activeFlags = buildActiveFlagsFromSettings();
-      const parsed = parseItems(
-        state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
-        activeFlags
-      );
-
-      const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
-      const allIndices = quizItems.map((_, i) => i);
-      const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
-
-      state.quiz.activeFlags = activeFlags;
-      state.quiz.items = quizItems;
-      state.quiz.order = order;
-      state.quiz.index = 0;
-      state.quiz.typedAnswer = "";
-      state.quiz.typedAnswers = [];
-      state.quiz.lastResult = null;
-      state.quiz.attempts = {};
-      state.quiz.onlyWrong = !!onlyWrong;
-      state.quiz.startedAt = Date.now();
-      state.quiz.finishedAt = 0;
-      state.quiz.elapsedMs = 0;
-      state.quiz.phase = "question";
-      state.screen = "quiz";
-      document.title = state.doc?.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
-      render();
-    }
-
-    function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
-      state.doc = { ...docData, comments: sortComments(docData.comments || []) };
-      state.docId = id;
-      setAccessModeForDoc(state.doc, id);
-      state.showComments = false;
-      state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
-
-      if (state.accessMode === "key") {
-        rememberAccess(id, docData.key, {
-          title: docData.title || "",
-          subtitle: docData.subtitle || "",
-          createdAt: normalizeTs(docData.createdAt) || Date.now(),
-          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
-        });
+    function normalizePictureMap(map) {
+      const out = {};
+      for (const [k, v] of Object.entries(map || {})) {
+        if (v && typeof v === "object") out[String(k)] = { url:String(v.url || ""), name:String(v.name || ""), type:String(v.type || "") };
+        else if (typeof v === "string") out[String(k)] = { url:v, name:"", type:"" };
       }
+      return out;
+    }
 
-      if (state.accessMode === "owner") {
-        upsertMyMeta({
-          id,
-          title: docData.title || "",
-          subtitle: docData.subtitle || "",
-          createdAt: normalizeTs(docData.createdAt) || Date.now(),
-          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
-        });
+    function ensurePicturesFromText(text, pictures = {}) {
+      const ids = [...String(text || "").matchAll(/\[picture\((\d+)\)\]/gi)].map(m => m[1]);
+      const out = { ...pictures };
+      for (const id of ids) {
+        if (!out[id]) out[id] = { url:"", name:"", type:"" };
       }
+      return out;
+    }
 
-      state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
-      state.quiz.onOffControls = Array.from(new Set(docData.onOffControls || []));
-      applyOnOffDefaultsToQuiz();
-      state.quiz.pendingOrder = orderIndices || null;
-      state.quiz.pendingOnlyWrong = !!onlyWrong;
+    function maxPictureIndexFromText(text, pictures = {}) {
+      const ids = [...String(text || "").matchAll(/\[picture\((\d+)\)\]/gi)].map(m => Number(m[1]));
+      const picIds = Object.keys(pictures || {}).map(n => Number(n)).filter(n => Number.isFinite(n));
+      const max = Math.max(0, ...ids, ...picIds);
+      return max;
+    }
 
-      if (state.quiz.onOffControls.length) {
-        state.quiz.phase = "settings";
-        state.screen = "quiz";
-        render();
-      } else {
-        beginQuizRun(orderIndices, onlyWrong);
+    function htmlEscapePreservingSpaces(s) {
+      return esc(String(s ?? "")).replace(/\n/g, "<br>");
+    }
+
+    function renderInlineHtml(text, pictures = {}) {
+      const src = normalizeSpecialNewlines(String(text ?? ""));
+      const tokenRe = /\[color\((#[0-9a-fA-F]{3,8})\)\]|\[picture\((\d+)\)\]/g;
+      let out = "";
+      let idx = 0;
+      let activeColor = null;
+      let spanOpen = false;
+      const closeColor = () => {
+        if (spanOpen) {
+          out += "</span>";
+          spanOpen = false;
+        }
+      };
+      while (idx < src.length) {
+        tokenRe.lastIndex = idx;
+        const m = tokenRe.exec(src);
+        if (!m || m.index !== idx) {
+          const ch = src[idx];
+          if (ch === "\n") {
+            closeColor();
+            out += "<br>";
+            idx++;
+            continue;
+          }
+          if (ch === " ") {
+            closeColor();
+            out += "&nbsp;";
+            idx++;
+            continue;
+          }
+          if (activeColor && !spanOpen) {
+            out += `<span class="richColor" style="color:${esc(activeColor)}">`;
+            spanOpen = true;
+          }
+          out += esc(ch);
+          idx++;
+          continue;
+        }
+        if (m[1]) {
+          closeColor();
+          activeColor = m[1];
+          idx += m[0].length;
+          continue;
+        }
+        if (m[2]) {
+          closeColor();
+          const id = String(m[2]);
+          const pic = pictures?.[id];
+          if (pic?.url) {
+            out += `<img class="richInlinePicture" src="${esc(pic.url)}" alt="picture ${esc(id)}">`;
+          } else {
+            out += `<span class="commentBadge">picture(${esc(id)})</span>`;
+          }
+          idx += m[0].length;
+          continue;
+        }
       }
+      closeColor();
+      return out;
     }
 
-    function restartQuiz() {
-      if (!state.doc) return;
-      beginQuizRun(state.quiz.onlyWrong ? state.quiz.order : null, state.quiz.onlyWrong);
+    function renderRichBlock(text, pictures = {}) {
+      return `<div class="richText">${renderInlineHtml(text, pictures)}</div>`;
     }
 
-    function startWrongOnlyQuiz() {
-      if (!state.doc) return;
-      const wrong = state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct);
-      if (!wrong.length) return alert("間違えた問題がないよ");
-      beginQuizRun(wrong, true);
+    function renderSubtitle(text, pictures = {}) {
+      return text ? renderRichBlock(text, pictures) : "";
     }
 
-    function finalizeQuizTime() {
-      if (!state.quiz.finishedAt) {
-        state.quiz.finishedAt = Date.now();
-        state.quiz.elapsedMs = Math.max(0, state.quiz.finishedAt - (state.quiz.startedAt || state.quiz.finishedAt));
-      }
+    function renderSection(text, pictures = {}) {
+      return text ? `<div class="sectionText">${renderInlineHtml(text, pictures)}</div>` : "";
     }
 
-    function forceFinishAsWrong() {
-      if (!state.doc) return;
-      const q = currentQuestion();
-      if (q && !state.quiz.attempts[q.idx]) state.quiz.attempts[q.idx] = { given: "", correct: false };
-      const nextIndex = state.quiz.phase === "question" ? state.quiz.index + 1 : state.quiz.index;
-      for (const idx of state.quiz.order.slice(nextIndex)) {
-        if (!state.quiz.attempts[idx]) state.quiz.attempts[idx] = { given: "", correct: false };
-      }
-      finalizeQuizTime();
-      state.quiz.phase = "done";
-      render();
+    function renderQuestionText(text, pictures = {}) {
+      return `<div class="question">${renderInlineHtml(text, pictures)}</div>`;
     }
 
-    function nextQuestion() {
-      state.quiz.index += 1;
-      state.quiz.typedAnswer = "";
-      state.quiz.typedAnswers = [];
-      state.quiz.lastResult = null;
-      if (state.quiz.index >= state.quiz.order.length) {
-        finalizeQuizTime();
-        state.quiz.phase = "done";
-      } else {
-        state.quiz.phase = "question";
-      }
-      render();
+    function renderPictureBlock(id, pictures = {}) {
+      const pic = pictures?.[String(id)];
+      if (!pic?.url) return `<span class="commentBadge">picture(${esc(id)})</span>`;
+      return `<img class="richPicture" src="${esc(pic.url)}" alt="picture ${esc(id)}">`;
     }
 
-    function normalizeForMode(v, mode) {
-      if (mode === "number") return String(v ?? "").replace(/[^\d.-]/g, "").trim();
-      return norm(v);
+    function extractPictureTokens(text) {
+      const ids = [];
+      for (const m of String(text ?? "").matchAll(/\[picture\((\d+)\)\]/gi)) ids.push(String(m[1]));
+      return ids;
     }
 
-    function isCorrectByGroups(givenFields, answerGroups, mode) {
-      const groups = Array.isArray(answerGroups) ? answerGroups : [];
-      if (!groups.length) return false;
-      if (groups.length === 1 && (givenFields.length === 1)) {
-        return (groups[0] || []).map(v => normalizeForMode(v, mode)).includes(normalizeForMode(givenFields[0], mode));
-      }
-      if (givenFields.length !== groups.length) return false;
-      return groups.every((group, i) => (group || []).map(v => normalizeForMode(v, mode)).includes(normalizeForMode(givenFields[i], mode)));
+    function renderTextWithPictures(text, pictures = {}) {
+      const ids = extractPictureTokens(text);
+      const unique = [...new Set(ids)];
+      if (!unique.length) return renderInlineHtml(text, pictures);
+      return renderInlineHtml(text, pictures);
     }
 
-    function submitAnswer() {
-      const q = currentQuestion();
-      if (!q) return;
-
-      if (q.item.mode === "choice") {
-        const given = state.quiz.typedAnswer ?? "";
-        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
-        const correct = correctOptions.includes(norm(given));
-        state.quiz.attempts[q.idx] = { given, correct };
-        state.quiz.lastResult = { idx: q.idx, given, correct };
-        state.quiz.phase = "result";
-        render();
-        return;
-      }
-
-      const fieldCount = Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
-      const givenFields = Array.from({ length: fieldCount }, (_, i) => String(state.quiz.typedAnswers?.[i] ?? ""));
-      const correct = isCorrectByGroups(givenFields, q.item.answerGroups || [q.item.answers || []], q.item.mode);
-      const givenDisplay = fieldCount > 1 ? givenFields : (givenFields[0] || "");
-      state.quiz.attempts[q.idx] = { given: givenDisplay, givenFields, correct };
-      state.quiz.lastResult = { idx: q.idx, given: givenDisplay, givenFields, correct };
-      state.quiz.phase = "result";
-      render();
+    function activePictureIds(draft = state.draft) {
+      return [...new Set(Object.keys(draft?.pictures || {}))].sort((a, b) => Number(a) - Number(b));
     }
 
-    function syncEditorArea(textarea, gutter) {
-      textarea.style.height = "auto";
-      const next = Math.max(420, textarea.scrollHeight);
-      textarea.style.height = `${next}px`;
-      gutter.style.height = `${next}px`;
-      const count = Math.max(1, textarea.value.split(/\r?\n/).length);
-      gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
+    function nextPictureId(draft = state.draft) {
+      const ids = activePictureIds(draft).map(n => Number(n)).filter(Number.isFinite);
+      const max = ids.length ? Math.max(...ids) : 0;
+      return String(max + 1);
     }
 
-    let editorRaf = 0;
-    const scheduleEditorSync = (textarea, gutter) => {
-      cancelAnimationFrame(editorRaf);
-      editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter));
-    };
+    function insertAtTextarea(textarea, insertText) {
+      const start = textarea.selectionStart ?? 0;
+      const end = textarea.selectionEnd ?? start;
+      const value = textarea.value;
+      textarea.value = value.slice(0, start) + insertText + value.slice(end);
+      const pos = start + insertText.length;
+      textarea.selectionStart = textarea.selectionEnd = pos;
+      textarea.dispatchEvent(new Event("input", { bubbles:true }));
+      textarea.focus();
+    }
 
     function caretCoordinates(textarea, pos) {
       const style = getComputedStyle(textarea);
@@ -1923,14 +1822,15 @@
     function replaceTriggerAtCaret(textarea, triggerChar, insertValue) {
       const pos = textarea.selectionStart ?? 0;
       const end = textarea.selectionEnd ?? pos;
-      if (pos <= 0) return;
-      if (textarea.value[pos - 1] !== triggerChar) return;
+      if (pos <= 0) return false;
+      if (textarea.value[pos - 1] !== triggerChar) return false;
       const start = pos - 1;
       textarea.value = textarea.value.slice(0, start) + insertValue + textarea.value.slice(end);
       const newPos = start + insertValue.length;
       textarea.selectionStart = textarea.selectionEnd = newPos;
       textarea.focus();
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      textarea.dispatchEvent(new Event("input", { bubbles:true }));
+      return true;
     }
 
     function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
@@ -1969,8 +1869,8 @@
           btn.addEventListener("mousedown", e => e.preventDefault());
           btn.addEventListener("click", () => {
             const value = btn.dataset.value || "";
-            replaceTriggerAtCaret(textarea, triggerChar, value);
-            if (typeof onPick === "function") onPick(value);
+            const inserted = replaceTriggerAtCaret(textarea, triggerChar, value);
+            if (inserted && typeof onPick === "function") onPick(value);
             hide();
           });
         });
@@ -1997,23 +1897,23 @@
       if (!state.docId) return;
       const sorted = sortCommentsForPersist(nextComments);
       const updatedAt = Date.now();
-      await setDoc(doc(db, COLLECTION, state.docId), { comments: sorted, updatedAt }, { merge: true });
+      await setDoc(doc(db, COLLECTION, state.docId), { comments: sorted, updatedAt }, { merge:true });
       state.doc.comments = sorted;
       state.doc.updatedAt = updatedAt;
       if (state.accessMode === "owner") {
         upsertMyMeta({
-          id: state.docId,
-          title: state.doc.title || "",
-          subtitle: state.doc.subtitle || "",
-          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          id:state.docId,
+          title:state.doc.title || "",
+          subtitle:state.doc.subtitle || "",
+          createdAt:normalizeTs(state.doc.createdAt) || Date.now(),
           updatedAt
         });
       }
       if (state.accessMode === "key") {
         rememberAccess(state.docId, state.doc.key || "", {
-          title: state.doc.title || "",
-          subtitle: state.doc.subtitle || "",
-          createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
+          title:state.doc.title || "",
+          subtitle:state.doc.subtitle || "",
+          createdAt:normalizeTs(state.doc.createdAt) || Date.now(),
           updatedAt
         });
       }
@@ -2023,14 +1923,11 @@
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
-
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
-
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
-
       const btn = document.getElementById("deleteBtn");
       if (btn) btn.disabled = true;
 
@@ -2078,7 +1975,7 @@
           const v = comment?.proofs?.timeLabel;
           return v ? `<span class="timeToken">${esc(v)}</span>` : esc(part);
         }
-        return renderRichText(part, { allowColor: true });
+        return esc(part);
       }).join("");
     }
 
@@ -2090,10 +1987,25 @@
         host,
         textarea,
         box,
-        triggerChar: "@",
+        triggerChar:"@",
         items: makeCommentSuggestionItems(),
         onPick: () => {}
       });
+    }
+
+    function getPictureSuggestionItems() {
+      const max = Math.max(0, ...Object.keys(state.draft?.pictures || {}).map(v => Number(v)).filter(Number.isFinite));
+      const next = max + 1;
+      const items = [];
+      for (let i = 1; i <= next; i++) items.push({ label:`[picture(${i})]`, value:`[picture(${i})]` });
+      return items;
+    }
+
+    function openPicturePickerForId(id) {
+      if (!hiddenFileInput) return;
+      hiddenFileInput.dataset.targetPictureId = String(id);
+      hiddenFileInput.value = "";
+      hiddenFileInput.click();
     }
 
     function setupEditorTagSuggestions(host, textarea, box) {
@@ -2101,15 +2013,20 @@
         host,
         textarea,
         box,
-        triggerChar: "#",
+        triggerChar:"#",
         items: [
-          { label: "[open]", value: "[open]" },
-          { label: "[random]", value: "[random]" },
-          { label: "[choice]", value: "[choice]" },
-          { label: "[random choice]", value: "[random choice]" },
-          { label: "[number]", value: "[number]" },
-          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" }
-        ]
+          { label:"[open]", value:"[open]" },
+          { label:"[random]", value:"[random]" },
+          { label:"[choice]", value:"[choice]" },
+          { label:"[random choice]", value:"[random choice]" },
+          { label:"[number]", value:"[number]" },
+          { label:"[ONorOFF:random]", value:"[ONorOFF:random]" },
+          ...getPictureSuggestionItems()
+        ],
+        onPick: (value) => {
+          const match = String(value || "").match(/^\[picture\((\d+)\)\]$/i);
+          if (match) openPicturePickerForId(match[1]);
+        }
       });
     }
 
@@ -2128,11 +2045,43 @@
       return (state.doc?.comments || []).some(c => String(c.authorName || "").trim() === clean);
     }
 
+    async function readFileAsDataUrl(file) {
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error || new Error("read failed"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handlePictureFileInput(file) {
+      const id = String(hiddenFileInput.dataset.targetPictureId || "");
+      if (!id || !state.draft) return;
+      if (!file) return;
+      const url = await readFileAsDataUrl(file);
+      state.draft.pictures = { ...(state.draft.pictures || {}), [id]: { url, name:file.name, type:file.type || "" } };
+      if (state.draft.rawText && !state.draft.rawText.includes(`[picture(${id})]`)) {
+        state.draft.rawText += `\n[picture(${id})]`;
+      }
+      render();
+    }
+
+    function findPictureIdsInText(text) {
+      return [...String(text ?? "").matchAll(/\[picture\((\d+)\)\]/gi)].map(m => String(m[1]));
+    }
+
+    function normalizeCommentTextScores(text) {
+      return String(text || "");
+    }
+
+    function currentQuizTimeLabel() {
+      return formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+    }
+
     async function addComment() {
       if (!state.docId || !state.doc) return;
-
       let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
-      const text = (state.commentDraft?.text || "").trim();
+      const text = normalizeCommentTextScores(state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
       const replyTo = String(state.commentDraft?.replyTo || "");
       if (!text) return alert("コメントを書いてね");
@@ -2145,9 +2094,7 @@
       const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
       const proofs = {};
       if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()) {
-        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
-      }
+      if (text.includes("[[TIME]]") && isPerfectScore()) proofs.timeLabel = currentQuizTimeLabel();
 
       const comment = {
         id: uid(),
@@ -2170,7 +2117,6 @@
       state.commentDraft.isPrivate = false;
       state.commentDraft.name = name;
       state.commentDraft.replyTo = "";
-      state.commentDraft.scoreWanted = false;
       state.showComments = true;
       render();
     }
@@ -2199,7 +2145,9 @@
     };
 
     const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const homeButtonsHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
+    const partnerButtonHtml = () => `<button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
+    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>`;
+    const headerButtonsHtml = (showHelp) => `${showHelp ? helpButtonHtml() : ""}${partnerButtonHtml()}`;
 
     const editorActionHtml = () => {
       const buttons = [];
@@ -2222,7 +2170,7 @@
           const docTitle = String(data.title || "").trim();
           return d.id === candidateId || docTitle === candidateTitle;
         });
-        if (!exists) return { title: candidateTitle, id: candidateId };
+        if (!exists) return { title:candidateTitle, id:candidateId };
         const yes = confirm(`「${candidateTitle}」はもうあるよ。\n後ろに -uuid(4桁) を追加しますか？`);
         if (!yes) throw new Error("SAVE_CANCELLED");
         candidateTitle = `${candidateTitle}-${suffix4()}`;
@@ -2242,7 +2190,7 @@
     }
 
     function normalizeDoc(id, data) {
-      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
+      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags:{random:false,choice:false,randomChoice:false,number:false,open:false}, onOffControls:[], items:[] };
       const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
       const globalFlags = {
         random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
@@ -2265,7 +2213,8 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
+        comments: sortComments(Array.isArray(data.comments) ? data.comments : []),
+        pictures: normalizePictureMap(data.pictures || {})
       };
     }
 
@@ -2276,12 +2225,7 @@
         if (item.section) parts.push(item.section);
         parts.push(item.question || "");
         if (item.mode === "choice") parts.push((item.options || []).map(o => o.text).join(" "));
-        else {
-          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => group.join(" ")).join(" ")
-            : (item.answers || []).join(" ");
-          parts.push(answerText);
-        }
+        else parts.push((item.answerSpec || []).map(g => g.join(" ")).join(" "));
       }
       return parts.join(" ").toLowerCase();
     }
@@ -2314,8 +2258,8 @@
         if (ownedByMe) mine.push(d);
         else if (accessed) access.push(d);
       }
-      mine.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
-      access.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
+      mine.sort((a,b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
+      access.sort((a,b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
       return { mine, access };
     }
 
@@ -2336,9 +2280,13 @@
       for (const d of docs) {
         const result = scoreDocForQuery(d, q);
         if (!result) continue;
-        ranked.push({ doc: d, ...result });
+        ranked.push({ doc:d, ...result });
       }
-      ranked.sort((a, b) => a.group !== b.group ? a.group - b.group : b.score !== a.score ? b.score - a.score : (normalizeTs(b.doc.updatedAt) || 0) - (normalizeTs(a.doc.updatedAt) || 0));
+      ranked.sort((a,b) =>
+        a.group !== b.group ? a.group - b.group :
+        b.score !== a.score ? b.score - a.score :
+        (normalizeTs(b.doc.updatedAt) || 0) - (normalizeTs(a.doc.updatedAt) || 0)
+      );
       return ranked.map(r => r.doc);
     }
 
@@ -2362,7 +2310,7 @@
     }
 
     function resetHomePaging(tab) {
-      state.homeVisibleCount[tab] = tab === "public" ? 12 : 20;
+      state.homeVisibleCount[tab] = tab === "public" ? MAX_PUBLIC_ITEMS : MAX_LIBRARY_ITEMS;
     }
 
     const getHomeQuery = () => state.homeQueries[state.homeTab] || "";
@@ -2389,10 +2337,10 @@
       if (!sentinel || !hasMore || !("IntersectionObserver" in window)) return;
       homeObserver = new IntersectionObserver(entries => {
         if (entries.some(e => e.isIntersecting)) {
-          state.homeVisibleCount[tab] += tab === "public" ? 12 : 20;
+          state.homeVisibleCount[tab] += tab === "public" ? MAX_PUBLIC_ITEMS : MAX_LIBRARY_ITEMS;
           render();
         }
-      }, { rootMargin: "220px" });
+      }, { rootMargin:"220px" });
       homeObserver.observe(sentinel);
     }
 
@@ -2417,11 +2365,11 @@
         <div class="listItem">
           <div class="listMeta">
             <div class="homeMeta">
-              <div class="reviewQ">${esc(docData.title || "無題")}</div>
+              <div class="reviewQ">${renderInlineHtml(docData.title || "無題", docData.pictures || {})}</div>
               ${sourceLabel ? `<span class="publicBadge">${esc(sourceLabel)}</span>` : ""}
               ${isOpenDoc(docData) ? `<span class="publicBadge">公開</span>` : ""}
             </div>
-            <div class="reviewA">${esc(docData.subtitle || "")}</div>
+            <div class="reviewA">${renderInlineHtml(docData.subtitle || "", docData.pictures || {})}</div>
             <div class="metaLine">作成: ${esc(created)}</div>
             <div class="metaLine">最終編集: ${esc(updated)}</div>
           </div>
@@ -2513,7 +2461,7 @@
       await setDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID), {
         partnerLink: value,
         updatedAt: Date.now()
-      }, { merge: true });
+      }, { merge:true });
     }
 
     function openPartnerAction() {
@@ -2521,12 +2469,10 @@
         openPartnerModal();
         return;
       }
-
       if (!state.partnerLink) {
         alert("パートナーリンクはまだ未設定だよ");
         return;
       }
-
       window.open(state.partnerLink, "_blank", "noopener,noreferrer");
     }
 
@@ -2541,6 +2487,10 @@
       if (topBtn) topBtn.onclick = () => { location.hash = ""; };
     }
 
+    function safeDecodeRouteId(id) {
+      try { return decodeURIComponent(id); } catch { return id; }
+    }
+
     function renderHome() {
       clearResultEnterHandler();
       document.title = "問題作成サイト";
@@ -2552,7 +2502,7 @@
                 <h1 class="title">問題作成サイト</h1>
                 <div class="sub">作って、そのまま遊べる</div>
               </div>
-              ${homeButtonsHtml()}
+              ${headerButtonsHtml(true)}
             </div>
           </div>
 
@@ -2564,7 +2514,8 @@
                 <b>= なしの行</b> は共通見出しになるよ。<br>
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
-                <b>[picture(1)]</b> みたいな画像タグや、<b>[color(#ff0000)]</b> みたいな色つき文字も使えるよ。
+                <b>[picture(1)]</b> で画像を入れられる。<br>
+                <b>[color(#RRGGBB)]</b> で文字の一部を色付けできる。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -2623,19 +2574,17 @@
         searchBtn.addEventListener("click", () => setHomeQuery(searchInput.value.trim()));
       }
 
-      if (reloadBtn) {
-        reloadBtn.addEventListener("click", refreshPublicFeed);
-      }
+      if (reloadBtn) reloadBtn.addEventListener("click", refreshPublicFeed);
 
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/${encodeURIComponent(btn.dataset.openQuiz || "")}`;
+          location.hash = `#/${btn.dataset.openQuiz || ""}`;
         });
       });
 
       document.querySelectorAll("[data-edit-quiz]").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.hash = `#/edit/${encodeURIComponent(btn.dataset.editQuiz || "")}`;
+          location.hash = `#/edit/${btn.dataset.editQuiz || ""}`;
         });
       });
 
@@ -2647,7 +2596,7 @@
             await navigator.clipboard.writeText(link);
             alert("リンクをコピーしたよ");
           } catch {
-            prompt("コピーできない環境だったよ。手動でコピーしてね", decodeURIComponent(link));
+            prompt("コピーできない環境だったよ。手動でコピーしてね", link);
           }
         });
       });
@@ -2668,6 +2617,7 @@
                 <h1 class="title">作成 / 編集</h1>
                 <div class="sub">タイトルの右に Key ボタン</div>
               </div>
+              ${partnerButtonHtml()}
             </div>
             <div class="row">${topButtonHtml()}</div>
           </div>
@@ -2702,10 +2652,9 @@
 首都=東京
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
-[ONorOFF:random]
-あい[color(#ff0000)]うえ お=こたえ
-1+1=2↵2
-">${esc(d.rawText)}</textarea>
+[picture(1)] 画像付きの問題
+あい[color(#ff0000)]うえ お
+[ONorOFF:random]">${esc(d.rawText)}</textarea>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
               </div>
@@ -2715,10 +2664,10 @@
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
-                問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
-                答え側にそれらを入れると、答える枠を増やせる。<br>
-                <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
-                問題欄で <b>#</b> を打つと候補が出るよ。
+                問題欄で <b>#</b> を打つと候補が出るよ。<br>
+                <b>[picture(1)]</b> は画像を入れられる。<br>
+                <b>[color(#RRGGBB)]</b> は、そのあとに続く文字を色付けするよ。<br>
+                <b>↵</b> <b>↩︎</b> <b>\\n</b> は改行として扱うよ。
               </div>
             </div>
           </div>
@@ -2748,18 +2697,22 @@
           editorInfo.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
           keyBtn.disabled = false;
           keyBtn.textContent = "Key";
-          keyBtn.title = "";
         } else {
           editorInfo.textContent = state.doc.keyMode === "open" ? "公開編集モード" : "Keyは主催者のみ変更できます";
           keyBtn.disabled = true;
           keyBtn.textContent = "Key";
-          keyBtn.title = "Keyは主催者のみ変更できます";
         }
       }
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
-      problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); });
+      problemText.addEventListener("input", e => { d.rawText = e.target.value; d.pictures = ensurePicturesFromText(d.rawText, d.pictures || {}); scheduleEditorSync(problemText, gutter); });
+      problemText.addEventListener("keydown", e => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          insertAtTextarea(problemText, "  ");
+        }
+      });
 
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
@@ -2778,8 +2731,8 @@
 
       if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
-          const title = d.title.trim();
-          const subtitle = d.subtitle.trim();
+          const title = normalizeSpecialNewlines(d.title.trim());
+          const subtitle = normalizeSpecialNewlines(d.subtitle.trim());
           const parsed = parseItems(d.rawText);
           const items = parsed.items;
           const globalFlags = parsed.globalFlags;
@@ -2812,6 +2765,15 @@
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
+          const pictures = normalizePictureMap(d.pictures || {});
+          const neededPics = [...new Set(findPictureIdsInText(d.rawText))];
+          for (const pid of neededPics) {
+            if (!pictures[pid] || !pictures[pid].url) {
+              alert(`picture(${pid}) の画像がまだ入ってないよ`);
+              return;
+            }
+          }
+
           const payload = {
             title: finalTitle,
             subtitle,
@@ -2819,6 +2781,7 @@
             rawText: d.rawText,
             globalFlags,
             onOffControls,
+            pictures,
             keyMode: effectiveKeyMode,
             key: effectiveKey,
             ownerToken,
@@ -2832,7 +2795,7 @@
           saveBtn.textContent = "保存中...";
 
           try {
-            await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
+            await setDoc(doc(db, COLLECTION, newId), payload, { merge:true });
 
             if (oldId && oldId !== newId) {
               try { await deleteDoc(doc(db, COLLECTION, oldId)); } catch (_) {}
@@ -2842,7 +2805,7 @@
             }
 
             state.docId = newId;
-            state.doc = { ...payload, items, comments: sortComments(existingComments) };
+            state.doc = { ...payload, items, comments: sortComments(existingComments), pictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -2851,13 +2814,15 @@
             else state.allDocs.unshift(normalized);
             rebuildPublicOrder();
 
-            if (isOwner() || !isExisting) upsertMyMeta({
-              id: newId,
-              title: payload.title,
-              subtitle: payload.subtitle,
-              createdAt: payload.createdAt,
-              updatedAt: payload.updatedAt
-            });
+            if (isOwner() || !isExisting) {
+              upsertMyMeta({
+                id: newId,
+                title: payload.title,
+                subtitle: payload.subtitle,
+                createdAt: payload.createdAt,
+                updatedAt: payload.updatedAt
+              });
+            }
             if (state.accessMode === "key") {
               rememberAccess(newId, effectiveKey, {
                 title: payload.title,
@@ -2867,10 +2832,10 @@
               });
             }
 
-            location.hash = `#/${encodeURIComponent(newId)}`;
+            location.hash = `#/${newId}`;
             const link = prettyLink(newId);
-            navigator.clipboard?.writeText(decodeURIComponent(link)).catch(() => {});
-            alert(`保存したよ！\n\n${decodeURIComponent(link)}`);
+            navigator.clipboard?.writeText(link).catch(() => {});
+            alert(`保存したよ！\n\n${link}`);
             startQuiz(state.doc, newId);
           } catch (err) {
             console.error("save failed:", err);
@@ -2892,100 +2857,178 @@
       bindGlobalButtons();
     }
 
-    function renderSettings() {
-      clearResultEnterHandler();
-      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
-      const controls = state.quiz.onOffControls || [];
-      const total = state.doc?.items?.length || 0;
+    function inputValueByIndex(i) {
+      const el = document.querySelector(`[data-answer-index="${i}"]`);
+      return el ? el.value : "";
+    }
 
-      root.innerHTML = `
-        <div class="page">
-          <div class="topbar">
-            <div class="titleArea">
-              <div class="titleBlock">
-                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${esc(state.doc.subtitle || "")}</div>
-              </div>
-            </div>
-            <div class="row">
-              ${topButtonHtml()}
-              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
-            </div>
-          </div>
+    function setInputValueByIndex(i, value) {
+      const el = document.querySelector(`[data-answer-index="${i}"]`);
+      if (el) el.value = value;
+    }
 
-          <div class="quiz settingsScreen">
-            <div class="card settingHeader">
-              <div class="settingTitle">開始前の設定</div>
-              <div class="settingSub">ON/OFF を切り替えてから始めるよ。複数あるときは、ここに全部出る。</div>
-            </div>
+    function submitAnswer() {
+      const q = currentQuestion();
+      if (!q) return;
 
-            <div class="card">
-              <div class="progress">
-                <div>${total}問</div>
-                <div>${controls.length}項目</div>
-              </div>
-              <div style="height:12px"></div>
-              <div class="settingList">
-                ${controls.map(target => {
-                  const enabled = !!state.quiz.settingValues?.[target];
-                  return `
-                    <button class="settingRow" type="button" data-toggle-setting="${esc(target)}">
-                      <div class="settingText">
-                        <div class="settingLabel">${esc(CONTROL_LABELS[target] || target)}</div>
-                        <div class="settingHint">${esc(CONTROL_HINTS[target] || "")}</div>
-                      </div>
-                      <div class="toggleSwitch ${enabled ? "on" : ""}" aria-checked="${enabled}">
-                        <div class="toggleKnob"></div>
-                      </div>
-                    </button>
-                  `;
-                }).join("")}
-              </div>
-            </div>
+      const given = (q.item.mode === "choice")
+        ? (state.quiz.typedAnswers[0] || "")
+        : state.quiz.typedAnswers.slice(0, q.item.answerSpec.length).join("\n");
 
-            <div class="actions" style="justify-content:flex-end">
-              <button class="submit" id="startQuizBtn" type="button">はじめる</button>
-            </div>
-          </div>
-        </div>
-      `;
+      let correct = false;
 
-      bindGlobalButtons();
-
-      const editBtn = document.getElementById("editBtn");
-      if (editBtn) {
-        editBtn.addEventListener("click", () => {
-          if (canEdit()) return openEditFromDoc();
-          const entered = prompt("Key を入力して編集", "");
-          if (entered === null) return;
-          if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
-          if ((entered || "").trim() === (state.doc.key || "")) {
-            if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-            rememberAccess(state.docId, (state.doc.key || ""), {
-              title: state.doc.title || "",
-              subtitle: state.doc.subtitle || "",
-              createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
-              updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
-            });
-            state.accessMode = "key";
-            return openEditFromDoc();
-          }
-          alert("Key が違うよ");
+      if (q.item.mode === "choice") {
+        const normalizedGiven = norm(given);
+        const correctOptions = (q.item.options || []).filter(o => o.correct).map(o => norm(o.text));
+        correct = !!normalizedGiven && correctOptions.includes(normalizedGiven);
+      } else {
+        const answers = q.item.answerSpec || [[]];
+        const userAnswers = answers.map((_, idx) => norm(state.quiz.typedAnswers[idx] || ""));
+        correct = answers.every((group, idx) => {
+          const ans = userAnswers[idx];
+          if (!ans) return false;
+          return group.map(norm).includes(ans);
         });
       }
 
-      document.querySelectorAll("[data-toggle-setting]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const key = btn.dataset.toggleSetting || "";
-          state.quiz.settingValues[key] = !state.quiz.settingValues[key];
-          render();
+      state.quiz.attempts[q.idx] = { given, correct };
+      state.quiz.lastResult = { idx:q.idx, given, correct };
+      state.quiz.phase = "result";
+      render();
+    }
+
+    function nextQuestion() {
+      state.quiz.index += 1;
+      state.quiz.typedAnswers = [];
+      state.quiz.lastResult = null;
+      if (state.quiz.index >= state.quiz.order.length) {
+        state.quiz.finishedAt = Date.now();
+        state.quiz.elapsedMs = Math.max(0, state.quiz.finishedAt - (state.quiz.startedAt || state.quiz.finishedAt));
+        state.quiz.phase = "done";
+      } else {
+        state.quiz.phase = "question";
+      }
+      render();
+    }
+
+    function forceFinishAsWrong() {
+      if (!state.doc) return;
+      const q = currentQuestion();
+      if (q && !state.quiz.attempts[q.idx]) state.quiz.attempts[q.idx] = { given:"", correct:false };
+      const nextIndex = state.quiz.phase === "question" ? state.quiz.index + 1 : state.quiz.index;
+      for (const idx of state.quiz.order.slice(nextIndex)) {
+        if (!state.quiz.attempts[idx]) state.quiz.attempts[idx] = { given:"", correct:false };
+      }
+      state.quiz.finishedAt = Date.now();
+      state.quiz.elapsedMs = Math.max(0, state.quiz.finishedAt - (state.quiz.startedAt || state.quiz.finishedAt));
+      state.quiz.phase = "done";
+      render();
+    }
+
+    function restartQuiz() {
+      if (!state.doc) return;
+      beginQuizRun(state.quiz.onlyWrong ? state.quiz.order : null, state.quiz.onlyWrong);
+    }
+
+    function startWrongOnlyQuiz() {
+      if (!state.doc) return;
+      const wrong = state.quiz.order.filter(idx => !state.quiz.attempts[idx]?.correct);
+      if (!wrong.length) return alert("間違えた問題がないよ");
+      beginQuizRun(wrong, true);
+    }
+
+    function beginQuizRun(orderIndices = null, onlyWrong = false) {
+      const activeFlags = buildActiveFlagsFromSettings();
+      const parsed = parseItems(
+        state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || [], state.doc?.pictures || {}),
+        activeFlags
+      );
+      const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
+      const allIndices = quizItems.map((_, i) => i);
+      const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
+
+      state.quiz.activeFlags = activeFlags;
+      state.quiz.items = quizItems;
+      state.quiz.order = order;
+      state.quiz.index = 0;
+      state.quiz.typedAnswers = [];
+      state.quiz.lastResult = null;
+      state.quiz.attempts = {};
+      state.quiz.onlyWrong = !!onlyWrong;
+      state.quiz.startedAt = Date.now();
+      state.quiz.finishedAt = 0;
+      state.quiz.elapsedMs = 0;
+      state.quiz.phase = "question";
+      state.screen = "quiz";
+      document.title = state.doc?.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+      render();
+    }
+
+    function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
+      state.doc = { ...docData, comments: sortComments(docData.comments || []), pictures: normalizePictureMap(docData.pictures || {}) };
+      state.docId = id;
+      setAccessModeForDoc(state.doc, id);
+      state.showComments = false;
+      state.commentDraft = { name:getCommentName(), text:"", isPrivate:false, replyTo:"" };
+
+      if (state.accessMode === "key") {
+        rememberAccess(id, docData.key, {
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
+      if (state.accessMode === "owner") {
+        upsertMyMeta({
+          id,
+          title: docData.title || "",
+          subtitle: docData.subtitle || "",
+          createdAt: normalizeTs(docData.createdAt) || Date.now(),
+          updatedAt: normalizeTs(docData.updatedAt) || Date.now()
+        });
+      }
+
+      state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
+      state.quiz.onOffControls = Array.from(new Set(docData.onOffControls || []));
+      applyOnOffDefaultsToQuiz();
+      state.quiz.pendingOrder = orderIndices || null;
+      state.quiz.pendingOnlyWrong = !!onlyWrong;
+
+      if (state.quiz.onOffControls.length) {
+        state.quiz.phase = "settings";
+        state.screen = "quiz";
+        render();
+      } else {
+        beginQuizRun(orderIndices, onlyWrong);
+      }
+    }
+
+    function currentQuestionAnswerSpec(q) {
+      return q?.item?.answerSpec?.length ? q.item.answerSpec : [[]];
+    }
+
+    function createAnswerBoxes(q) {
+      const spec = currentQuestionAnswerSpec(q);
+      return spec.map((_, i) => `<input class="answerBox" data-answer-index="${i}" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ここに入力">`).join("");
+    }
+
+    function bindAnswerBoxEvents(q) {
+      const boxes = [...document.querySelectorAll("[data-answer-index]")];
+      boxes.forEach((box, index) => {
+        box.addEventListener("input", e => {
+          state.quiz.typedAnswers[index] = e.target.value;
+        });
+        box.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (index < boxes.length - 1) boxes[index + 1].focus();
+            else submitAnswer();
+          }
         });
       });
-
-      const startQuizBtn = document.getElementById("startQuizBtn");
-      if (startQuizBtn) {
-        startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
-      }
+      if (boxes[0]) boxes[0].focus();
     }
 
     function renderQuestion() {
@@ -2994,23 +3037,21 @@
       if (!q) { state.quiz.phase = "done"; render(); return; }
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
-      const fieldCount = q.item.mode === "choice" ? 1 : Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
-      if (!Array.isArray(state.quiz.typedAnswers) || state.quiz.typedAnswers.length !== fieldCount) {
-        state.quiz.typedAnswers = Array.from({ length: fieldCount }, () => "");
-      }
+      const spec = currentQuestionAnswerSpec(q);
+      const multiInput = q.item.mode !== "choice" && spec.length > 1;
 
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
             <div class="titleArea">
               <div class="titleBlock">
-                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
+                <h1 class="title">${renderInlineHtml(state.doc.title || "問題", state.doc.pictures || {})}</h1>
+                <div class="sub">${renderSubtitle(state.doc.subtitle || "", state.doc.pictures || {})}</div>
               </div>
+              ${partnerButtonHtml()}
             </div>
             <div class="row">
               ${topButtonHtml()}
-              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
 
@@ -3021,30 +3062,21 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${q.item.section ? `<div class="sectionText">${renderRichText(q.item.section)}</div><div style="height:10px"></div>` : ""}
-              <div class="question">${renderRichText(q.item.question)}</div>
+              ${q.item.section ? renderSection(q.item.section, state.doc.pictures || {}) + `<div style="height:10px"></div>` : ""}
+              ${renderQuestionText(q.item.question, state.doc.pictures || {})}
+              ${(() => {
+                const ids = extractPictureTokens(q.item.question || "");
+                return ids.map(id => renderPictureBlock(id, state.doc.pictures || {})).join("");
+              })()}
             </div>
 
             <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
-              ${q.item.mode === "choice" ? `
-                <div id="choiceGrid" class="choiceGrid"></div>
-              ` : `
-                <div class="answerFields" style="grid-template-columns:repeat(${Math.max(1, fieldCount)}, minmax(0, 1fr));">
-                  ${Array.from({ length: fieldCount }, (_, i) => `
-                    <input
-                      id="answerInput${i}"
-                      class="answer"
-                      type="text"
-                      placeholder="ここに入力"
-                      autocomplete="off"
-                      autocapitalize="off"
-                      spellcheck="false"
-                      ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}
-                    >
-                  `).join("")}
-                </div>
-              `}
+              ${
+                q.item.mode === "choice"
+                  ? `<div id="choiceGrid" class="choiceGrid"></div>`
+                  : (multiInput ? `<div class="answerBoxGrid">${createAnswerBoxes(q)}</div>` : `<input id="answerInput" class="answer" type="text" placeholder="ここに入力" autocomplete="off" autocapitalize="off" spellcheck="false" ${q.item.mode === "number" ? 'inputmode="numeric" pattern="[0-9]*"' : ""}>`)
+              }
               <div class="actions">
                 ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
                 <button class="submit" id="submitBtn" type="button">✅</button>
@@ -3056,71 +3088,47 @@
 
       bindGlobalButtons();
 
-      document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEdit()) return openEditFromDoc();
-        const entered = prompt("Key を入力して編集", "");
-        if (entered === null) return;
-        if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
-        if ((entered || "").trim() === (state.doc.key || "")) {
-          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
-            title: state.doc.title || "",
-            subtitle: state.doc.subtitle || "",
-            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
-            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
-          });
-          state.accessMode = "key";
-          return openEditFromDoc();
-        }
-        alert("Key が違うよ");
+      const forceEndBtn = document.getElementById("forceEndBtn");
+      if (forceEndBtn) forceEndBtn.addEventListener("click", () => {
+        if (confirm("本当に残りを×で終わりますか？")) forceFinishAsWrong();
       });
 
-      const forceEndBtn = document.getElementById("forceEndBtn");
-      if (forceEndBtn) {
-        forceEndBtn.addEventListener("click", () => {
-          if (confirm("本当に残りを×で終わりますか？")) forceFinishAsWrong();
-        });
-      }
+      const submitBtn = document.getElementById("submitBtn");
+      if (submitBtn) submitBtn.addEventListener("click", submitAnswer);
 
       if (q.item.mode === "choice") {
         const grid = document.getElementById("choiceGrid");
         const options = (q.item.randomChoice ? shuffle(q.item.options || []) : (q.item.options || [])).slice();
         grid.innerHTML = options.map((opt, idx) => `
-          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${esc(opt.text)}</button>
+          <button type="button" class="ghost miniAction choiceBtn" data-choice-index="${idx}" data-choice-text="${esc(opt.text)}">${renderInlineHtml(opt.text, state.doc.pictures || {})}</button>
         `).join("");
         const buttons = [...grid.querySelectorAll(".choiceBtn")];
         buttons.forEach(btn => btn.addEventListener("click", () => {
           buttons.forEach(b => b.classList.remove("selected"));
           btn.classList.add("selected");
-          state.quiz.typedAnswer = btn.dataset.choiceText || "";
+          state.quiz.typedAnswers = [btn.dataset.choiceText || ""];
         }));
+      } else if (multiInput) {
+        state.quiz.typedAnswers = Array(spec.length).fill("");
+        bindAnswerBoxEvents(q);
       } else {
-        const inputs = [...document.querySelectorAll('[id^="answerInput"]')];
-        inputs.forEach((input, i) => {
-          input.value = state.quiz.typedAnswers[i] || "";
-          input.addEventListener("input", e => {
-            if (q.item.mode === "number") e.target.value = e.target.value.replace(/\D/g, "");
-            state.quiz.typedAnswers[i] = e.target.value;
-          });
-          input.addEventListener("keydown", e => {
-            if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
-              e.preventDefault();
-              return;
-            }
-            if (e.key === "Enter") {
-              e.preventDefault();
-              if (i < inputs.length - 1) {
-                inputs[i + 1].focus();
-              } else {
-                submitAnswer();
-              }
-            }
-          });
+        const input = document.getElementById("answerInput");
+        input.focus();
+        input.addEventListener("input", e => {
+          if (q.item.mode === "number") e.target.value = e.target.value.replace(/\D/g, "");
+          state.quiz.typedAnswers = [e.target.value];
         });
-        if (inputs[0]) inputs[0].focus();
+        input.addEventListener("keydown", e => {
+          if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+            return;
+          }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            submitAnswer();
+          }
+        });
       }
-
-      document.getElementById("submitBtn").addEventListener("click", submitAnswer);
     }
 
     function renderResult() {
@@ -3130,7 +3138,7 @@
       const q = state.quiz.items[r.idx];
       const answerText = q.mode === "choice"
         ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-        : renderAnswerText(q.answerGroups || [q.answers || []]);
+        : answerSpecLabel(q.answerSpec || []).join(" / ");
 
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
 
@@ -3139,29 +3147,31 @@
           <div class="topbar">
             <div class="titleArea">
               <div class="titleBlock">
-                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
+                <h1 class="title">${renderInlineHtml(state.doc.title || "問題", state.doc.pictures || {})}</h1>
+                <div class="sub">${renderSubtitle(state.doc.subtitle || "", state.doc.pictures || {})}</div>
               </div>
+              ${partnerButtonHtml()}
             </div>
-            <div class="row">
-              ${topButtonHtml()}
-              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
-            </div>
+            <div class="row">${topButtonHtml()}</div>
           </div>
 
           <div class="quiz">
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
 
             <div class="card">
-              ${q.section ? `<div class="sectionText">${renderRichText(q.section)}</div><div style="height:10px"></div>` : ""}
+              ${q.section ? `${renderSection(q.section, state.doc.pictures || {})}<div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${renderRichText(q.question)}</div>
+              ${renderQuestionText(q.question, state.doc.pictures || {})}
+              ${(() => {
+                const ids = extractPictureTokens(q.question || "");
+                return ids.map(id => renderPictureBlock(id, state.doc.pictures || {})).join("");
+              })()}
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${renderRichText(answerText)}</div>
+              <div class="explain">${renderInlineHtml(answerText, state.doc.pictures || {})}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(String(v))).join("<br>") : renderRichText(String(r.given ?? ""))}</div>
+              <div class="explain">${renderInlineHtml(r.given || "", state.doc.pictures || {})}</div>
             </div>
 
             <div class="actions">
@@ -3172,26 +3182,6 @@
       `;
 
       bindGlobalButtons();
-
-      document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEdit()) return openEditFromDoc();
-        const entered = prompt("Key を入力して編集", "");
-        if (entered === null) return;
-        if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
-        if ((entered || "").trim() === (state.doc.key || "")) {
-          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
-            title: state.doc.title || "",
-            subtitle: state.doc.subtitle || "",
-            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
-            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
-          });
-          state.accessMode = "key";
-          return openEditFromDoc();
-        }
-        alert("Key が違うよ");
-      });
-
       document.getElementById("nextBtn").addEventListener("click", nextQuestion);
       enableResultEnterHandler();
     }
@@ -3203,7 +3193,7 @@
       const roleClass = commentRoleClass(role);
       const canManage = canManageComment(comment);
       const parent = comment.parentId ? comments.find(c => c.id === comment.parentId) : null;
-      const children = comments.filter(c => c.parentId === comment.id).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
+      const children = comments.filter(c => c.parentId === comment.id).sort((a,b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
       const replyLine = parent ? `<div class="metaLine">↳ ${esc(parent.authorName || "匿名")} への返信</div>` : "";
 
       return `
@@ -3228,7 +3218,7 @@
       const replyTarget = state.commentDraft.replyTo ? comments.find(c => c.id === state.commentDraft.replyTo) : null;
       const list = comments
         .filter(c => !c.parentId || !comments.some(p => p.id === c.parentId))
-        .sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0))
+        .sort((a,b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0))
         .map(c => renderCommentNode(c, comments, 0))
         .join("");
 
@@ -3302,14 +3292,12 @@
           <div class="topbar">
             <div class="titleArea">
               <div class="titleBlock">
-                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(state.doc.subtitle || "")}</div>
+                <h1 class="title">${renderInlineHtml(state.doc.title || "問題", state.doc.pictures || {})}</h1>
+                <div class="sub">${renderSubtitle(state.doc.subtitle || "", state.doc.pictures || {})}</div>
               </div>
+              ${partnerButtonHtml()}
             </div>
-            <div class="row">
-              ${topButtonHtml()}
-              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
-            </div>
+            <div class="row">${topButtonHtml()}</div>
           </div>
 
           <div class="summary">
@@ -3336,14 +3324,14 @@
                   const cls = attempt ? (isGood ? "reviewGood" : "reviewBad") : "";
                   const answerText = item.mode === "choice"
                     ? (item.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-                    : renderAnswerText(item.answerGroups || [item.answers || []]);
+                    : answerSpecLabel(item.answerSpec || []).join(" / ");
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
-                      ${item.section ? `<div class="reviewSection">${renderRichText(item.section)}</div>` : ""}
-                      <div class="reviewQ">${renderRichText(item.question)}</div>
-                      <div class="reviewA">正解: ${renderRichText(answerText)}</div>
-                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(String(v))).join("<br>") : renderRichText(String(given))}</div>
+                      ${item.section ? `<div class="reviewSection">${renderInlineHtml(item.section, state.doc.pictures || {})}</div>` : ""}
+                      <div class="reviewQ">${renderInlineHtml(item.question, state.doc.pictures || {})}</div>
+                      <div class="reviewA">正解: ${renderInlineHtml(answerText, state.doc.pictures || {})}</div>
+                      <div class="reviewA">あなたの答え: ${renderInlineHtml(given, state.doc.pictures || {})}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3355,30 +3343,13 @@
 
       bindGlobalButtons();
 
-      document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEdit()) return openEditFromDoc();
-        const entered = prompt("Key を入力して編集", "");
-        if (entered === null) return;
-        if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
-        if ((entered || "").trim() === (state.doc.key || "")) {
-          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
-            title: state.doc.title || "",
-            subtitle: state.doc.subtitle || "",
-            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
-            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
-          });
-          state.accessMode = "key";
-          return openEditFromDoc();
-        }
-        alert("Key が違うよ");
-      });
-
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
       const commentsBtn = document.getElementById("commentsBtn");
       if (commentsBtn) commentsBtn.addEventListener("click", () => { state.showComments = !state.showComments; render(); });
       const wrongOnlyBtn = document.getElementById("wrongOnlyBtn");
       if (wrongOnlyBtn) wrongOnlyBtn.addEventListener("click", startWrongOnlyQuiz);
+
+      document.getElementById("topBtn").addEventListener("click", () => { location.hash = ""; });
 
       if (state.showComments) {
         const commentName = document.getElementById("commentName");
@@ -3431,13 +3402,10 @@
     }
 
     function render() {
-      if (state.screen === "loading") {
-        renderLoading();
-      } else if (state.screen === "home") {
-        renderHome();
-      } else if (state.screen === "editor") {
-        renderEditor();
-      } else if (state.screen === "quiz") {
+      if (state.screen === "loading") renderLoading();
+      else if (state.screen === "home") renderHome();
+      else if (state.screen === "editor") renderEditor();
+      else if (state.screen === "quiz") {
         if (!state.doc || !state.doc.items || !state.doc.items.length) {
           state.screen = "home";
           render();
@@ -3452,12 +3420,118 @@
       renderPartnerLayer();
     }
 
+    function renderSettings() {
+      clearResultEnterHandler();
+      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
+      const controls = state.quiz.onOffControls || [];
+      const total = state.doc?.items?.length || 0;
+
+      root.innerHTML = `
+        <div class="page">
+          <div class="topbar">
+            <div class="titleArea">
+              <div class="titleBlock">
+                <h1 class="title">${renderInlineHtml(state.doc.title || "問題", state.doc.pictures || {})}</h1>
+                <div class="sub">${renderSubtitle(state.doc.subtitle || "", state.doc.pictures || {})}</div>
+              </div>
+              ${partnerButtonHtml()}
+            </div>
+            <div class="row">${topButtonHtml()}</div>
+          </div>
+
+          <div class="quiz settingsScreen">
+            <div class="card settingHeader">
+              <div class="settingTitle">開始前の設定</div>
+              <div class="settingSub">ON/OFF を切り替えてから始めるよ。複数あるときは、ここに全部出る。</div>
+            </div>
+
+            <div class="card">
+              <div class="progress">
+                <div>${total}問</div>
+                <div>${controls.length}項目</div>
+              </div>
+              <div style="height:12px"></div>
+              <div class="settingList">
+                ${controls.map(target => {
+                  const enabled = !!state.quiz.settingValues?.[target];
+                  return `
+                    <button class="settingRow" type="button" data-toggle-setting="${esc(target)}">
+                      <div class="settingText">
+                        <div class="settingLabel">${esc(target === "random" ? "問題順ランダム" : target)}</div>
+                        <div class="settingHint">${esc(target === "random" ? "問題の順番をランダムにする" : "")}</div>
+                      </div>
+                      <div class="toggleSwitch ${enabled ? "on" : ""}" aria-checked="${enabled}">
+                        <div class="toggleKnob"></div>
+                      </div>
+                    </button>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+
+            <div class="actions" style="justify-content:flex-end">
+              <button class="submit" id="startQuizBtn" type="button">はじめる</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      bindGlobalButtons();
+      document.getElementById("startQuizBtn").addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
+      document.querySelectorAll("[data-toggle-setting]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.toggleSetting || "";
+          state.quiz.settingValues[key] = !state.quiz.settingValues[key];
+          render();
+        });
+      });
+    }
+
+    function openTutorial(auto = false) {
+      state.tutorial.open = true;
+      state.tutorial.page = 0;
+      state.tutorial.closing = false;
+      state.tutorial.motion = auto ? "open" : "open";
+      render();
+    }
+
+    function closeTutorial(markSeen = true) {
+      state.tutorial.closing = true;
+      state.tutorial.motion = "close";
+      renderTutorialLayer();
+
+      setTimeout(() => {
+        state.tutorial.open = false;
+        state.tutorial.closing = false;
+        state.tutorial.motion = "open";
+        if (markSeen) {
+          state.tutorial.seen = true;
+          setCookie(TUTORIAL_COOKIE, "1");
+        }
+        renderTutorialLayer();
+        render();
+      }, 220);
+    }
+
+    function maybeAutoOpenTutorial() {
+      if (state.tutorial.seen) return;
+      if (state.tutorial.autoShown) return;
+      state.tutorial.autoShown = true;
+      setTimeout(() => {
+        if (!state.tutorial.seen && !state.tutorial.open) openTutorial(true);
+      }, 120);
+    }
+
+    function loadTutorialSeenState() {
+      state.tutorial.seen = getCookie(TUTORIAL_COOKIE) === "1";
+    }
+
     function tutorialPages() {
       return [
         {
-          title: "ようこそ",
-          subtitle: "このサイトの入口だよ。",
-          body: `
+          title:"ようこそ",
+          subtitle:"このサイトの入口だよ。",
+          body:`
             <div class="tutorialCard tutorialHero">
               <h2>問題作成サイトへようこそ</h2>
               <p>このサイトでは、クイズを作って、公開して、遊べるよ。<br>作る人と遊ぶ人、どっちにも使いやすいようにしてある。</p>
@@ -3468,9 +3542,9 @@
           `
         },
         {
-          title: "遊ぶ",
-          subtitle: "クイズの楽しみ方を先に見よう。",
-          body: `
+          title:"遊ぶ",
+          subtitle:"クイズの楽しみ方を先に見よう。",
+          body:`
             <div class="tutorialCard tutorialHero">
               <h2>クイズの流れ</h2>
               <p>問題が出たら答えを入れて、✅を押すだけ。<br>PCなら Enter でも進めるよ。<br>最後に正解数が出て、コメントもできる。</p>
@@ -3481,7 +3555,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>@ と #</h2>
-              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、よく使うタグの候補が出るよ。</p>
+              <p>コメント欄で <b>@</b> を打つと「点数」や、満点のときは「時間」の候補が出る。<br>問題欄で <b>#</b> を打つと、タグや picture の候補が出るよ。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>開始前の設定</h2>
@@ -3490,9 +3564,9 @@
           `
         },
         {
-          title: "作る",
-          subtitle: "文法を1つずつ見よう。",
-          body: `
+          title:"作る",
+          subtitle:"文法を1つずつ見よう。",
+          body:`
             <div class="tutorialCard tutorialHero">
               <h2>基本</h2>
               <p>1行に <b>A=B</b> と書くと、A が問題文、B が答えになる。<br>1行につき1問。<br><b>=</b> がない行は見出しになるよ。</p>
@@ -3523,25 +3597,29 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[ONorOFF:random]</h2>
-              <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
+              <p>1行目に書くと、始める前にON/OFFを選べる項目になる。</p>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>個別の行に書くタグ</h2>
-              <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
+              <h2>[picture(1)]</h2>
+              <p>画像を入れる。<br>同じ番号なら同じ画像を使う。<br>問題文でもサブタイトルでも使える。</p>
             </div>
             <div class="tutorialCard tutorialHero">
-              <h2>改行・色・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。</p>
+              <h2>[color(#RRGGBB)]</h2>
+              <p>そのあとに続く文字を、次の半角スペースまで色付けする。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>改行</h2>
+              <p><b>↵</b> <b>↩︎</b> <b>\\n</b> は改行として扱う。<br>答え側で使うと、複数の入力欄になる。</p>
             </div>
           `
         },
         {
-          title: "GO!",
-          subtitle: "準備はできた。あとは始めるだけ。",
-          body: `
+          title:"GO!",
+          subtitle:"準備はできた。あとは始めるだけ。",
+          body:`
             <div class="tutorialCard tutorialHero">
               <h2>それじゃ、始めよう</h2>
-              <p>「作成」から始めて、公開して、コメントして、遊んでみてね。<br>右上の「説明を読む」から、またいつでも見直せるよ。</p>
+              <p>「作成」から始めて、公開して、コメントして、遊んでみてね。</p>
             </div>
             <div class="tutorialCard">
               <div class="tutorialCode">GO!</div>
@@ -3611,7 +3689,6 @@
           renderTutorialLayer();
         });
       }
-
       if (nextBtn) {
         nextBtn.addEventListener("click", () => {
           if (isLast) {
@@ -3623,45 +3700,6 @@
           renderTutorialLayer();
         });
       }
-    }
-
-    function openTutorial(auto = false) {
-      state.tutorial.open = true;
-      state.tutorial.page = 0;
-      state.tutorial.closing = false;
-      state.tutorial.motion = auto ? "open" : "open";
-      render();
-    }
-
-    function closeTutorial(markSeen = true) {
-      state.tutorial.closing = true;
-      state.tutorial.motion = "close";
-      renderTutorialLayer();
-
-      setTimeout(() => {
-        state.tutorial.open = false;
-        state.tutorial.closing = false;
-        state.tutorial.motion = "open";
-        if (markSeen) {
-          state.tutorial.seen = true;
-          setCookie(TUTORIAL_COOKIE, "1");
-        }
-        renderTutorialLayer();
-        render();
-      }, 220);
-    }
-
-    function maybeAutoOpenTutorial() {
-      if (state.tutorial.seen) return;
-      if (state.tutorial.autoShown) return;
-      state.tutorial.autoShown = true;
-      setTimeout(() => {
-        if (!state.tutorial.seen && !state.tutorial.open) openTutorial(true);
-      }, 120);
-    }
-
-    function loadTutorialSeenState() {
-      state.tutorial.seen = getCookie(TUTORIAL_COOKIE) === "1";
     }
 
     function renderPartnerLayer() {
@@ -3744,7 +3782,7 @@
         const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()) { state.screen = "home"; render(); return; }
         const data = snap.data() || {};
-        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
+        const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags:{random:false,choice:false,randomChoice:false,number:false,open:false}, onOffControls:[], items:[] };
         const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
 
         state.docId = id;
@@ -3767,14 +3805,21 @@
           slug: data.slug || id,
           createdAt: data.createdAt || null,
           updatedAt: data.updatedAt || null,
-          comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
+          comments: sortComments(Array.isArray(data.comments) ? data.comments : []),
+          pictures: normalizePictureMap(data.pictures || {})
         };
 
         setAccessModeForDoc(state.doc, id);
-        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") { openEditFromDoc(); return; }
+        if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") {
+          openEditFromDoc();
+          return;
+        }
 
         const entered = prompt("Key を入力して編集", "");
-        if (entered === null) { location.hash = `#/${encodeURIComponent(id)}`; return; }
+        if (entered === null) {
+          location.hash = `#/${id}`;
+          return;
+        }
         if ((entered || "").trim() === (state.doc.key || "")) {
           if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
           rememberAccess(state.docId, (state.doc.key || ""), {
@@ -3787,7 +3832,7 @@
           openEditFromDoc();
         } else {
           alert("Key が違うよ");
-          location.hash = `#/${encodeURIComponent(id)}`;
+          location.hash = `#/${id}`;
         }
       } catch (err) {
         console.error(err);
@@ -3822,7 +3867,7 @@
           const snap = await getDoc(doc(db, COLLECTION, r.id));
           if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
           const data = snap.data() || {};
-          const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: data.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
+          const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags:{random:false,choice:false,randomChoice:false,number:false,open:false}, onOffControls:[], items:[] };
           const items = Array.isArray(data.items) && data.items.length ? data.items : parsed.items;
           startQuiz(normalizeDoc(r.id, {
             ...data,
@@ -3835,7 +3880,8 @@
               number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
               open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
             },
-            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || []))
+            onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
+            pictures: normalizePictureMap(data.pictures || {})
           }), r.id);
           maybeAutoOpenTutorial();
         } catch (err) {
@@ -3847,6 +3893,55 @@
       }
     }
 
+    function setAccessModeForDoc(docData, id) {
+      if (docData.keyMode === "open" || docData.globalFlags?.open) {
+        state.accessMode = isOwner() ? "owner" : "open";
+        return;
+      }
+      if (isOwner()) {
+        state.accessMode = "owner";
+        return;
+      }
+      const rec = findAccessRecord(id);
+      if (rec && docData.key && rec.key === docData.key) {
+        state.accessMode = "key";
+        return;
+      }
+      state.accessMode = "none";
+    }
+
+    function bindAnswerBoxEvents(q) {
+      const boxes = [...document.querySelectorAll("[data-answer-index]")];
+      boxes.forEach((box, index) => {
+        box.addEventListener("input", e => {
+          state.quiz.typedAnswers[index] = e.target.value;
+        });
+        box.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (index < boxes.length - 1) boxes[index + 1].focus();
+            else submitAnswer();
+          }
+        });
+      });
+      if (boxes[0]) boxes[0].focus();
+    }
+
+    function updateEditorHeight(textarea, gutter) {
+      textarea.style.height = "auto";
+      const next = Math.max(420, textarea.scrollHeight);
+      textarea.style.height = `${next}px`;
+      gutter.style.height = `${next}px`;
+      const count = Math.max(1, textarea.value.split(/\r?\n/).length);
+      gutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
+    }
+
+    let editorRaf = 0;
+    const scheduleEditorSync = (textarea, gutter) => {
+      cancelAnimationFrame(editorRaf);
+      editorRaf = requestAnimationFrame(() => updateEditorHeight(textarea, gutter));
+    };
+
     if (systemDark) {
       const onThemeChange = () => { applySystemTheme(); render(); };
       if (systemDark.addEventListener) systemDark.addEventListener("change", onThemeChange);
@@ -3854,7 +3949,30 @@
     }
 
     window.addEventListener("hashchange", loadRoute);
+    hiddenFileInput.addEventListener("change", async () => {
+      const file = hiddenFileInput.files && hiddenFileInput.files[0];
+      if (!file) return;
+      try {
+        await handlePictureFileInput(file);
+      } catch (err) {
+        console.error(err);
+        alert(`画像の読み込みで失敗したよ: ${err?.message || err}`);
+      }
+    });
+
     loadRoute();
+
+    async function openPartnerAction() {
+      if (isPartnerAdmin()) {
+        openPartnerModal();
+        return;
+      }
+      if (!state.partnerLink) {
+        alert("パートナーリンクはまだ未設定だよ");
+        return;
+      }
+      window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+    }
   </script>
 </body>
 </html>
