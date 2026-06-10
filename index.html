@@ -40,10 +40,7 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
-
+    html, body{overflow-x:auto;}
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -210,17 +207,26 @@
       background:var(--panel);
     }
 
-    .editorMirror{
+    .editorMirror,
+    .editorMeasure{
       position:absolute;
       inset:0;
       padding:14px;
       font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       white-space:pre;
       overflow:auto;
-      color:var(--text);
       pointer-events:none;
       z-index:1;
       scrollbar-gutter:stable;
+    }
+
+    .editorMirror{
+      color:var(--text);
+    }
+
+    .editorMeasure{
+      visibility:hidden;
+      color:transparent;
     }
 
     .editorMirror .memoText{
@@ -1165,6 +1171,7 @@
       editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
+      ui: { refreshOkUntil: 0, refreshBusy: false },
       quiz: {
         phase: "question",
         order: [],
@@ -1264,15 +1271,8 @@
       let memo = false;
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
-        if (ch === "\n") {
-          out += ch;
-          memo = false;
-          continue;
-        }
-        if (ch === ";") {
-          memo = !memo;
-          continue;
-        }
+        if (ch === "\n") { out += ch; memo = false; continue; }
+        if (ch === ";") { memo = !memo; continue; }
         if (!memo) out += ch;
       }
       return out;
@@ -1283,27 +1283,15 @@
       let html = "";
       let memo = false;
       let buf = "";
-
       const flush = () => {
         if (!buf) return;
         html += memo ? `<span class="memoText">${esc(buf)}</span>` : esc(buf);
         buf = "";
       };
-
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
-        if (ch === "\n") {
-          flush();
-          html += "<br>";
-          memo = false;
-          continue;
-        }
-        if (ch === ";") {
-          flush();
-          html += `<span class="memoText">;</span>`;
-          memo = !memo;
-          continue;
-        }
+        if (ch === "\n") { flush(); html += "<br>"; memo = false; continue; }
+        if (ch === ";") { flush(); html += `<span class="memoText">;</span>`; memo = !memo; continue; }
         buf += ch;
       }
       flush();
@@ -1323,7 +1311,9 @@
       const out = {};
       if (!obj || typeof obj !== "object") return out;
       for (const [k, v] of Object.entries(obj)) {
-        if (typeof v === "string" && v.startsWith("data:image/")) out[String(k)] = v;
+        if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) {
+          out[String(k)] = v;
+        }
       }
       return out;
     }
@@ -1366,28 +1356,15 @@
       const out = [];
       let buf = "";
       let inQuotes = false;
-
       for (let i = 0; i < s.length;) {
         const ch = s[i];
-        if (ch === '"') {
-          inQuotes = !inQuotes;
-          i++;
-          continue;
-        }
+        if (ch === '"') { inQuotes = !inQuotes; i++; continue; }
         if (!inQuotes) {
           let matched = "";
           for (const sep of seps) {
-            if (sep && s.startsWith(sep, i)) {
-              matched = sep;
-              break;
-            }
+            if (sep && s.startsWith(sep, i)) { matched = sep; break; }
           }
-          if (matched) {
-            out.push(buf);
-            buf = "";
-            i += matched.length;
-            continue;
-          }
+          if (matched) { out.push(buf); buf = ""; i += matched.length; continue; }
         }
         buf += ch;
         i++;
@@ -1416,15 +1393,6 @@
       return groups.length >= 2 ? groups : [];
     }
 
-    function sameMapFromGroups(groups) {
-      const map = [];
-      for (const group of groups || []) {
-        const normed = group.map(v => normalizeAnswerText(v)).filter(Boolean);
-        if (normed.length >= 2) map.push(normed);
-      }
-      return map;
-    }
-
     function sameMatches(a, b, sameGroups, mode) {
       const na = normalizeForMode(a, mode);
       const nb = normalizeForMode(b, mode);
@@ -1436,26 +1404,18 @@
       return false;
     }
 
-    function splitAnswerValues(text) {
-      const fields = splitRespectingQuotes(text, ["↵", "↩︎", "\\n"]);
-      return fields.map(field => splitRespectingQuotes(field, [",", "、"]).map(v => unquoteAnswerLiteral(v.trim())).filter(Boolean));
-    }
-
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
       let s = String(text ?? "");
       s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
-
       let out = "";
       let color = null;
       let buf = "";
-
       const flush = () => {
         if (!buf) return;
         const safe = esc(buf);
         out += color ? `<span style="color:${color}">${safe}</span>` : safe;
         buf = "";
       };
-
       for (let i = 0; i < s.length;) {
         if (allowColor) {
           const m = s.slice(i).match(/^\[color\((#[0-9a-fA-F]{3,8})\)\]/);
@@ -1466,36 +1426,19 @@
             continue;
           }
         }
-
         const pm = s.slice(i).match(/^\[picture\((\d+)\)\]/);
         if (pm) {
           flush();
           const n = pm[1];
           const src = pictureMap[String(n)];
-          if (src) {
-            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
-          } else {
-            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
-          }
+          if (src) out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          else out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
           i += pm[0].length;
           continue;
         }
-
         const ch = s[i];
-        if (ch === "\n") {
-          flush();
-          out += "<br>";
-          color = null;
-          i++;
-          continue;
-        }
-        if (ch === " ") {
-          flush();
-          out += " ";
-          color = null;
-          i++;
-          continue;
-        }
+        if (ch === "\n") { flush(); out += "<br>"; color = null; i++; continue; }
+        if (ch === " ") { flush(); out += " "; color = null; i++; continue; }
         buf += ch;
         i++;
       }
@@ -1514,38 +1457,31 @@
       const tags = [];
       const onOffControls = [];
       const sameGroups = [];
-
       while (rest.startsWith("[")) {
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
-
         const token = tagMatch[1].trim();
         const tokenLower = token.toLowerCase();
         const after = rest.slice(tagMatch[0].length).trimStart();
-
         if (tokenLower.startsWith("onoroff:")) {
           const target = normalizeOnOffTarget(tokenLower.slice("onoroff:".length));
           if (target) onOffControls.push(target);
           rest = after;
           continue;
         }
-
         if (tokenLower.startsWith("same(")) {
           const g = parseSameTag(tokenLower);
           if (g.length) sameGroups.push(g);
           rest = after;
           continue;
         }
-
         if (TAGS.includes(tokenLower)) {
           tags.push(tokenLower);
           rest = after;
           continue;
         }
-
         break;
       }
-
       return { tags, onOffControls: Array.from(new Set(onOffControls)), sameGroups, rest };
     }
 
@@ -1572,6 +1508,19 @@
       return { mode: "text", randomChoice: false };
     }
 
+    function findFirstUnquoted(text, targets) {
+      const s = String(text ?? "");
+      const t = [...targets].sort((a, b) => b.length - a.length);
+      let inQuotes = false;
+      for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '"') { inQuotes = !inQuotes; continue; }
+        if (inQuotes) continue;
+        for (const target of t) if (s.startsWith(target, i)) return i;
+      }
+      return -1;
+    }
+
     function parseQuestionLine(line, globalFlags, globalSameGroups = []) {
       const { tags, onOffControls, sameGroups, rest } = parseLeadingSettings(line);
       const raw = rest.trim();
@@ -1581,7 +1530,6 @@
       const question = raw.slice(0, eqIdx).trim();
       if (!question) return null;
       const { mode, randomChoice } = pickMode(globalFlags, tags);
-
       const mergedSameGroups = [...(globalSameGroups || []), ...(sameGroups || [])];
 
       if (mode === "choice") {
@@ -1601,33 +1549,15 @@
 
       if (mode === "number") {
         const answerText = raw.slice(eqIdx + 1).trim();
-        const answerGroups = splitAnswerValues(answerText);
+        const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
         if (!answerGroups.some(g => g.some(Boolean))) return null;
         return { type: "question", mode: "number", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls, sameGroups: mergedSameGroups };
       }
 
       const answerText = raw.slice(eqIdx + 1).trim();
-      const answerGroups = splitAnswerValues(answerText);
+      const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
       if (!answerGroups.some(g => g.some(Boolean))) return null;
       return { type: "question", mode: "text", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls, sameGroups: mergedSameGroups };
-    }
-
-    function findFirstUnquoted(text, targets) {
-      const s = String(text ?? "");
-      const t = [...targets].sort((a, b) => b.length - a.length);
-      let inQuotes = false;
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        if (ch === '"') {
-          inQuotes = !inQuotes;
-          continue;
-        }
-        if (inQuotes) continue;
-        for (const target of t) {
-          if (s.startsWith(target, i)) return i;
-        }
-      }
-      return -1;
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1637,7 +1567,6 @@
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
       let onOffControls = [];
       let globalSameGroups = [];
-
       let i = 0;
       while (i < lines.length && !String(lines[i]).trim()) i++;
 
@@ -1645,7 +1574,6 @@
         const raw = String(lines[i] ?? "");
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
-
         const parsed = parseLeadingSettings(raw);
         if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -1654,7 +1582,6 @@
           i++;
           continue;
         }
-
         break;
       }
 
@@ -1677,7 +1604,6 @@
           items.push({ id: uid(), section: currentSection, ...parsed });
           continue;
         }
-
         if (!trimmed.startsWith("[")) currentSection = trimmed;
       }
 
@@ -1693,16 +1619,13 @@
           type: item.type || "question",
           mode: "choice",
           question: String(item.question || ""),
-          options: (item.options || []).map(o => ({
-            text: String(o?.text || ""),
-            correct: !!o?.correct
-          })).filter(o => o.text),
+          options: (item.options || []).map(o => ({ text: String(o?.text || ""), correct: !!o?.correct })).filter(o => o.text),
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
-          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : []
+          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
+          sameGroups: Array.isArray(item.sameGroups) ? item.sameGroups.map(g => Array.isArray(g) ? g.map(v => String(v ?? "")) : []).filter(g => g.length) : []
         };
       }
-
       const groups = Array.isArray(item.answerGroups) ? item.answerGroups : [];
       return {
         id: item.id || uid(),
@@ -1712,44 +1635,40 @@
         question: String(item.question || ""),
         answerGroupsText: groups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")).join(",") : String(group ?? "")),
         localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
-        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : []
+        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
+        sameGroups: Array.isArray(item.sameGroups) ? item.sameGroups.map(g => Array.isArray(g) ? g.map(v => String(v ?? "")) : []).filter(g => g.length) : []
       };
     }
 
     function unpackItemFromFirestore(item) {
       if (!item || typeof item !== "object") return item;
-
       if (item.mode === "choice") {
         return {
           ...item,
           options: Array.isArray(item.options)
-            ? item.options.map(o => ({
-                text: String(o?.text || ""),
-                correct: !!o?.correct
-              })).filter(o => o.text)
+            ? item.options.map(o => ({ text: String(o?.text || ""), correct: !!o?.correct })).filter(o => o.text)
             : [],
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
-          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : []
+          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : [],
+          sameGroups: Array.isArray(item.sameGroups) ? item.sameGroups.map(g => Array.isArray(g) ? g.map(v => String(v ?? "")) : []).filter(g => g.length) : []
         };
       }
-
       const groupsSource =
         Array.isArray(item.answerGroupsText) && item.answerGroupsText.length
-          ? item.answerGroupsText.map(txt => splitAnswerValues(txt))
+          ? item.answerGroupsText.map(txt => splitAnswers(txt))
           : Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")) : splitAnswerValues(String(group ?? "")))
-            : (item.answers ? [splitAnswerValues(Array.isArray(item.answers) ? item.answers.join(",") : String(item.answers))] : [[]]);
-
+            ? item.answerGroups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")) : splitAnswers(String(group ?? "")))
+            : (item.answers ? [splitAnswers(Array.isArray(item.answers) ? item.answers.join(",") : String(item.answers))] : [[]]);
       const answerGroups = groupsSource.map(group => group.filter(Boolean)).filter(group => group.length > 0);
-
       return {
         ...item,
         mode: item.mode === "number" ? "number" : "text",
         answerGroups,
         answers: answerGroups[0] || [],
         localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
-        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : []
+        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : [],
+        sameGroups: Array.isArray(item.sameGroups) ? item.sameGroups.map(g => Array.isArray(g) ? g.map(v => String(v ?? "")) : []).filter(g => g.length) : []
       };
     }
 
@@ -1773,14 +1692,17 @@
         let prefix = "";
         if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
         if (item.mode === "number") prefix = "[number] ";
+        const same = Array.isArray(item.sameGroups) && item.sameGroups.length
+          ? item.sameGroups.map(g => `[same(${g.join(")(")})]`).join(" ")
+          : "";
         if (item.mode === "choice") {
           const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
-          lines.push(`${prefix}${item.question}=${opts}`);
+          lines.push(`${[same, `${prefix}${item.question}=${opts}`].filter(Boolean).join(" ")}`.trim());
         } else {
           const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
             ? item.answerGroups.map(group => group.join(",")).join("↵")
             : (item.answers || []).join(",");
-          lines.push(`${prefix}${item.question}=${answerText}`);
+          lines.push(`${[same, `${prefix}${item.question}=${answerText}`].filter(Boolean).join(" ")}`.trim());
         }
       }
       return lines.join("\n");
@@ -1917,7 +1839,6 @@
       clearResultEnterHandler();
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
-
       resultEnterHandler = (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
@@ -1925,7 +1846,6 @@
         e.preventDefault();
         nextQuestion();
       };
-
       window.addEventListener("keydown", resultEnterHandler);
     }
 
@@ -2092,11 +2012,9 @@
         state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
         activeFlags
       );
-
       const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
       const allIndices = quizItems.map((_, i) => i);
       const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
-
       state.quiz.activeFlags = activeFlags;
       state.quiz.items = quizItems;
       state.quiz.order = order;
@@ -2121,7 +2039,6 @@
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
       state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
-
       if (state.accessMode === "key") {
         rememberAccess(id, docData.key, {
           title: docData.title || "",
@@ -2130,7 +2047,6 @@
           updatedAt: normalizeTs(docData.updatedAt) || Date.now()
         });
       }
-
       if (state.accessMode === "owner") {
         upsertMyMeta({
           id,
@@ -2140,13 +2056,11 @@
           updatedAt: normalizeTs(docData.updatedAt) || Date.now()
         });
       }
-
       state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
       state.quiz.onOffControls = Array.from(new Set(docData.onOffControls || []));
       applyOnOffDefaultsToQuiz();
       state.quiz.pendingOrder = orderIndices || null;
       state.quiz.pendingOnlyWrong = !!onlyWrong;
-
       if (state.quiz.onOffControls.length) {
         state.quiz.phase = "settings";
         state.screen = "quiz";
@@ -2249,14 +2163,12 @@
         const labels = [];
         let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
         let q = 0;
-
         let i = 0;
         while (i < lines.length && !String(lines[i]).trim()) { labels.push(""); i++; }
         while (i < lines.length) {
           const line = String(lines[i] ?? "");
           const trimmed = line.trim();
           if (!trimmed) { labels.push(""); i++; continue; }
-
           const parsed = parseLeadingSettings(line);
           if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
             globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -2264,20 +2176,14 @@
             i++;
             continue;
           }
-
           const qline = parseQuestionLine(line, globalFlags);
-          if (qline) {
-            q += 1;
-            labels.push(String(q));
-          } else {
-            labels.push("");
-          }
+          if (qline) { q += 1; labels.push(String(q)); }
+          else labels.push("");
           i++;
         }
         while (labels.length < lines.length) labels.push("");
         return labels;
       }
-
       return Array.from({ length: lines.length }, (_, i) => String(i + 1));
     }
 
@@ -2287,10 +2193,8 @@
       textarea.style.height = `${next}px`;
       gutter.style.height = `${next}px`;
       if (mirror) mirror.style.height = `${next}px`;
-
       const labels = buildEditorGutterLabels(textarea.value, state.editorGutterMode);
       gutter.textContent = labels.length ? labels.join("\n") : "1";
-
       if (mirror) {
         mirror.innerHTML = renderMemoPreview(textarea.value);
         mirror.scrollTop = textarea.scrollTop;
@@ -2304,31 +2208,31 @@
       editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter, mirror));
     };
 
-    function caretCoordinates(textarea, pos) {
+    function caretCoordinatesByMirror(textarea, measureLayer, pos) {
+      if (!textarea || !measureLayer) return { left: 0, top: 0, height: 20 };
       const style = getComputedStyle(textarea);
-      const div = document.createElement("div");
-      const span = document.createElement("span");
-      const props = ["boxSizing","width","height","overflowX","overflowY","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth","paddingTop","paddingRight","paddingBottom","paddingLeft","fontStyle","fontVariant","fontWeight","fontStretch","fontSize","fontFamily","lineHeight","letterSpacing","textIndent","textTransform","wordSpacing","tabSize","MozTabSize"];
-      props.forEach(p => { div.style[p] = style[p]; });
-      div.style.position = "absolute";
-      div.style.visibility = "hidden";
-      div.style.whiteSpace = "pre-wrap";
-      div.style.wordWrap = "break-word";
-      div.style.overflow = "auto";
-      div.style.left = "-9999px";
-      div.style.top = "0";
-      div.style.width = `${textarea.offsetWidth}px`;
-      div.textContent = textarea.value.substring(0, pos);
-      span.textContent = textarea.value.substring(pos) || ".";
-      div.appendChild(span);
-      document.body.appendChild(div);
-      div.scrollTop = textarea.scrollTop;
-      div.scrollLeft = textarea.scrollLeft;
-      const rect = span.getBoundingClientRect();
-      const dRect = div.getBoundingClientRect();
-      const out = { left: rect.left - dRect.left, top: rect.top - dRect.top, height: parseFloat(style.lineHeight) || 20 };
-      document.body.removeChild(div);
-      return out;
+      const before = textarea.value.slice(0, pos).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+      measureLayer.style.width = `${textarea.clientWidth}px`;
+      measureLayer.style.height = `${textarea.clientHeight}px`;
+      measureLayer.style.font = style.font;
+      measureLayer.style.letterSpacing = style.letterSpacing;
+      measureLayer.style.lineHeight = style.lineHeight;
+      measureLayer.style.padding = style.padding;
+      measureLayer.style.border = style.border;
+      measureLayer.style.whiteSpace = "pre-wrap";
+      measureLayer.style.wordWrap = "break-word";
+      measureLayer.scrollTop = textarea.scrollTop;
+      measureLayer.scrollLeft = textarea.scrollLeft;
+      measureLayer.innerHTML = `${before}<span id="__caretMark__">|</span>`;
+      const mark = measureLayer.querySelector("#__caretMark__");
+      if (!mark) return { left: 0, top: 0, height: parseFloat(style.lineHeight) || 20 };
+      const mRect = mark.getBoundingClientRect();
+      const hRect = measureLayer.getBoundingClientRect();
+      return {
+        left: mRect.left - hRect.left,
+        top: mRect.top - hRect.top,
+        height: mRect.height || parseFloat(style.lineHeight) || 20
+      };
     }
 
     function replaceTriggerAtCaret(textarea, triggerChar, insertValue) {
@@ -2344,31 +2248,21 @@
       textarea.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
-    function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
+    function setupFloatingTriggerSuggestions({ host, textarea, box, measureLayer, triggerChar, items, onPick }) {
       if (!host || !textarea || !box) return;
-
-      const hide = () => {
-        box.innerHTML = "";
-        box.classList.add("hide");
-      };
-
+      const hide = () => { box.innerHTML = ""; box.classList.add("hide"); };
       const refresh = () => {
         const pos = textarea.selectionStart ?? 0;
         const active = pos > 0 && textarea.value[pos - 1] === triggerChar;
         if (!active) return hide();
-
         const list = typeof items === "function" ? items() : items;
-
         box.classList.remove("hide");
         box.innerHTML = list.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
-
         const hostRect = host.getBoundingClientRect();
         const taRect = textarea.getBoundingClientRect();
-        const caret = caretCoordinates(textarea, pos);
-
+        const caret = caretCoordinatesByMirror(textarea, measureLayer, pos);
         let left = taRect.left - hostRect.left + caret.left + 10;
         let top = taRect.top - hostRect.top + caret.top + caret.height + 8;
-
         requestAnimationFrame(() => {
           const maxLeft = Math.max(8, host.clientWidth - box.offsetWidth - 8);
           const maxTop = Math.max(8, host.clientHeight - box.offsetHeight - 8);
@@ -2377,7 +2271,6 @@
           box.style.left = `${Math.max(8, left)}px`;
           box.style.top = `${Math.max(8, top)}px`;
         });
-
         box.querySelectorAll(".suggestChip").forEach(btn => {
           btn.addEventListener("mousedown", e => e.preventDefault());
           btn.addEventListener("click", () => {
@@ -2390,7 +2283,6 @@
           });
         });
       };
-
       textarea.addEventListener("input", refresh);
       textarea.addEventListener("keyup", refresh);
       textarea.addEventListener("click", refresh);
@@ -2409,26 +2301,22 @@
           el.onerror = reject;
           el.src = url;
         });
-
         const maxSide = 1400;
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
         const scale = Math.min(1, maxSide / Math.max(w, h));
         const cw = Math.max(1, Math.round(w * scale));
         const ch = Math.max(1, Math.round(h * scale));
-
         const canvas = document.createElement("canvas");
         canvas.width = cw;
         canvas.height = ch;
         const ctx = canvas.getContext("2d");
         if (!ctx) throw new Error("canvas context unavailable");
         ctx.drawImage(img, 0, 0, cw, ch);
-
         try {
           const webp = canvas.toDataURL("image/webp", 0.75);
           if (webp.startsWith("data:image/webp")) return webp;
         } catch {}
-
         const fallback = await new Promise(resolve => {
           canvas.toBlob(blob => {
             if (!blob) return resolve("");
@@ -2449,14 +2337,10 @@
       input.accept = "image/*";
       input.style.display = "none";
       document.body.appendChild(input);
-
       const result = await new Promise(resolve => {
         input.addEventListener("change", async () => {
           const file = input.files && input.files[0];
-          if (!file) {
-            resolve(null);
-            return;
-          }
+          if (!file) { resolve(null); return; }
           try {
             const dataUrl = await fileToWebpDataUrl(file);
             resolve(dataUrl || null);
@@ -2465,12 +2349,9 @@
             resolve(null);
           }
         }, { once: true });
-
         input.click();
       });
-
       input.remove();
-
       if (result) {
         state.draftPictures[String(number)] = result;
         safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
@@ -2513,21 +2394,30 @@
       render();
     }
 
+    async function deletePictureFilesIfNeeded(docId, pictures) {
+      const entries = Object.entries(normalizePictures(pictures || {}));
+      for (const [num, url] of entries) {
+        if (typeof url === "string" && url.includes("firebasestorage.googleapis.com")) {
+          try {
+            const path = `quiz_pictures/${docId}/picture-${num}.webp`;
+            await deleteObject(storageRef(storage, path));
+          } catch {}
+        }
+      }
+    }
+
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
-
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
-
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
-
       const btn = document.getElementById("deleteBtn");
       if (btn) btn.disabled = true;
-
       (async () => {
         try {
+          await deletePictureFilesIfNeeded(state.docId, state.doc?.pictures || {});
           await deleteDoc(doc(db, COLLECTION, state.docId));
           removeMyMeta(state.docId);
           removeAccessRecord(state.docId);
@@ -2578,22 +2468,24 @@
     const commentRoleLabel = (role) => role === "owner" ? "主催者" : role === "editor" ? "共同編集者" : "コメント";
     const commentRoleClass = (role) => role === "owner" ? "commentOwner" : role === "editor" ? "commentEditor" : "commentViewer";
 
-    function setupCommentSuggestions(host, textarea, box) {
+    function setupCommentSuggestions(host, textarea, box, measureLayer) {
       setupFloatingTriggerSuggestions({
         host,
         textarea,
         box,
+        measureLayer,
         triggerChar: "@",
         items: makeCommentSuggestionItems(),
         onPick: () => {}
       });
     }
 
-    function setupEditorTagSuggestions(host, textarea, box) {
+    function setupEditorTagSuggestions(host, textarea, box, measureLayer) {
       setupFloatingTriggerSuggestions({
         host,
         textarea,
         box,
+        measureLayer,
         triggerChar: "#",
         items: () => {
           const next = getNextPictureNumber(textarea.value, state.draftPictures);
@@ -2631,25 +2523,21 @@
 
     async function addComment() {
       if (!state.docId || !state.doc) return;
-
       let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
       const text = (state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
       const replyTo = String(state.commentDraft?.replyTo || "");
       if (!text) return alert("コメントを書いてね");
-
       if (name !== "匿名" && latestCommentNameConflict(name)) {
         const yes = confirm(`「${name}」はもう使われてるよ。\n後ろに -uuid(4桁) を追加して投稿する？`);
         if (yes) name = `${name}-${suffix4()}`;
       }
-
       const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
       const proofs = {};
       if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
       if (text.includes("[[TIME]]") && isPerfectScore()) {
         proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
       }
-
       const comment = {
         id: uid(),
         authorToken: getCommentToken(),
@@ -2662,11 +2550,9 @@
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-
       setCommentName(name);
       const next = sortComments([...(state.doc.comments || []), comment]);
       await persistComments(next);
-
       state.commentDraft.text = "";
       state.commentDraft.isPrivate = false;
       state.commentDraft.name = name;
@@ -2745,9 +2631,7 @@
 
     function normalizeDoc(id, data) {
       const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-      const items = Array.isArray(data.items) && data.items.length
-        ? data.items.map(unpackItemFromFirestore).filter(Boolean)
-        : parsed.items;
+      const items = Array.isArray(data.items) && data.items.length ? data.items.map(unpackItemFromFirestore).filter(Boolean) : parsed.items;
       const globalFlags = {
         random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
         choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
@@ -2782,9 +2666,7 @@
         parts.push(stripMemoSegments(item.question || ""));
         if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(o.text)).join(" "));
         else {
-          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => group.join(" ")).join(" ")
-            : (item.answers || []).join(" ");
+          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length ? item.answerGroups.map(group => group.join(" ")).join(" ") : (item.answers || []).join(" ");
           parts.push(stripMemoSegments(answerText));
         }
       }
@@ -2907,6 +2789,41 @@
       render();
     }
 
+    async function refreshCurrentDocAndComments() {
+      if (!state.docId) return;
+      if (state.ui.refreshBusy) return;
+      state.ui.refreshBusy = true;
+      render();
+
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, state.docId));
+        if (!snap.exists()) throw new Error("not found");
+        const data = snap.data() || {};
+        state.doc = normalizeDoc(state.docId, data);
+        state.doc.comments = sortComments(state.doc.comments || []);
+        state.allDocs = state.allDocs.map(d => d.id === state.docId ? normalizeDoc(state.docId, data) : d);
+        updateCatalogDocFromState();
+
+        if (state.screen === "quiz" && state.quiz.phase === "done") {
+          state.quiz.items = state.doc.items || [];
+        }
+
+        state.ui.refreshOkUntil = Date.now() + 800;
+      } catch (err) {
+        console.error(err);
+        alert(`更新で失敗したよ: ${err?.message || err}`);
+      } finally {
+        state.ui.refreshBusy = false;
+        render();
+      }
+    }
+
+    function refreshIconHtml() {
+      if (state.ui.refreshBusy) return "…";
+      if (Date.now() < (state.ui.refreshOkUntil || 0)) return "✓";
+      return "↻";
+    }
+
     function renderDocActions(docData) {
       const canEditHere = canEditDocMeta(docData);
       const buttons = [`<button class="ghost miniAction" data-open-quiz="${esc(docData.id)}" type="button">開く</button>`];
@@ -3026,22 +2943,18 @@
         openPartnerModal();
         return;
       }
-
       if (!state.partnerLink) {
         alert("パートナーリンクはまだ未設定だよ");
         return;
       }
-
       window.open(state.partnerLink, "_blank", "noopener,noreferrer");
     }
 
     function bindGlobalButtons() {
       const helpBtn = document.getElementById("helpBtn");
       if (helpBtn) helpBtn.onclick = () => openTutorial(false);
-
       const partnerBtn = document.getElementById("partnerBtn");
       if (partnerBtn) partnerBtn.onclick = () => openPartnerAction();
-
       const topBtn = document.getElementById("topBtn");
       if (topBtn) topBtn.onclick = () => { location.hash = ""; };
     }
@@ -3101,7 +3014,6 @@
           </div>
         </div>
       `;
-
       const createBtn = document.getElementById("createBtn");
       if (createBtn) createBtn.addEventListener("click", () => { location.hash = "#/create"; openCreate(); });
       bindGlobalButtons();
@@ -3169,11 +3081,28 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
+    async function asyncUploadPicturesForDoc(docId, pictures) {
+      const out = {};
+      const entries = Object.entries(normalizePictures(pictures || {}));
+      for (const [num, value] of entries) {
+        if (typeof value === "string" && !value.startsWith("data:image/")) {
+          out[num] = value;
+          continue;
+        }
+        if (typeof value === "string" && value.startsWith("data:image/")) {
+          const path = `quiz_pictures/${docId}/picture-${num}.webp`;
+          const sRef = storageRef(storage, path);
+          await uploadString(sRef, value, "data_url");
+          out[num] = await getDownloadURL(sRef);
+        }
+      }
+      return out;
+    }
+
     function renderEditor() {
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
-
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -3218,6 +3147,7 @@
                   <div id="gutter" class="gutter"></div>
                   <div class="editorTextWrap">
                     <div id="editorMirror" class="editorMirror"></div>
+                    <div id="editorMeasure" class="editorMeasure"></div>
                     <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
 [open] [random]
 日本について
@@ -3258,6 +3188,7 @@
       const problemText = document.getElementById("problemText");
       const gutter = document.getElementById("gutter");
       const mirror = document.getElementById("editorMirror");
+      const measureLayer = document.getElementById("editorMeasure");
       const keyBtn = document.getElementById("keyBtn");
       const saveBtn = document.getElementById("saveBtn");
       const deleteBtn = document.getElementById("deleteBtn");
@@ -3360,8 +3291,8 @@
 
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
-
           try {
+            const uploadedPictures = await asyncUploadPicturesForDoc(newId, prunedPictures);
             const payload = {
               title: finalTitle,
               subtitle,
@@ -3375,7 +3306,7 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictures: prunedPictures,
+              pictures: uploadedPictures,
               comments: existingComments
             };
 
@@ -3390,7 +3321,7 @@
 
             state.docId = newId;
             state.doc = { ...payload, items, comments: sortComments(existingComments) };
-            state.draftPictures = { ...prunedPictures };
+            state.draftPictures = { ...uploadedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -3432,9 +3363,8 @@
 
       if (deleteBtn) deleteBtn.addEventListener("click", openDeleteConfirmThenDelete);
       if (leaveBtn) leaveBtn.addEventListener("click", openLeaveConfirmThenLeave);
-
       syncEditorArea(problemText, gutter, mirror);
-      setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox);
+      setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox, measureLayer);
       refreshKeyStatus();
       titleInput.focus();
       bindGlobalButtons();
@@ -3445,7 +3375,6 @@
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       const controls = state.quiz.onOffControls || [];
       const total = state.doc?.items?.length || 0;
-
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -3497,9 +3426,7 @@
           </div>
         </div>
       `;
-
       bindGlobalButtons();
-
       const editBtn = document.getElementById("editBtn");
       if (editBtn) {
         editBtn.addEventListener("click", () => {
@@ -3521,7 +3448,6 @@
           alert("Key が違うよ");
         });
       }
-
       document.querySelectorAll("[data-toggle-setting]").forEach(btn => {
         btn.addEventListener("click", () => {
           const key = btn.dataset.toggleSetting || "";
@@ -3529,7 +3455,6 @@
           render();
         });
       });
-
       const startQuizBtn = document.getElementById("startQuizBtn");
       if (startQuizBtn) {
         startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
@@ -3547,7 +3472,6 @@
       if (!Array.isArray(state.quiz.typedAnswers) || state.quiz.typedAnswers.length !== fieldCount) {
         state.quiz.typedAnswers = Array.from({ length: fieldCount }, () => "");
       }
-
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -3577,9 +3501,7 @@
 
             <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
-              ${q.item.mode === "choice" ? `
-                <div id="choiceGrid" class="choiceGrid"></div>
-              ` : `
+              ${q.item.mode === "choice" ? `<div id="choiceGrid" class="choiceGrid"></div>` : `
                 <div class="answerFields" style="grid-template-columns:1fr;">
                   ${Array.from({ length: fieldCount }, (_, i) => `
                     <input
@@ -3603,9 +3525,7 @@
           </div>
         </div>
       `;
-
       bindGlobalButtons();
-
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
         const entered = prompt("Key を入力して編集", "");
@@ -3624,14 +3544,12 @@
         }
         alert("Key が違うよ");
       });
-
       const forceEndBtn = document.getElementById("forceEndBtn");
       if (forceEndBtn) {
         forceEndBtn.addEventListener("click", () => {
           if (confirm("本当に残りを×で終わりますか？")) forceFinishAsWrong();
         });
       }
-
       if (q.item.mode === "choice") {
         const grid = document.getElementById("choiceGrid");
         const options = (q.item.randomChoice ? shuffle(q.item.options || []) : (q.item.options || [])).slice();
@@ -3659,119 +3577,14 @@
             }
             if (e.key === "Enter") {
               e.preventDefault();
-              if (i < inputs.length - 1) {
-                inputs[i + 1].focus();
-              } else {
-                submitAnswer();
-              }
+              if (i < inputs.length - 1) inputs[i + 1].focus();
+              else submitAnswer();
             }
           });
         });
         if (inputs[0]) inputs[0].focus();
       }
-
       document.getElementById("submitBtn").addEventListener("click", submitAnswer);
-    }
-
-    function renderResult() {
-      const r = state.quiz.lastResult;
-      if (!r) { state.quiz.phase = "question"; render(); return; }
-
-      const q = state.quiz.items[r.idx];
-      const pics = getPictureMap();
-      const answerText = q.mode === "choice"
-        ? (q.options || []).filter(o => o.correct).map(o => o.text).join(" / ")
-        : renderAnswerText(q.answerGroups || [q.answers || []]);
-
-      document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
-
-      root.innerHTML = `
-        <div class="page">
-          <div class="topbar">
-            <div class="titleArea">
-              <div class="titleBlock">
-                <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
-              </div>
-              ${helpButtonHtml()}
-            </div>
-            <div class="row">
-              ${topButtonHtml()}
-              <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
-            </div>
-          </div>
-
-          <div class="quiz">
-            <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
-
-            <div class="card">
-              ${q.section ? `<div class="sectionText">${renderRichText(stripMemoSegments(q.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
-              <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${renderRichText(stripMemoSegments(q.question), { pictureMap: pics })}</div>
-              <div style="height:12px"></div>
-              <div class="label">答え</div>
-              <div class="explain">${renderRichText(stripMemoSegments(answerText), { pictureMap: pics })}</div>
-              <div style="height:12px"></div>
-              <div class="label">あなたの答え</div>
-              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(stripMemoSegments(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(stripMemoSegments(String(r.given ?? "")), { pictureMap: pics })}</div>
-            </div>
-
-            <div class="actions">
-              <button class="next" id="nextBtn" type="button">次へ</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      bindGlobalButtons();
-
-      document.getElementById("editBtn").addEventListener("click", () => {
-        if (canEdit()) return openEditFromDoc();
-        const entered = prompt("Key を入力して編集", "");
-        if (entered === null) return;
-        if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return openEditFromDoc();
-        if ((entered || "").trim() === (state.doc.key || "")) {
-          if (state.docId) setCookie(`qb_key_${state.docId}`, "1");
-          rememberAccess(state.docId, (state.doc.key || ""), {
-            title: state.doc.title || "",
-            subtitle: state.doc.subtitle || "",
-            createdAt: normalizeTs(state.doc.createdAt) || Date.now(),
-            updatedAt: normalizeTs(state.doc.updatedAt) || Date.now()
-          });
-          state.accessMode = "key";
-          return openEditFromDoc();
-        }
-        alert("Key が違うよ");
-      });
-
-      document.getElementById("nextBtn").addEventListener("click", nextQuestion);
-      enableResultEnterHandler();
-    }
-
-    function renderCommentNode(comment, comments, depth = 0) {
-      if (!canViewComment(comment)) return `<div class="commentItem" style="margin-left:${depth * 14}px"><div class="commentMask">🫥</div></div>`;
-      const role = comment.authorRole || "viewer";
-      const roleLabel = commentRoleLabel(role);
-      const roleClass = commentRoleClass(role);
-      const canManage = canManageComment(comment);
-      const parent = comment.parentId ? comments.find(c => c.id === comment.parentId) : null;
-      const children = comments.filter(c => c.parentId === comment.id).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
-      const replyLine = parent ? `<div class="metaLine">↳ ${esc(parent.authorName || "匿名")} への返信</div>` : "";
-
-      return `
-        <div class="commentItem ${roleClass}" style="margin-left:${depth * 14}px">
-          ${replyLine}
-          <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span>${comment.isPrivate ? ` <span class="commentBadge">🫥</span>` : ""}</div>
-          <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
-          <div class="commentBody">${renderCommentBody(comment)}</div>
-          <div class="row" style="justify-content:flex-end;">
-            <button class="ghost miniAction" data-reply-comment="${esc(comment.id)}" type="button">返信</button>
-            ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}" type="button">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
-            ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}" type="button">削除</button>` : ""}
-          </div>
-          ${children.length ? `<div class="reviewList" style="margin-top:8px">${children.map(child => renderCommentNode(child, comments, depth + 1)).join("")}</div>` : ""}
-        </div>
-      `;
     }
 
     function renderCommentsPanel(comments) {
@@ -3783,17 +3596,19 @@
         .sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0))
         .map(c => renderCommentNode(c, comments, 0))
         .join("");
-
       const scoreBox = state.quiz.onlyWrong
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
         : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
-
+      const refreshText = refreshIconHtml();
       return `
         <div class="commentWrap">
           <div class="card commentWrap">
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメントを書く</div>
-              <div class="commentPrivateNote">🫥 は非公開コメント</div>
+              <div class="row" style="gap:8px;align-items:center">
+                <button class="ghost miniAction" id="refreshDocBtn" type="button" title="コメントと問題を更新">${refreshText}</button>
+                <div class="commentPrivateNote">🫥 は非公開コメント</div>
+              </div>
             </div>
 
             <div class="commentForm">
@@ -3849,7 +3664,6 @@
       const attempts = state.quiz.attempts || {};
       const pics = getPictureMap();
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
-
       root.innerHTML = `
         <div class="page">
           <div class="topbar">
@@ -3906,9 +3720,7 @@
           </div>
         </div>
       `;
-
       bindGlobalButtons();
-
       document.getElementById("editBtn").addEventListener("click", () => {
         if (canEdit()) return openEditFromDoc();
         const entered = prompt("Key を入力して編集", "");
@@ -3927,7 +3739,6 @@
         }
         alert("Key が違うよ");
       });
-
       document.getElementById("restartBtn").addEventListener("click", restartQuiz);
       const commentsBtn = document.getElementById("commentsBtn");
       if (commentsBtn) commentsBtn.addEventListener("click", () => { state.showComments = !state.showComments; render(); });
@@ -3942,7 +3753,7 @@
         const scoreSuggestBox = document.getElementById("scoreSuggestBox");
         const commentHost = document.querySelector(".commentInputHost");
         const cancelReplyBtn = document.getElementById("cancelReplyBtn");
-
+        const refreshDocBtn = document.getElementById("refreshDocBtn");
         if (commentName) commentName.addEventListener("input", e => { state.commentDraft.name = e.target.value; setCommentName(e.target.value.trim() || "匿名"); });
         if (commentText) {
           commentText.addEventListener("input", e => {
@@ -3955,9 +3766,20 @@
         }
         if (commentPrivate) commentPrivate.addEventListener("change", e => { state.commentDraft.isPrivate = !!e.target.checked; });
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
-        if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
+        if (commentText && scoreSuggestBox && commentHost) {
+          const measureLayer = document.createElement("div");
+          measureLayer.className = "editorMeasure";
+          measureLayer.style.position = "absolute";
+          measureLayer.style.left = "-99999px";
+          measureLayer.style.top = "0";
+          measureLayer.style.width = "1px";
+          measureLayer.style.height = "1px";
+          measureLayer.style.overflow = "hidden";
+          commentHost.appendChild(measureLayer);
+          setupCommentSuggestions(commentHost, commentText, scoreSuggestBox, measureLayer);
+        }
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
-
+        if (refreshDocBtn) refreshDocBtn.addEventListener("click", refreshCurrentDocAndComments);
         document.querySelectorAll("[data-toggle-comment]").forEach(btn => btn.addEventListener("click", () => toggleCommentVisibility(btn.dataset.toggleComment || "")));
         document.querySelectorAll("[data-delete-comment]").forEach(btn => btn.addEventListener("click", () => deleteComment(btn.dataset.deleteComment || "")));
         document.querySelectorAll("[data-reply-comment]").forEach(btn => btn.addEventListener("click", () => {
@@ -3985,13 +3807,10 @@
     }
 
     function render() {
-      if (state.screen === "loading") {
-        renderLoading();
-      } else if (state.screen === "home") {
-        renderHome();
-      } else if (state.screen === "editor") {
-        renderEditor();
-      } else if (state.screen === "quiz") {
+      if (state.screen === "loading") renderLoading();
+      else if (state.screen === "home") renderHome();
+      else if (state.screen === "editor") renderEditor();
+      else if (state.screen === "quiz") {
         if (!state.doc || !state.doc.items || !state.doc.items.length) {
           state.screen = "home";
           render();
@@ -4111,11 +3930,7 @@
 
     function renderTutorialLayer() {
       if (!tutorialLayer) return;
-      if (!state.tutorial.open) {
-        tutorialLayer.innerHTML = "";
-        return;
-      }
-
+      if (!state.tutorial.open) { tutorialLayer.innerHTML = ""; return; }
       const pages = tutorialPages();
       const pageIndex = Math.max(0, Math.min(state.tutorial.page, pages.length - 1));
       const page = pages[pageIndex];
@@ -4124,7 +3939,6 @@
       const showLeft = !(pageIndex === 0 && !state.tutorial.seen);
       const leftLabel = pageIndex === 0 && state.tutorial.seen ? "閉じる" : "前へ";
       const rightLabel = isLast ? "始める" : "次へ";
-
       tutorialLayer.innerHTML = `
         <div class="tutorialOverlay ${state.tutorial.closing ? "closing" : ""}">
           <div class="tutorialPanel">
@@ -4135,13 +3949,11 @@
               </div>
               ${showTopClose ? `<button class="tutorialClose" id="tutorialCloseBtn" type="button" aria-label="閉じる">×</button>` : `<div style="width:44px;height:44px"></div>`}
             </div>
-
             <div class="tutorialBody">
               <div class="tutorialPage anim-${state.tutorial.motion || "open"}">
                 ${page.body}
               </div>
             </div>
-
             <div class="tutorialFooter">
               ${showLeft ? `<button class="ghost tutorialNavBtn" id="tutorialPrevBtn" type="button">${esc(leftLabel)}</button>` : `<div style="width:110px"></div>`}
               <div class="tutorialDots">
@@ -4152,11 +3964,9 @@
           </div>
         </div>
       `;
-
       const closeBtn = document.getElementById("tutorialCloseBtn");
       const prevBtn = document.getElementById("tutorialPrevBtn");
       const nextBtn = document.getElementById("tutorialNextBtn");
-
       if (closeBtn) closeBtn.addEventListener("click", () => closeTutorial(true));
       if (prevBtn) {
         prevBtn.addEventListener("click", () => {
@@ -4169,13 +3979,9 @@
           renderTutorialLayer();
         });
       }
-
       if (nextBtn) {
         nextBtn.addEventListener("click", () => {
-          if (isLast) {
-            closeTutorial(true);
-            return;
-          }
+          if (isLast) { closeTutorial(true); return; }
           state.tutorial.page = Math.min(pages.length - 1, pageIndex + 1);
           state.tutorial.motion = "next";
           renderTutorialLayer();
@@ -4195,7 +4001,6 @@
       state.tutorial.closing = true;
       state.tutorial.motion = "close";
       renderTutorialLayer();
-
       setTimeout(() => {
         state.tutorial.open = false;
         state.tutorial.closing = false;
@@ -4224,11 +4029,7 @@
 
     function renderPartnerLayer() {
       if (!partnerLayer) return;
-      if (!state.partnerModal.open) {
-        partnerLayer.innerHTML = "";
-        return;
-      }
-
+      if (!state.partnerModal.open) { partnerLayer.innerHTML = ""; return; }
       const admin = isPartnerAdmin();
       partnerLayer.innerHTML = `
         <div class="partnerOverlay">
@@ -4254,18 +4055,13 @@
           </div>
         </div>
       `;
-
       const closeBtn = document.getElementById("partnerCloseBtn");
       const openBtn = document.getElementById("partnerOpenBtn");
       const editBtn = document.getElementById("partnerEditBtn");
-
       if (closeBtn) closeBtn.addEventListener("click", () => closePartnerModal());
       if (openBtn) openBtn.addEventListener("click", () => {
-        if (state.partnerLink) {
-          window.open(state.partnerLink, "_blank", "noopener,noreferrer");
-        } else {
-          alert("パートナーリンクはまだ未設定だよ");
-        }
+        if (state.partnerLink) window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        else alert("パートナーリンクはまだ未設定だよ");
         closePartnerModal();
       });
       if (editBtn) editBtn.addEventListener("click", async () => {
@@ -4297,7 +4093,6 @@
     async function openEditRoute(id) {
       state.screen = "loading";
       render();
-
       try {
         const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()) { state.screen = "home"; render(); return; }
@@ -4305,12 +4100,10 @@
         state.docId = id;
         state.doc = normalizeDoc(id, data);
         setAccessModeForDoc(state.doc, id);
-
         if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") {
           openEditFromDoc();
           return;
         }
-
         const entered = prompt("Key を入力して編集", "");
         if (entered === null) { location.hash = `#/${id}`; return; }
         if ((entered || "").trim() === (state.doc.key || "")) {
@@ -4339,7 +4132,6 @@
       loadTutorialSeenState();
       await loadSiteSettings();
       const r = route();
-
       if (r.name === "home") {
         try { await loadCatalog(); } catch (e) { console.error(e); }
         state.screen = "home";
@@ -4348,10 +4140,8 @@
         maybeAutoOpenTutorial();
         return;
       }
-
       if (r.name === "create") { openCreate(); maybeAutoOpenTutorial(); return; }
       if (r.name === "edit") { await openEditRoute(r.id); maybeAutoOpenTutorial(); return; }
-
       if (r.name === "quiz") {
         state.screen = "loading";
         state.showComments = false;
