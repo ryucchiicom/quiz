@@ -99,6 +99,7 @@
       font-size:13px;
       line-height:1.6;
       word-break:break-word;
+      white-space:normal;
     }
 
     .card{
@@ -179,7 +180,7 @@
 
     .gridEditor{
       display:grid;
-      grid-template-columns:42px 1fr;
+      grid-template-columns:64px 1fr;
       border:1px solid var(--line);
       border-radius:18px;
       overflow:hidden;
@@ -191,7 +192,7 @@
     .gutter{
       background:rgba(127,127,127,.07);
       border-right:1px solid var(--line);
-      padding:14px 6px 14px 0;
+      padding:14px 8px 14px 0;
       text-align:right;
       color:#8a93a8;
       font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -281,9 +282,7 @@
       white-space:normal;
     }
 
-    body.dark .sectionText{
-      color:#d7def0;
-    }
+    body.dark .sectionText{ color:#d7def0; }
 
     .question{
       font-size:clamp(22px,4vw,32px);
@@ -432,9 +431,7 @@
       line-height:1.4;
     }
 
-    body.dark .reviewSection{
-      color:#d7def0;
-    }
+    body.dark .reviewSection{ color:#d7def0; }
 
     .reviewQ{
       font-weight:900;
@@ -495,15 +492,9 @@
       word-break:break-word;
     }
 
-    .commentWrap{
-      display:grid;
-      gap:12px;
-    }
+    .commentWrap{ display:grid; gap:12px; }
 
-    .commentForm{
-      display:grid;
-      gap:10px;
-    }
+    .commentForm{ display:grid; gap:10px; }
 
     .commentHeader{
       display:flex;
@@ -564,20 +555,9 @@
       gap:6px;
     }
 
-    .commentOwner{
-      border-color:var(--ownerLine);
-      background:var(--ownerBg);
-    }
-
-    .commentEditor{
-      border-color:var(--editorLine);
-      background:var(--editorBg);
-    }
-
-    .commentViewer{
-      border-color:var(--line);
-      background:var(--panel);
-    }
+    .commentOwner{ border-color:var(--ownerLine); background:var(--ownerBg); }
+    .commentEditor{ border-color:var(--editorLine); background:var(--editorBg); }
+    .commentViewer{ border-color:var(--line); background:var(--panel); }
 
     .choiceGrid{
       display:grid;
@@ -604,10 +584,7 @@
       color:#f3f7ff !important;
     }
 
-    .homeControls{
-      display:grid;
-      gap:10px;
-    }
+    .homeControls{ display:grid; gap:10px; }
 
     .homeTopRow{
       display:flex;
@@ -705,19 +682,13 @@
       align-items:center;
     }
 
-    .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
-    .replyHint{font-size:12px;color:var(--muted);}
-    .timeOnlyNote{font-size:12px;color:var(--muted);}
+    .replyLabel{ font-size:13px; font-weight:900; color:var(--text); }
+    .replyHint{ font-size:12px; color:var(--muted); }
+    .timeOnlyNote{ font-size:12px; color:var(--muted); }
 
-    .settingsScreen{
-      display:grid;
-      gap:14px;
-    }
+    .settingsScreen{ display:grid; gap:14px; }
 
-    .settingList{
-      display:grid;
-      gap:10px;
-    }
+    .settingList{ display:grid; gap:10px; }
 
     .settingRow{
       display:flex;
@@ -780,10 +751,7 @@
 
     .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
 
-    .settingHeader{
-      display:grid;
-      gap:8px;
-    }
+    .settingHeader{ display:grid; gap:8px; }
 
     .settingTitle{
       font-size:26px;
@@ -894,9 +862,7 @@
       background:rgba(127,127,127,.05);
     }
 
-    body.dark .tutorialCard{
-      background:rgba(255,255,255,.03);
-    }
+    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
 
     .tutorialHero{
       display:grid;
@@ -928,9 +894,7 @@
       word-break:break-word;
     }
 
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+    body.dark .tutorialCode{ background:#0a1220; }
 
     .tutorialFooter,.partnerFooter{
       display:flex;
@@ -955,7 +919,7 @@
       background:rgba(127,127,127,.35);
     }
 
-    .dot.active{background:var(--accent);}
+    .dot.active{ background:var(--accent); }
 
     .tutorialNavBtn{
       min-width:110px;
@@ -1038,7 +1002,7 @@
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
-      .gridEditor{grid-template-columns:36px 1fr;min-height:380px}
+      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
       .question{font-size:22px}
       .answer{font-size:16px}
       .bigBtn{width:100%}
@@ -1125,6 +1089,13 @@
     const CONTROL_LABELS = { random: "問題順ランダム" };
     const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
+    const Q_COMMA = "\uE000";
+    const Q_EQ = "\uE001";
+    const Q_NL1 = "\uE002";
+    const Q_NL2 = "\uE003";
+    const Q_BSLASHN = "\uE004";
+    const Q_SEMI = "\uE005";
+
     const state = {
       screen: "loading",
       docId: "",
@@ -1158,7 +1129,6 @@
         activeFlags: {},
         settingValues: {},
         onOffControls: [],
-        samePairs: [],
         items: [],
         pendingOrder: null,
         pendingOnlyWrong: false
@@ -1207,12 +1177,26 @@
         .replace(/'/g, "&#39;");
     }
 
-    function norm(s) {
+    function decodeQuotedLiteral(s) {
       return String(s ?? "")
-        .replace(/\u3000/g, " ")
-        .trim()
-        .replace(/\s+/g, " ")
-        .toLowerCase();
+        .replaceAll(Q_COMMA, ",")
+        .replaceAll(Q_EQ, "=")
+        .replaceAll(Q_NL1, "↵")
+        .replaceAll(Q_NL2, "↩︎")
+        .replaceAll(Q_BSLASHN, "\\n")
+        .replaceAll(Q_SEMI, ";");
+    }
+
+    function encodeQuotedLiteral(s) {
+      return String(s ?? "")
+        .replaceAll("\\n", Q_BSLASHN)
+        .replaceAll("↵", Q_NL1)
+        .replaceAll("↩︎", Q_NL2)
+        .replaceAll(",", Q_COMMA)
+        .replaceAll("、", Q_COMMA)
+        .replaceAll("=", Q_EQ)
+        .replaceAll("＝", Q_EQ)
+        .replaceAll(";", Q_SEMI);
     }
 
     function splitOutsideQuotes(text, separators) {
@@ -1256,14 +1240,24 @@
 
     function unquoteLiteral(text) {
       const s = String(text ?? "");
-      if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1);
+      if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) {
+        return encodeQuotedLiteral(s.slice(1, -1));
+      }
       return s;
+    }
+
+    function norm(s) {
+      return decodeQuotedLiteral(String(s ?? ""))
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
     }
 
     function splitAnswers(text) {
       return splitOutsideQuotes(text, [",", "、"])
         .map(v => unquoteLiteral(v).trim())
-        .filter(v => v.length > 0 || String(v) === "");
+        .filter(v => v.length > 0 || v === "");
     }
 
     function splitAnswerFields(text) {
@@ -1281,14 +1275,21 @@
       const s = String(text ?? "");
       let out = "";
       let memo = false;
+      let inQuote = false;
+
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
+        if (ch === '"') {
+          inQuote = !inQuote;
+          if (!memo) out += ch;
+          continue;
+        }
         if (ch === "\n") {
           out += ch;
           memo = false;
           continue;
         }
-        if (ch === ";") {
+        if (!inQuote && ch === ";") {
           memo = !memo;
           continue;
         }
@@ -1301,6 +1302,7 @@
       const s = String(text ?? "");
       let html = "";
       let memo = false;
+      let inQuote = false;
       let buf = "";
 
       const flush = () => {
@@ -1311,13 +1313,18 @@
 
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
+        if (ch === '"') {
+          inQuote = !inQuote;
+          buf += ch;
+          continue;
+        }
         if (ch === "\n") {
           flush();
           html += "<br>";
           memo = false;
           continue;
         }
-        if (ch === ";") {
+        if (!inQuote && ch === ";") {
           flush();
           html += `<span class="memoText">;</span>`;
           memo = !memo;
@@ -1329,47 +1336,61 @@
       return html;
     }
 
-    function normalizePictures(obj) {
-      const out = {};
-      if (!obj || typeof obj !== "object") return out;
-      for (const [k, v] of Object.entries(obj)) {
-        if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) {
-          out[String(k)] = v;
+    function normalizeKeyForCompare(value, mode = "text") {
+      const decoded = decodeQuotedLiteral(String(value ?? ""));
+      if (mode === "number") return decoded.replace(/[^\d.-]/g, "").trim();
+      return decoded.replace(/\u3000/g, " ").trim().replace(/\s+/g, " ");
+    }
+
+    function uniqueSamePairs(pairs = []) {
+      const seen = new Set();
+      const out = [];
+      for (const p of pairs || []) {
+        const a = normalizeKeyForCompare(p?.[0] ?? "");
+        const b = normalizeKeyForCompare(p?.[1] ?? "");
+        if (!a || !b) continue;
+        const key = a < b ? `${a}__${b}` : `${b}__${a}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push([a, b]);
+      }
+      return out;
+    }
+
+    function mergeSamePairs(base = [], add = []) {
+      return uniqueSamePairs([...(base || []), ...(add || [])]);
+    }
+
+    function makeSameMatcher(samePairs = []) {
+      const groups = [];
+      const findGroup = (x) => groups.find(g => g.has(x));
+
+      for (const pair of uniqueSamePairs(samePairs)) {
+        const a = pair[0];
+        const b = pair[1];
+        const ga = findGroup(a);
+        const gb = findGroup(b);
+
+        if (ga && gb && ga !== gb) {
+          const merged = new Set([...ga, ...gb]);
+          groups.splice(groups.indexOf(ga), 1);
+          groups.splice(groups.indexOf(gb), 1);
+          groups.push(merged);
+        } else if (ga) {
+          ga.add(b);
+        } else if (gb) {
+          gb.add(a);
+        } else {
+          groups.push(new Set([a, b]));
         }
       }
-      return out;
-    }
 
-    function getPictureMap() {
-      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
-    }
-
-    function getNextPictureNumber(text, pictures) {
-      const nums = [];
-      String(text || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => { nums.push(Number(n)); return ""; });
-      for (const k of Object.keys(pictures || {})) nums.push(Number(k));
-      const max = nums.length ? Math.max(...nums.filter(n => Number.isFinite(n))) : 0;
-      return max + 1;
-    }
-
-    function getPictureRefsFromTexts(...texts) {
-      const set = new Set();
-      for (const t of texts) {
-        String(t || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => {
-          set.add(String(n));
-          return "";
-        });
-      }
-      return set;
-    }
-
-    function prunePicturesMap(pictures, refs) {
-      const out = {};
-      const keep = refs instanceof Set ? refs : new Set(refs || []);
-      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))) {
-        if (keep.has(String(k))) out[String(k)] = v;
-      }
-      return out;
+      return (a, b, mode = "text") => {
+        const na = normalizeKeyForCompare(a, mode);
+        const nb = normalizeKeyForCompare(b, mode);
+        if (na === nb) return true;
+        return groups.some(g => g.has(na) && g.has(nb));
+      };
     }
 
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
@@ -1382,7 +1403,7 @@
 
       const flush = () => {
         if (!buf) return;
-        const safe = esc(buf);
+        const safe = esc(decodeQuotedLiteral(buf));
         out += color ? `<span style="color:${color}">${safe}</span>` : safe;
         buf = "";
       };
@@ -1434,10 +1455,18 @@
       return out;
     }
 
+    function normalizeSubtitlePreview(text) {
+      return stripMemoSegments(String(text ?? ""));
+    }
+
     function renderAnswerText(answerGroups) {
       const groups = Array.isArray(answerGroups) ? answerGroups : [];
       if (!groups.length) return "";
       return groups.map(group => group.join(" / ")).join(" ↵ ");
+    }
+
+    function samePairsToTokens(pairs = []) {
+      return uniqueSamePairs(pairs).map(([a, b]) => `[same(${decodeQuotedLiteral(a)})(${decodeQuotedLiteral(b)})]`);
     }
 
     function splitLeadingTags(line) {
@@ -1449,7 +1478,10 @@
       while (rest.startsWith("[")) {
         const sameMatch = rest.match(/^\[same\((.*?)\)\((.*?)\)\]/);
         if (sameMatch) {
-          samePairs.push([unquoteLiteral(sameMatch[1]), unquoteLiteral(sameMatch[2])]);
+          samePairs.push([
+            unquoteLiteral(sameMatch[1]).trim(),
+            unquoteLiteral(sameMatch[2]).trim()
+          ]);
           rest = rest.slice(sameMatch[0].length).trimStart();
           continue;
         }
@@ -1479,7 +1511,7 @@
       return {
         tags,
         onOffControls: Array.from(new Set(onOffControls)),
-        samePairs,
+        samePairs: uniqueSamePairs(samePairs),
         rest
       };
     }
@@ -1507,64 +1539,18 @@
       return { mode: "text", randomChoice: false };
     }
 
-    function mergeSamePairs(basePairs = [], addPairs = []) {
-      return [...(basePairs || []), ...(addPairs || [])];
-    }
-
-    function normalizeKeyForCompare(value, mode = "text") {
-      if (mode === "number") {
-        return String(value ?? "").replace(/[^\d.-]/g, "").trim();
-      }
-      return String(value ?? "")
-        .replace(/\u3000/g, " ")
-        .trim()
-        .replace(/\s+/g, " ");
-    }
-
-    function makeSameMatcher(samePairs = []) {
-      const groups = [];
-      const findGroup = (x) => groups.find(g => g.has(x));
-
-      for (const pair of samePairs || []) {
-        const a = normalizeKeyForCompare(pair[0]);
-        const b = normalizeKeyForCompare(pair[1]);
-        if (!a || !b) continue;
-
-        const ga = findGroup(a);
-        const gb = findGroup(b);
-
-        if (ga && gb && ga !== gb) {
-          const merged = new Set([...ga, ...gb]);
-          groups.splice(groups.indexOf(ga), 1);
-          groups.splice(groups.indexOf(gb), 1);
-          groups.push(merged);
-        } else if (ga) {
-          ga.add(b);
-        } else if (gb) {
-          gb.add(a);
-        } else {
-          groups.push(new Set([a, b]));
-        }
-      }
-
-      return (a, b, mode = "text") => {
-        const na = normalizeKeyForCompare(a, mode);
-        const nb = normalizeKeyForCompare(b, mode);
-        if (na === nb) return true;
-        return groups.some(g => g.has(na) && g.has(nb));
-      };
-    }
-
     function parseQuestionLine(line, globalFlags, globalSamePairs = []) {
       const { tags, onOffControls, samePairs, rest } = splitLeadingTags(line);
       const raw = rest.trim();
       if (!raw) return null;
+
       const parts = splitOutsideQuotes(raw, ["=", "＝"]);
       if (parts.length < 2) return null;
       const question = unquoteLiteral(parts[0]).trim();
       if (!question) return null;
+
       const { mode, randomChoice } = pickMode(globalFlags, tags);
-      const localSamePairs = mergeSamePairs(globalSamePairs, samePairs);
+      const samePairsAll = mergeSamePairs(globalSamePairs, samePairs);
 
       if (mode === "choice") {
         const rawOptions = splitAnswers(parts.slice(1).join("=").trim());
@@ -1587,13 +1573,14 @@
           randomChoice,
           localTags: tags,
           localOnOffControls: onOffControls,
-          samePairs: localSamePairs
+          localSamePairs: samePairs,
+          samePairs: samePairsAll
         };
       }
 
       const answerText = parts.slice(1).join("=").trim();
       const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
-      if (!answerGroups.some(g => g.some(Boolean) || (g.length === 1 && g[0] === ""))) return null;
+      if (!answerGroups.some(g => g.some(Boolean) || g.length === 1 && g[0] === "")) return null;
 
       return {
         type: "question",
@@ -1603,7 +1590,8 @@
         answers: answerGroups[0] || [],
         localTags: tags,
         localOnOffControls: onOffControls,
-        samePairs: localSamePairs
+        localSamePairs: samePairs,
+        samePairs: samePairsAll
       };
     }
 
@@ -1673,11 +1661,12 @@
           options: (item.options || []).map(o => ({
             text: String(o?.text || ""),
             correct: !!o?.correct
-          })).filter(o => o.text),
+          })).filter(o => o.text !== undefined),
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
           localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
-          samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
+          localSamePairs: Array.isArray(item.localSamePairs) ? item.localSamePairs.filter(Boolean).map(pair => [String(pair[0] || ""), String(pair[1] || "")]) : [],
+          samePairs: Array.isArray(item.samePairs) ? item.samePairs.filter(Boolean).map(pair => [String(pair[0] || ""), String(pair[1] || "")]) : []
         };
       }
 
@@ -1691,7 +1680,8 @@
         answerGroupsText: groups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")).join(",") : String(group ?? "")),
         localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
         localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
-        samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
+        localSamePairs: Array.isArray(item.localSamePairs) ? item.localSamePairs.filter(Boolean).map(pair => [String(pair[0] || ""), String(pair[1] || "")]) : [],
+        samePairs: Array.isArray(item.samePairs) ? item.samePairs.filter(Boolean).map(pair => [String(pair[0] || ""), String(pair[1] || "")]) : []
       };
     }
 
@@ -1699,18 +1689,20 @@
       if (!item || typeof item !== "object") return item;
 
       if (item.mode === "choice") {
+        const localSamePairs = uniqueSamePairs(item.localSamePairs || item.samePairs || []);
         return {
           ...item,
           options: Array.isArray(item.options)
             ? item.options.map(o => ({
                 text: String(o?.text || ""),
                 correct: !!o?.correct
-              })).filter(o => o.text)
+              })).filter(o => o.text !== undefined)
             : [],
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
           localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : [],
-          samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
+          localSamePairs,
+          samePairs: uniqueSamePairs(item.samePairs || localSamePairs)
         };
       }
 
@@ -1722,6 +1714,7 @@
             : (item.answers ? [splitAnswers(Array.isArray(item.answers) ? item.answers.join(",") : String(item.answers))] : [[]]);
 
       const answerGroups = groupsSource.map(group => group.filter(Boolean)).filter(group => group.length > 0);
+      const localSamePairs = uniqueSamePairs(item.localSamePairs || item.samePairs || []);
 
       return {
         ...item,
@@ -1730,7 +1723,8 @@
         answers: answerGroups[0] || [],
         localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
         localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : [],
-        samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
+        localSamePairs,
+        samePairs: uniqueSamePairs(item.samePairs || localSamePairs)
       };
     }
 
@@ -1742,30 +1736,34 @@
       if (globalFlags.choice && globalFlags.randomChoice) gf.push("[random choice]");
       else if (globalFlags.choice) gf.push("[choice]");
       if (globalFlags.number) gf.push("[number]");
-      if (gf.length) lines.push(gf.join(" "));
+      const globalTokens = [...gf, ...samePairsToTokens(samePairs)];
+      if (globalTokens.length) lines.push(globalTokens.join(" "));
       if (onOffControls?.length) lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
-      if (samePairs?.length) lines.push(samePairs.map(p => `[same(${p[0]})(${p[1]})]`).join(" "));
 
       let lastSection = null;
       for (const item of items || []) {
         if (item.section && item.section !== lastSection) {
-          lines.push(item.section);
+          lines.push(decodeQuotedLiteral(item.section));
           lastSection = item.section;
         }
-        const samePrefix = Array.isArray(item.samePairs) && item.samePairs.length
-          ? item.samePairs.map(p => `[same(${p[0]})(${p[1]})]`).join(" ") + " "
-          : "";
-        let prefix = samePrefix;
-        if (item.mode === "choice") prefix += item.randomChoice ? "[random choice] " : "[choice] ";
-        if (item.mode === "number") prefix += "[number] ";
+
+        const localPrefix = [];
+        const localSame = Array.isArray(item.localSamePairs) ? item.localSamePairs : [];
+        localPrefix.push(...samePairsToTokens(localSame));
+        if (item.mode === "choice") localPrefix.push(item.randomChoice ? "[random choice]" : "[choice]");
+        if (item.mode === "number") localPrefix.push("[number]");
+        if (Array.isArray(item.localTags) && item.localTags.includes("open")) localPrefix.push("[open]");
+
+        const prefix = localPrefix.length ? localPrefix.join(" ") + " " : "";
+
         if (item.mode === "choice") {
-          const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
-          lines.push(`${prefix}${item.question}=${opts}`);
+          const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${decodeQuotedLiteral(String(o.text || ""))}`).join(",");
+          lines.push(`${prefix}${decodeQuotedLiteral(String(item.question || ""))}=${opts}`);
         } else {
           const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => group.join(",")).join("↵")
-            : (item.answers || []).join(",");
-          lines.push(`${prefix}${item.question}=${answerText}`);
+            ? item.answerGroups.map(group => group.map(v => decodeQuotedLiteral(String(v || ""))).join(",")).join("↵")
+            : (item.answers || []).map(v => decodeQuotedLiteral(String(v || ""))).join(",");
+          lines.push(`${prefix}${decodeQuotedLiteral(String(item.question || ""))}=${answerText}`);
         }
       }
       return lines.join("\n");
@@ -2085,7 +2083,6 @@
       state.quiz.activeFlags = activeFlags;
       state.quiz.items = quizItems;
       state.quiz.order = order;
-      state.quiz.samePairs = parsed.samePairs || [];
       state.quiz.index = 0;
       state.quiz.typedAnswer = "";
       state.quiz.typedAnswers = [];
@@ -2129,7 +2126,6 @@
 
       state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
       state.quiz.onOffControls = Array.from(new Set(docData.onOffControls || []));
-      state.quiz.samePairs = Array.isArray(docData.samePairs) ? docData.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : [];
       applyOnOffDefaultsToQuiz();
       state.quiz.pendingOrder = orderIndices || null;
       state.quiz.pendingOnlyWrong = !!onlyWrong;
@@ -2258,7 +2254,7 @@
             continue;
           }
 
-          const qline = parseQuestionLine(line, globalFlags);
+          const qline = parseQuestionLine(line, globalFlags, []);
           if (qline) {
             q += 1;
             labels.push(String(q));
@@ -2478,25 +2474,6 @@
       return sortComments(nextComments);
     }
 
-    async function asyncUploadPicturesForDoc(docId, pictures) {
-      const out = {};
-      const entries = Object.entries(normalizePictures(pictures || {}));
-
-      for (const [num, value] of entries) {
-        if (typeof value === "string" && !value.startsWith("data:image/")) {
-          out[num] = value;
-          continue;
-        }
-        if (typeof value === "string" && value.startsWith("data:image/")) {
-          const path = `quiz_pictures/${docId}/picture-${num}.webp`;
-          const sRef = storageRef(storage, path);
-          await uploadString(sRef, value, "data_url");
-          out[num] = await getDownloadURL(sRef);
-        }
-      }
-      return out;
-    }
-
     async function persistComments(nextComments) {
       if (!state.docId) return;
       const sorted = sortCommentsForPersist(nextComments);
@@ -2541,11 +2518,13 @@
       (async () => {
         try {
           if (state.doc?.pictures) {
-            for (const [num] of Object.entries(state.doc.pictures)) {
-              try {
-                const path = `quiz_pictures/${state.docId}/picture-${num}.webp`;
-                await deleteObject(storageRef(storage, path));
-              } catch {}
+            for (const [num, url] of Object.entries(state.doc.pictures)) {
+              if (typeof url === "string" && url.includes("firebasestorage.googleapis.com")) {
+                try {
+                  const path = `quiz_pictures/${state.docId}/picture-${num}.webp`;
+                  await deleteObject(storageRef(storage, path));
+                } catch {}
+              }
             }
           }
 
@@ -2626,7 +2605,7 @@
             { label: "[number]", value: "[number]" },
             { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
             { label: `[picture(${next})]`, value: `[picture(${next})]` },
-            { label: `[same(A)(B)]`, value: `[same(A)(B)]` }
+            { label: "[same(A)(B)]", value: "[same(A)(B)]" }
           ];
         },
         onPick: (value) => {
@@ -2785,7 +2764,7 @@
         rawText: data.rawText || "",
         globalFlags,
         onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
-        samePairs: Array.isArray(data.samePairs) ? data.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : (parsed.samePairs || []),
+        samePairs: uniqueSamePairs(data.samePairs || parsed.samePairs || []),
         keyMode: data.keyMode || "key",
         key: data.key || "",
         ownerToken: data.ownerToken || "",
@@ -2811,7 +2790,7 @@
           parts.push(stripMemoSegments(answerText));
         }
       }
-      return parts.join(" ").toLowerCase();
+      return decodeQuotedLiteral(parts.join(" ")).toLowerCase();
     }
 
     function scoreDocForQuery(docData, query) {
@@ -3093,11 +3072,11 @@
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
                 <b>[color(#ff0000)]</b> で文字色を変えられる。<br>
-                <b>↵</b> / <b>↩︎</b> / <b>\\n</b> で改行できるよ。<br>
+                <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。<br>
                 <b>[picture(1)]</b> で画像も入れられるよ。<br>
                 <b>;</b> でメモを入れられるよ。<br>
-                <b>[same(A)(B)]</b> で A と B を同じ答えとして扱えるよ。<br>
-                <b>"</b> で囲むと記号をそのまま答えにできるよ。
+                <b>"..."</b> で記号を普通の文字として扱えるよ。<br>
+                <b>[same(A)(B)]</b> で A と B を同じ答えにできるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -3188,11 +3167,27 @@
       attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
     }
 
-    function normalizeSubtitlePreview(text) {
-      return stripMemoSegments(String(text ?? ""));
+    function asyncUploadPicturesForDoc(docId, pictures) {
+      return (async () => {
+        const out = {};
+        const entries = Object.entries(normalizePictures(pictures || {}));
+        for (const [num, value] of entries) {
+          if (typeof value === "string" && !value.startsWith("data:image/")) {
+            out[num] = value;
+            continue;
+          }
+          if (typeof value === "string" && value.startsWith("data:image/")) {
+            const path = `quiz_pictures/${docId}/picture-${num}.webp`;
+            const sRef = storageRef(storage, path);
+            await uploadString(sRef, value, "data_url");
+            out[num] = await getDownloadURL(sRef);
+          }
+        }
+        return out;
+      })();
     }
 
-    async function uploadAllPictures(docId, pictures) {
+    async function uploadPicturesOnly(docId, pictures) {
       return asyncUploadPicturesForDoc(docId, pictures);
     }
 
@@ -3252,10 +3247,10 @@
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
 [ONorOFF:random]
-[same(. )(.)] こんにちは=こんにちは
-あい[color(#ff0000)]うえ お=こたえ
-1+1=2↵2
-;ここはメモ">${esc(d.rawText)}</textarea>
+[ same(A)(B) ] ※スペースなしで書く
+[a, b] ではなく [same(a)(b)]">{${
+                      esc(d.rawText)
+                    }}</textarea>
                   </div>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
@@ -3266,14 +3261,14 @@
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
-                <b>[same(A)(B)]</b> で A と B を同じ答えとして扱える。<br>
-                問題文に <b>↵</b> / <b>↩︎</b> / <b>\\n</b> を入れると改行できる。<br>
+                問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
                 答え側にそれらを入れると、答える枠を複数にできる。<br>
                 <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
                 <b>[picture(1)]</b> で画像を入れられる。<br>
                 <b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br>
-                問題欄で <b>#</b> を打つと候補が出るよ。<br>
-                <b>"</b> で囲んだ中は記号をそのまま表示できるよ。
+                <b>"..."</b> で記号を普通の文字として扱えるよ。<br>
+                <b>[same(A)(B)]</b> で A と B を同じ答えにできるよ。<br>
+                問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
           </div>
@@ -3354,7 +3349,7 @@
           const items = parsed.items;
           const globalFlags = parsed.globalFlags;
           const onOffControls = parsed.onOffControls;
-          const samePairs = parsed.samePairs || [];
+          const samePairs = parsed.samePairs;
 
           if (!title) return alert("タイトルを入れてね");
           if (!items.length) return alert("問題が1つも読めなかったよ。");
@@ -3390,7 +3385,7 @@
           saveBtn.textContent = "保存中...";
 
           try {
-            const uploadedPictures = await uploadAllPictures(newId, prunedPictures);
+            const uploadedPictures = await uploadPicturesOnly(newId, prunedPictures);
 
             const payload = {
               title: finalTitle,
@@ -3602,8 +3597,8 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${q.item.section ? `<div class="sectionText">${renderRichText(stripMemoSegments(q.item.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
-              <div class="question">${renderRichText(stripMemoSegments(q.item.question), { pictureMap: pics })}</div>
+              ${q.item.section ? `<div class="sectionText">${renderRichText(normalizeSubtitlePreview(q.item.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
+              <div class="question">${renderRichText(normalizeSubtitlePreview(q.item.question), { pictureMap: pics })}</div>
             </div>
 
             <div class="card" style="display:grid;gap:10px">
@@ -3736,15 +3731,15 @@
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
 
             <div class="card">
-              ${q.section ? `<div class="sectionText">${renderRichText(stripMemoSegments(q.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
+              ${q.section ? `<div class="sectionText">${renderRichText(normalizeSubtitlePreview(q.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${renderRichText(stripMemoSegments(q.question), { pictureMap: pics })}</div>
+              <div class="question" style="font-size:22px">${renderRichText(normalizeSubtitlePreview(q.question), { pictureMap: pics })}</div>
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${renderRichText(stripMemoSegments(answerText), { pictureMap: pics })}</div>
+              <div class="explain">${renderRichText(normalizeSubtitlePreview(answerText), { pictureMap: pics })}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(stripMemoSegments(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(stripMemoSegments(String(r.given ?? "")), { pictureMap: pics })}</div>
+              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(normalizeSubtitlePreview(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(normalizeSubtitlePreview(String(r.given ?? "")), { pictureMap: pics })}</div>
             </div>
 
             <div class="actions">
@@ -3925,10 +3920,10 @@
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
-                      ${item.section ? `<div class="reviewSection">${renderRichText(stripMemoSegments(item.section), { pictureMap: pics })}</div>` : ""}
-                      <div class="reviewQ">${renderRichText(stripMemoSegments(item.question), { pictureMap: pics })}</div>
-                      <div class="reviewA">正解: ${renderRichText(stripMemoSegments(answerText), { pictureMap: pics })}</div>
-                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(stripMemoSegments(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(stripMemoSegments(String(given)), { pictureMap: pics })}</div>
+                      ${item.section ? `<div class="reviewSection">${renderRichText(normalizeSubtitlePreview(item.section), { pictureMap: pics })}</div>` : ""}
+                      <div class="reviewQ">${renderRichText(normalizeSubtitlePreview(item.question), { pictureMap: pics })}</div>
+                      <div class="reviewA">正解: ${renderRichText(normalizeSubtitlePreview(answerText), { pictureMap: pics })}</div>
+                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(normalizeSubtitlePreview(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(normalizeSubtitlePreview(String(given)), { pictureMap: pics })}</div>
                     </div>
                   `;
                 }).join("")}
@@ -4112,7 +4107,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>[same(A)(B)]</h2>
-              <p>A と B を同じ答えとして扱うよ。</p>
+              <p>A と B を同じ答えとして扱う。<br>選択問題では使わなくて大丈夫。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
@@ -4120,11 +4115,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>改行・色・画像・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。</p>
-            </div>
-            <div class="tutorialCard tutorialHero">
-              <h2>"で囲む</h2>
-              <p>記号を文字としてそのまま表示したいときは <b>"</b> で囲む。</p>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br><b>"..."</b> で記号を普通の文字として扱えるよ。</p>
             </div>
           `
         },
