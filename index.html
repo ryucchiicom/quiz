@@ -1112,13 +1112,6 @@
       deleteDoc,
       collection
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    import {
-      getStorage,
-      ref as storageRef,
-      uploadString,
-      getDownloadURL,
-      deleteObject
-    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -1132,7 +1125,6 @@
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
-    const storage = getStorage(appFirebase);
 
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
@@ -1150,7 +1142,7 @@
     const PARTNER_LINK_LOCAL_KEY = "qb_partner_link";
     const SETTINGS_COLLECTION = "siteSettings";
     const SETTINGS_DOC_ID = "main";
-    const TAGS = ["random", "choice", "random choice", "number", "open"];
+    const TAGS = ["random", "choice", "random choice", "number", "open", "same"];
     const LOCAL_GUTTER_KEY = "qb_editor_gutter_mode";
 
     const CONTROL_LABELS = { random: "問題順ランダム" };
@@ -1245,60 +1237,11 @@
         .toLowerCase();
     }
 
-    function splitOutsideQuotes(text, separators) {
-      const src = String(text ?? "");
-      const seps = Array.isArray(separators) ? separators : [separators];
-      const out = [];
-      let buf = "";
-      let inQuote = false;
-
-      for (let i = 0; i < src.length; i++) {
-        const ch = src[i];
-
-        if (ch === '"') {
-          inQuote = !inQuote;
-          continue;
-        }
-
-        if (!inQuote) {
-          let matched = null;
-          for (const sep of seps) {
-            if (!sep) continue;
-            if (src.startsWith(sep, i)) {
-              matched = sep;
-              break;
-            }
-          }
-          if (matched !== null) {
-            out.push(buf);
-            buf = "";
-            i += matched.length - 1;
-            continue;
-          }
-        }
-
-        buf += ch;
-      }
-
-      out.push(buf);
-      return out;
-    }
-
-    function unquoteLiteral(text) {
-      const s = String(text ?? "");
-      if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1);
-      return s;
-    }
-
     function splitAnswers(text) {
-      return splitOutsideQuotes(text, [",", "、"])
-        .map(v => unquoteLiteral(v).trim())
-        .filter(v => v.length > 0 || v === "");
-    }
-
-    function splitAnswerFields(text) {
-      return splitOutsideQuotes(String(text ?? ""), ["↵", "↩︎", "\\n", "\n"])
-        .map(v => unquoteLiteral(v).trim());
+      return String(text ?? "")
+        .split(/[、,]/)
+        .map(v => v.trim())
+        .filter(Boolean);
     }
 
     function splitSearchTerms(q) {
@@ -1319,20 +1262,14 @@
       const s = String(text ?? "");
       let out = "";
       let memo = false;
-      let quote = false;
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
-        if (ch === '"') {
-          quote = !quote;
-          continue;
-        }
         if (ch === "\n") {
           out += ch;
           memo = false;
-          quote = false;
           continue;
         }
-        if (!quote && ch === ";") {
+        if (ch === ";") {
           memo = !memo;
           continue;
         }
@@ -1345,7 +1282,6 @@
       const s = String(text ?? "");
       let html = "";
       let memo = false;
-      let quote = false;
       let buf = "";
 
       const flush = () => {
@@ -1356,20 +1292,13 @@
 
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
-        if (ch === '"') {
-          flush();
-          html += esc(ch);
-          quote = !quote;
-          continue;
-        }
         if (ch === "\n") {
           flush();
           html += "<br>";
           memo = false;
-          quote = false;
           continue;
         }
-        if (!quote && ch === ";") {
+        if (ch === ";") {
           flush();
           html += `<span class="memoText">;</span>`;
           memo = !memo;
@@ -1381,13 +1310,20 @@
       return html;
     }
 
+    function splitAnswerFields(text) {
+      return String(text ?? "")
+        .replace(/\s*\\n\s*/g, "\n")
+        .replace(/\s*↵\s*/g, "\n")
+        .replace(/\s*↩︎\s*/g, "\n")
+        .split("\n")
+        .map(v => v.trim());
+    }
+
     function normalizePictures(obj) {
       const out = {};
       if (!obj || typeof obj !== "object") return out;
       for (const [k, v] of Object.entries(obj)) {
-        if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) {
-          out[String(k)] = v;
-        }
+        if (typeof v === "string" && v.startsWith("data:image/")) out[String(k)] = v;
       }
       return out;
     }
@@ -1424,6 +1360,87 @@
       return out;
     }
 
+    function splitRespectingQuotes(text, separators) {
+      const s = String(text ?? "");
+      const seps = [...separators].sort((a, b) => b.length - a.length);
+      const out = [];
+      let buf = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < s.length;) {
+        const ch = s[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+          i++;
+          continue;
+        }
+        if (!inQuotes) {
+          let matched = "";
+          for (const sep of seps) {
+            if (sep && s.startsWith(sep, i)) {
+              matched = sep;
+              break;
+            }
+          }
+          if (matched) {
+            out.push(buf);
+            buf = "";
+            i += matched.length;
+            continue;
+          }
+        }
+        buf += ch;
+        i++;
+      }
+      out.push(buf);
+      return out;
+    }
+
+    function unquoteAnswerLiteral(s) {
+      return String(s ?? "").replace(/^"(.*)"$/s, "$1");
+    }
+
+    function normalizeAnswerText(s) {
+      return norm(unquoteAnswerLiteral(s));
+    }
+
+    function parseSameTag(token) {
+      const inside = token.slice(4).trim();
+      const groups = [];
+      const re = /\(([^)]*)\)/g;
+      let m;
+      while ((m = re.exec(inside))) {
+        const v = unquoteAnswerLiteral(m[1].trim());
+        if (v) groups.push(v);
+      }
+      return groups.length >= 2 ? groups : [];
+    }
+
+    function sameMapFromGroups(groups) {
+      const map = [];
+      for (const group of groups || []) {
+        const normed = group.map(v => normalizeAnswerText(v)).filter(Boolean);
+        if (normed.length >= 2) map.push(normed);
+      }
+      return map;
+    }
+
+    function sameMatches(a, b, sameGroups, mode) {
+      const na = normalizeForMode(a, mode);
+      const nb = normalizeForMode(b, mode);
+      if (na === nb) return true;
+      for (const group of sameGroups || []) {
+        const g = group.map(v => normalizeForMode(v, mode));
+        if (g.includes(na) && g.includes(nb)) return true;
+      }
+      return false;
+    }
+
+    function splitAnswerValues(text) {
+      const fields = splitRespectingQuotes(text, ["↵", "↩︎", "\\n"]);
+      return fields.map(field => splitRespectingQuotes(field, [",", "、"]).map(v => unquoteAnswerLiteral(v.trim())).filter(Boolean));
+    }
+
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
       let s = String(text ?? "");
       s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
@@ -1455,8 +1472,11 @@
           flush();
           const n = pm[1];
           const src = pictureMap[String(n)];
-          if (src) out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
-          else out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          if (src) {
+            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          } else {
+            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          }
           i += pm[0].length;
           continue;
         }
@@ -1489,35 +1509,36 @@
       return groups.map(group => group.join(" / ")).join(" ↵ ");
     }
 
-    function splitLeadingTags(line) {
+    function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
       const onOffControls = [];
-      const samePairs = [];
+      const sameGroups = [];
 
       while (rest.startsWith("[")) {
-        const sameMatch = rest.match(/^\[same\((.*?)\)\((.*?)\)\]/);
-        if (sameMatch) {
-          samePairs.push([unquoteLiteral(sameMatch[1]), unquoteLiteral(sameMatch[2])]);
-          rest = rest.slice(sameMatch[0].length).trimStart();
-          continue;
-        }
-
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
 
-        const token = tagMatch[1].trim().toLowerCase();
+        const token = tagMatch[1].trim();
+        const tokenLower = token.toLowerCase();
         const after = rest.slice(tagMatch[0].length).trimStart();
 
-        if (token.startsWith("onoroff:")) {
-          const target = normalizeOnOffTarget(token.slice("onoroff:".length));
+        if (tokenLower.startsWith("onoroff:")) {
+          const target = normalizeOnOffTarget(tokenLower.slice("onoroff:".length));
           if (target) onOffControls.push(target);
           rest = after;
           continue;
         }
 
-        if (TAGS.includes(token)) {
-          tags.push(token);
+        if (tokenLower.startsWith("same(")) {
+          const g = parseSameTag(tokenLower);
+          if (g.length) sameGroups.push(g);
+          rest = after;
+          continue;
+        }
+
+        if (TAGS.includes(tokenLower)) {
+          tags.push(tokenLower);
           rest = after;
           continue;
         }
@@ -1525,7 +1546,7 @@
         break;
       }
 
-      return { tags, onOffControls: Array.from(new Set(onOffControls)), samePairs, rest };
+      return { tags, onOffControls: Array.from(new Set(onOffControls)), sameGroups, rest };
     }
 
     function mergeFlags(base, tags) {
@@ -1551,103 +1572,62 @@
       return { mode: "text", randomChoice: false };
     }
 
-    function sameMatcher(samePairs = []) {
-      const groups = [];
-      const findGroup = (x) => groups.find(g => g.has(x));
-
-      for (const pair of samePairs || []) {
-        const a = normalizeKeyForCompare(pair[0]);
-        const b = normalizeKeyForCompare(pair[1]);
-        if (!a || !b) continue;
-
-        const ga = findGroup(a);
-        const gb = findGroup(b);
-
-        if (ga && gb && ga !== gb) {
-          const merged = new Set([...ga, ...gb]);
-          groups.splice(groups.indexOf(ga), 1);
-          groups.splice(groups.indexOf(gb), 1);
-          groups.push(merged);
-        } else if (ga) {
-          ga.add(b);
-        } else if (gb) {
-          gb.add(a);
-        } else {
-          groups.push(new Set([a, b]));
-        }
-      }
-
-      return (a, b, mode = "text") => {
-        const na = normalizeKeyForCompare(a, mode);
-        const nb = normalizeKeyForCompare(b, mode);
-        if (na === nb) return true;
-        return groups.some(g => g.has(na) && g.has(nb));
-      };
-    }
-
-    function normalizeKeyForCompare(value, mode = "text") {
-      if (mode === "number") {
-        return String(value ?? "").replace(/[^\d.-]/g, "").trim();
-      }
-      return String(value ?? "")
-        .replace(/\u3000/g, " ")
-        .trim()
-        .replace(/\s+/g, " ");
-    }
-
-    function parseQuestionLine(line, globalFlags, globalSamePairs = []) {
-      const { tags, onOffControls, samePairs, rest } = splitLeadingTags(line);
+    function parseQuestionLine(line, globalFlags, globalSameGroups = []) {
+      const { tags, onOffControls, sameGroups, rest } = parseLeadingSettings(line);
       const raw = rest.trim();
       if (!raw) return null;
-
-      const parts = splitOutsideQuotes(raw, ["=", "＝"]);
-      if (parts.length < 2) return null;
-
-      const question = unquoteLiteral(parts[0]).trim();
+      const eqIdx = findFirstUnquoted(raw, ["=", "＝"]);
+      if (eqIdx < 0) return null;
+      const question = raw.slice(0, eqIdx).trim();
       if (!question) return null;
-
       const { mode, randomChoice } = pickMode(globalFlags, tags);
-      const localSamePairs = [...(globalSamePairs || []), ...(samePairs || [])];
+
+      const mergedSameGroups = [...(globalSameGroups || []), ...(sameGroups || [])];
 
       if (mode === "choice") {
-        const rawOptions = splitAnswers(parts.slice(1).join("=").trim());
+        const rawOptions = splitRespectingQuotes(raw.slice(eqIdx + 1).trim(), [",", "、"]).map(v => v.trim()).filter(Boolean);
         const options = rawOptions.map(opt => {
-          let text = unquoteLiteral(opt).trim();
-          let correct = false;
+          let text = opt.trim(), correct = false;
           if (text.startsWith("!") || text.startsWith("*") || text.startsWith("＊")) {
             correct = true;
             text = text.slice(1).trim();
           }
-          return { text, correct };
-        }).filter(o => o.text.length > 0 || o.text === "");
+          return { text: unquoteAnswerLiteral(text), correct };
+        }).filter(o => o.text);
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return {
-          type: "question",
-          mode: "choice",
-          question,
-          options,
-          randomChoice,
-          localTags: tags,
-          localOnOffControls: onOffControls,
-          samePairs: localSamePairs
-        };
+        return { type: "question", mode: "choice", question, options, randomChoice, localTags: tags, localOnOffControls: onOffControls, sameGroups: mergedSameGroups };
       }
 
-      const answerText = parts.slice(1).join("=").trim();
-      const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
-      if (!answerGroups.some(g => g.some(Boolean) || g.length === 1 && g[0] === "")) return null;
+      if (mode === "number") {
+        const answerText = raw.slice(eqIdx + 1).trim();
+        const answerGroups = splitAnswerValues(answerText);
+        if (!answerGroups.some(g => g.some(Boolean))) return null;
+        return { type: "question", mode: "number", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls, sameGroups: mergedSameGroups };
+      }
 
-      return {
-        type: "question",
-        mode: mode === "number" ? "number" : "text",
-        question,
-        answerGroups,
-        answers: answerGroups[0] || [],
-        localTags: tags,
-        localOnOffControls: onOffControls,
-        samePairs: localSamePairs
-      };
+      const answerText = raw.slice(eqIdx + 1).trim();
+      const answerGroups = splitAnswerValues(answerText);
+      if (!answerGroups.some(g => g.some(Boolean))) return null;
+      return { type: "question", mode: "text", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls, sameGroups: mergedSameGroups };
+    }
+
+    function findFirstUnquoted(text, targets) {
+      const s = String(text ?? "");
+      const t = [...targets].sort((a, b) => b.length - a.length);
+      let inQuotes = false;
+      for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+          continue;
+        }
+        if (inQuotes) continue;
+        for (const target of t) {
+          if (s.startsWith(target, i)) return i;
+        }
+      }
+      return -1;
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1656,7 +1636,7 @@
       const items = [];
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
       let onOffControls = [];
-      let samePairs = [];
+      let globalSameGroups = [];
 
       let i = 0;
       while (i < lines.length && !String(lines[i]).trim()) i++;
@@ -1666,11 +1646,11 @@
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
 
-        const parsed = splitLeadingTags(raw);
-        if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.samePairs.length)) {
+        const parsed = parseLeadingSettings(raw);
+        if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
           onOffControls = Array.from(new Set([...onOffControls, ...parsed.onOffControls]));
-          samePairs = [...samePairs, ...(parsed.samePairs || [])];
+          globalSameGroups.push(...parsed.sameGroups);
           i++;
           continue;
         }
@@ -1684,15 +1664,15 @@
         const trimmed = line.trim();
         if (!trimmed) continue;
 
-        const parsedSettings = splitLeadingTags(line);
-        if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length || parsedSettings.samePairs.length)) {
+        const parsedSettings = parseLeadingSettings(line);
+        if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length || parsedSettings.sameGroups.length)) {
           globalFlags = mergeFlags(globalFlags, parsedSettings.tags);
           onOffControls = Array.from(new Set([...onOffControls, ...parsedSettings.onOffControls]));
-          samePairs = [...samePairs, ...(parsedSettings.samePairs || [])];
+          globalSameGroups.push(...parsedSettings.sameGroups);
           continue;
         }
 
-        const parsed = parseQuestionLine(line, overrideFlags || globalFlags, samePairs);
+        const parsed = parseQuestionLine(line, overrideFlags || globalFlags, globalSameGroups);
         if (parsed) {
           items.push({ id: uid(), section: currentSection, ...parsed });
           continue;
@@ -1701,7 +1681,7 @@
         if (!trimmed.startsWith("[")) currentSection = trimmed;
       }
 
-      return { globalFlags, onOffControls, samePairs, items };
+      return { globalFlags, onOffControls, items };
     }
 
     function packItemForFirestore(item) {
@@ -1756,10 +1736,10 @@
 
       const groupsSource =
         Array.isArray(item.answerGroupsText) && item.answerGroupsText.length
-          ? item.answerGroupsText.map(txt => splitAnswers(txt))
+          ? item.answerGroupsText.map(txt => splitAnswerValues(txt))
           : Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")) : splitAnswers(String(group ?? "")))
-            : (item.answers ? [splitAnswers(Array.isArray(item.answers) ? item.answers.join(",") : String(item.answers))] : [[]]);
+            ? item.answerGroups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")) : splitAnswerValues(String(group ?? "")))
+            : (item.answers ? [splitAnswerValues(Array.isArray(item.answers) ? item.answers.join(",") : String(item.answers))] : [[]]);
 
       const answerGroups = groupsSource.map(group => group.filter(Boolean)).filter(group => group.length > 0);
 
@@ -2227,26 +2207,15 @@
       return norm(v);
     }
 
-    function isCorrectByGroups(givenFields, answerGroups, mode, samePairs = []) {
+    function isCorrectByGroups(givenFields, answerGroups, mode, sameGroups = []) {
       const groups = Array.isArray(answerGroups) ? answerGroups : [];
       if (!groups.length) return false;
-
-      const sameMatch = sameMatcher(samePairs);
-
-      const fieldMatches = (given, target) => {
-        const g = normalizeForMode(given, mode);
-        const t = normalizeForMode(target, mode);
-        if (g === t) return true;
-        return sameMatch(g, t, mode);
-      };
-
-      if (groups.length === 1 && givenFields.length === 1) {
-        return (groups[0] || []).some(ans => fieldMatches(givenFields[0], ans));
+      if (groups.length === 1 && (givenFields.length === 1)) {
+        const candidates = groups[0] || [];
+        return candidates.some(c => sameMatches(givenFields[0], c, sameGroups, mode));
       }
-
       if (givenFields.length !== groups.length) return false;
-
-      return groups.every((group, i) => (group || []).some(ans => fieldMatches(givenFields[i], ans)));
+      return groups.every((group, i) => (group || []).some(c => sameMatches(givenFields[i], c, sameGroups, mode)));
     }
 
     function submitAnswer() {
@@ -2266,7 +2235,7 @@
 
       const fieldCount = Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
       const givenFields = Array.from({ length: fieldCount }, (_, i) => String(state.quiz.typedAnswers?.[i] ?? ""));
-      const correct = isCorrectByGroups(givenFields, q.item.answerGroups || [q.item.answers || []], q.item.mode, q.item.samePairs || []);
+      const correct = isCorrectByGroups(givenFields, q.item.answerGroups || [q.item.answers || []], q.item.mode, q.item.sameGroups || []);
       const givenDisplay = fieldCount > 1 ? givenFields : (givenFields[0] || "");
       state.quiz.attempts[q.idx] = { given: givenDisplay, givenFields, correct };
       state.quiz.lastResult = { idx: q.idx, given: givenDisplay, givenFields, correct };
@@ -2279,7 +2248,6 @@
       if (mode === "question") {
         const labels = [];
         let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
-        let samePairs = [];
         let q = 0;
 
         let i = 0;
@@ -2289,16 +2257,15 @@
           const trimmed = line.trim();
           if (!trimmed) { labels.push(""); i++; continue; }
 
-          const parsed = splitLeadingTags(line);
-          if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.samePairs.length)) {
+          const parsed = parseLeadingSettings(line);
+          if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
             globalFlags = mergeFlags(globalFlags, parsed.tags);
-            samePairs = [...samePairs, ...(parsed.samePairs || [])];
             labels.push("");
             i++;
             continue;
           }
 
-          const qline = parseQuestionLine(line, globalFlags, samePairs);
+          const qline = parseQuestionLine(line, globalFlags);
           if (qline) {
             q += 1;
             labels.push(String(q));
@@ -2518,32 +2485,6 @@
       return sortComments(nextComments);
     }
 
-    function withTimeout(promise, ms, label = "timeout") {
-      let timer = null;
-      const timeout = new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(label)), ms);
-      });
-      return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-    }
-
-    async function uploadPicturesForDoc(docId, pictures) {
-      const out = {};
-      const entries = Object.entries(normalizePictures(pictures || {}));
-      for (const [num, value] of entries) {
-        if (typeof value === "string" && !value.startsWith("data:image/")) {
-          out[num] = value;
-          continue;
-        }
-        if (typeof value === "string" && value.startsWith("data:image/")) {
-          const path = `quiz_pictures/${docId}/picture-${num}.webp`;
-          const sRef = storageRef(storage, path);
-          await uploadString(sRef, value, "data_url");
-          out[num] = await getDownloadURL(sRef);
-        }
-      }
-      return out;
-    }
-
     async function persistComments(nextComments) {
       if (!state.docId) return;
       const sorted = sortCommentsForPersist(nextComments);
@@ -2587,17 +2528,6 @@
 
       (async () => {
         try {
-          if (state.doc?.pictures) {
-            for (const [num, url] of Object.entries(state.doc.pictures)) {
-              if (typeof url === "string" && url.startsWith("https://") && url.includes("firebasestorage.googleapis.com")) {
-                try {
-                  const path = `quiz_pictures/${state.docId}/picture-${num}.webp`;
-                  await deleteObject(storageRef(storage, path));
-                } catch {}
-              }
-            }
-          }
-
           await deleteDoc(doc(db, COLLECTION, state.docId));
           removeMyMeta(state.docId);
           removeAccessRecord(state.docId);
@@ -2674,7 +2604,6 @@
             { label: "[random choice]", value: "[random choice]" },
             { label: "[number]", value: "[number]" },
             { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-            { label: `[same(A)(B)]`, value: `[same(A)(B)]` },
             { label: `[picture(${next})]`, value: `[picture(${next})]` }
           ];
         },
@@ -2815,7 +2744,7 @@
     }
 
     function normalizeDoc(id, data) {
-      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], samePairs: [], items: [] };
+      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
       const items = Array.isArray(data.items) && data.items.length
         ? data.items.map(unpackItemFromFirestore).filter(Boolean)
         : parsed.items;
@@ -2847,16 +2776,16 @@
 
     function buildCodeText(docData) {
       const parts = [];
-      if (docData.rawText) parts.push(stripMemoSegments(String(docData.rawText).replace(/"/g, "")));
+      if (docData.rawText) parts.push(stripMemoSegments(docData.rawText));
       for (const item of docData.items || []) {
-        if (item.section) parts.push(stripMemoSegments(String(item.section).replace(/"/g, "")));
-        parts.push(stripMemoSegments(String(item.question || "").replace(/"/g, "")));
-        if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(String(o.text).replace(/"/g, ""))).join(" "));
+        if (item.section) parts.push(stripMemoSegments(item.section));
+        parts.push(stripMemoSegments(item.question || ""));
+        if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(o.text)).join(" "));
         else {
           const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
             ? item.answerGroups.map(group => group.join(" ")).join(" ")
             : (item.answers || []).join(" ");
-          parts.push(stripMemoSegments(String(answerText).replace(/"/g, "")));
+          parts.push(stripMemoSegments(answerText));
         }
       }
       return parts.join(" ").toLowerCase();
@@ -3144,8 +3073,8 @@
                 <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。<br>
                 <b>[picture(1)]</b> で画像も入れられるよ。<br>
                 <b>;</b> でメモを入れられるよ。<br>
-                <b>"</b> で囲むと、記号をそのまま文字として使える。<br>
-                <b>[same(A)(B)]</b> で A と B を同じ答えにできる。
+                <b>" , 、 = ↵ \n</b> みたいな記号は、<b>"</b> で囲むと普通の文字として扱えるよ。<br>
+                <b>[same(A)(B)]</b> で、A と B を同じ答えとして扱えるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -3240,24 +3169,6 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
-    async function asyncUploadPicturesForDoc(docId, pictures) {
-      const out = {};
-      const entries = Object.entries(normalizePictures(pictures || {}));
-      for (const [num, value] of entries) {
-        if (typeof value === "string" && !value.startsWith("data:image/")) {
-          out[num] = value;
-          continue;
-        }
-        if (typeof value === "string" && value.startsWith("data:image/")) {
-          const path = `quiz_pictures/${docId}/picture-${num}.webp`;
-          const sRef = storageRef(storage, path);
-          await uploadString(sRef, value, "data_url");
-          out[num] = await getDownloadURL(sRef);
-        }
-      }
-      return out;
-    }
-
     function renderEditor() {
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
@@ -3317,8 +3228,7 @@
 あい[color(#ff0000)]うえ お=こたえ
 1+1=2↵2
 ;ここはメモ
-&quot;や,や=や↵や\\n&quot;=そのまま文字
-[same(. )(.)] . =.">${esc(d.rawText)}</textarea>
+[same(A)(B)] 問題=A">${esc(d.rawText)}</textarea>
                   </div>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
@@ -3331,10 +3241,10 @@
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
                 問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
                 答え側にそれらを入れると、答える枠を複数にできる。<br>
-                <b>"</b> で囲むと記号をそのまま文字として使える。<br>
                 <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
                 <b>[picture(1)]</b> で画像を入れられる。<br>
                 <b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br>
+                <b>"..."</b> で <b>, 、 = ↵ \n</b> を普通の文字として答えに入れられる。<br>
                 <b>[same(A)(B)]</b> で A と B を同じ答えにできる。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
@@ -3452,8 +3362,6 @@
           saveBtn.textContent = "保存中...";
 
           try {
-            const uploadedPictures = await withTimeout(uploadPicturesForDoc(newId, prunedPictures), 30000, "image upload timeout");
-
             const payload = {
               title: finalTitle,
               subtitle,
@@ -3467,11 +3375,11 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictures: uploadedPictures,
+              pictures: prunedPictures,
               comments: existingComments
             };
 
-            await withTimeout(setDoc(doc(db, COLLECTION, newId), payload, { merge: true }), 30000, "setDoc timeout");
+            await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
 
             if (oldId && oldId !== newId) {
               try { await deleteDoc(doc(db, COLLECTION, oldId)); } catch (_) {}
@@ -3482,7 +3390,7 @@
 
             state.docId = newId;
             state.doc = { ...payload, items, comments: sortComments(existingComments) };
-            state.draftPictures = { ...uploadedPictures };
+            state.draftPictures = { ...prunedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -4172,12 +4080,16 @@
               <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
             </div>
             <div class="tutorialCard tutorialHero">
+              <h2>[same(A)(B)]</h2>
+              <p>A と B を同じ答えとして扱える。<br>たとえば <b>[same(. )(.)]</b> なら、<b>.</b> と <b>. </b> を同じにできる。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
               <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>改行・色・画像・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br><b>"</b> で囲むと記号を文字として使える。<br><b>[same(A)(B)]</b> で A と B を同じ答えにできる。</p>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br><b>"..."</b> で <b>, 、 = ↵ \n</b> を普通の文字として答えに入れられる。</p>
             </div>
           `
         },
