@@ -40,9 +40,7 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
+    html, body{ overflow-x:auto; }
 
     *{box-sizing:border-box}
     body{
@@ -99,7 +97,6 @@
       margin-top:4px;
       color:var(--muted);
       font-size:13px;
-      line-height:1.6;
     }
 
     .card{
@@ -192,7 +189,7 @@
     .gutter{
       background:rgba(127,127,127,.07);
       border-right:1px solid var(--line);
-      padding:14px 8px 14px 0;
+      padding:14px 10px 14px 0;
       text-align:right;
       color:#8a93a8;
       font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -203,37 +200,7 @@
       min-height:420px;
     }
 
-    .editorTextWrap{
-      position:relative;
-      min-height:420px;
-      overflow:hidden;
-      background:var(--panel);
-    }
-
-    .editorMirror{
-      position:absolute;
-      inset:0;
-      padding:14px;
-      font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-      white-space:pre;
-      overflow:auto;
-      color:var(--text);
-      pointer-events:none;
-      z-index:1;
-      scrollbar-gutter:stable;
-    }
-
-    .editorMirror .memoText{
-      color:#98a0af;
-    }
-
-    body.dark .editorMirror .memoText{
-      color:#7e8798;
-    }
-
     .textarea{
-      position:relative;
-      z-index:2;
       width:100%;
       border:none;
       outline:none;
@@ -245,9 +212,8 @@
       overflow:auto;
       touch-action:pan-x pan-y;
       tab-size:2;
-      background:transparent;
-      color:transparent;
-      caret-color:var(--text);
+      background:var(--panel);
+      color:var(--text);
       scrollbar-gutter:stable;
     }
 
@@ -561,13 +527,8 @@
       font-weight:900;
     }
 
-    body.dark .scoreToken{
-      color:#66e08d;
-    }
-
-    body.dark .timeToken{
-      color:#8db2ff;
-    }
+    body.dark .scoreToken{ color:#66e08d; }
+    body.dark .timeToken{ color:#8db2ff; }
 
     .commentItem{
       border:1px solid var(--line);
@@ -777,13 +738,8 @@
       flex:none;
     }
 
-    body.dark .toggleSwitch{
-      background:#42506a;
-    }
-
-    .toggleSwitch.on{
-      background:var(--accent);
-    }
+    body.dark .toggleSwitch{ background:#42506a; }
+    .toggleSwitch.on{ background:var(--accent); }
 
     .toggleKnob{
       position:absolute;
@@ -797,9 +753,7 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{
-      transform:translateX(24px);
-    }
+    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
 
     .settingHeader{
       display:grid;
@@ -819,16 +773,14 @@
       line-height:1.6;
     }
 
-    #tutorialLayer,
-    #partnerLayer{
+    #tutorialLayer,#partnerLayer{
       position:fixed;
       inset:0;
       z-index:1000;
       pointer-events:none;
     }
 
-    .tutorialOverlay,
-    .partnerOverlay{
+    .tutorialOverlay,.partnerOverlay{
       position:fixed;
       inset:0;
       pointer-events:auto;
@@ -841,14 +793,12 @@
       transition:opacity .22s ease, transform .22s ease;
     }
 
-    .tutorialOverlay.closing,
-    .partnerOverlay.closing{
+    .tutorialOverlay.closing,.partnerOverlay.closing{
       opacity:0;
       transform:translateY(18px);
     }
 
-    .tutorialPanel,
-    .partnerPanel{
+    .tutorialPanel,.partnerPanel{
       width:min(860px, 100%);
       max-height:min(86vh, 860px);
       overflow:hidden;
@@ -861,8 +811,7 @@
       grid-template-rows:auto 1fr auto;
     }
 
-    .tutorialTop,
-    .partnerTop{
+    .tutorialTop,.partnerTop{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
@@ -870,24 +819,21 @@
       padding:16px 18px 0;
     }
 
-    .tutorialTitle,
-    .partnerTitle{
+    .tutorialTitle,.partnerTitle{
       font-size:24px;
       font-weight:1000;
       line-height:1.1;
       margin:0;
     }
 
-    .tutorialSub,
-    .partnerSub{
+    .tutorialSub,.partnerSub{
       margin-top:6px;
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    .tutorialClose,
-    .partnerClose{
+    .tutorialClose,.partnerClose{
       width:44px;
       height:44px;
       border-radius:14px;
@@ -898,8 +844,7 @@
       font-weight:900;
     }
 
-    .tutorialBody,
-    .partnerBody{
+    .tutorialBody,.partnerBody{
       padding:14px 18px 6px;
       overflow:auto;
     }
@@ -924,9 +869,7 @@
       background:rgba(127,127,127,.05);
     }
 
-    body.dark .tutorialCard{
-      background:rgba(255,255,255,.03);
-    }
+    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
 
     .tutorialHero{
       display:grid;
@@ -958,12 +901,9 @@
       word-break:break-word;
     }
 
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+    body.dark .tutorialCode{ background:#0a1220; }
 
-    .tutorialFooter,
-    .partnerFooter{
+    .tutorialFooter,.partnerFooter{
       display:flex;
       justify-content:space-between;
       gap:10px;
@@ -986,7 +926,7 @@
       background:rgba(127,127,127,.35);
     }
 
-    .dot.active{background:var(--accent);}
+    .dot.active{ background:var(--accent); }
 
     .tutorialNavBtn{
       min-width:110px;
@@ -1038,14 +978,6 @@
       vertical-align:middle;
     }
 
-    .smallSelect{
-      min-width:92px;
-      max-width:92px;
-      width:92px;
-      height:44px;
-      padding:0 10px;
-    }
-
     @keyframes tutInRight{
       from{opacity:0;transform:translateX(28px);}
       to{opacity:1;transform:translateX(0);}
@@ -1088,11 +1020,6 @@
       .tutorialHero h2{font-size:24px}
       .tutorialNavBtn{min-width:88px}
       .settingTitle{font-size:22px}
-      .smallSelect{
-        min-width:78px;
-        max-width:78px;
-        width:78px;
-      }
     }
   </style>
 </head>
@@ -1258,58 +1185,6 @@
       return null;
     }
 
-    function stripMemoSegments(text) {
-      const s = String(text ?? "");
-      let out = "";
-      let memo = false;
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        if (ch === "\n") {
-          out += ch;
-          memo = false;
-          continue;
-        }
-        if (ch === ";") {
-          memo = !memo;
-          continue;
-        }
-        if (!memo) out += ch;
-      }
-      return out;
-    }
-
-    function renderMemoPreview(text) {
-      const s = String(text ?? "");
-      let html = "";
-      let memo = false;
-      let buf = "";
-
-      const flush = () => {
-        if (!buf) return;
-        html += memo ? `<span class="memoText">${esc(buf)}</span>` : esc(buf);
-        buf = "";
-      };
-
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        if (ch === "\n") {
-          flush();
-          html += "<br>";
-          memo = false;
-          continue;
-        }
-        if (ch === ";") {
-          flush();
-          html += `<span class="memoText">;</span>`;
-          memo = !memo;
-          continue;
-        }
-        buf += ch;
-      }
-      flush();
-      return html;
-    }
-
     function splitAnswerFields(text) {
       return String(text ?? "")
         .replace(/\s*\\n\s*/g, "\n")
@@ -1338,26 +1213,6 @@
       for (const k of Object.keys(pictures || {})) nums.push(Number(k));
       const max = nums.length ? Math.max(...nums.filter(n => Number.isFinite(n))) : 0;
       return max + 1;
-    }
-
-    function getPictureRefsFromTexts(...texts) {
-      const set = new Set();
-      for (const t of texts) {
-        String(t || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => {
-          set.add(String(n));
-          return "";
-        });
-      }
-      return set;
-    }
-
-    function prunePicturesMap(pictures, refs) {
-      const out = {};
-      const keep = refs instanceof Set ? refs : new Set(refs || []);
-      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))) {
-        if (keep.has(String(k))) out[String(k)] = v;
-      }
-      return out;
     }
 
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
@@ -1521,8 +1376,7 @@
     }
 
     function parseItems(text, overrideFlags = null) {
-      const cleanText = stripMemoSegments(String(text ?? ""));
-      const lines = cleanText.split(/\r?\n/);
+      const lines = String(text ?? "").split(/\r?\n/);
       const items = [];
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
       let onOffControls = [];
@@ -2167,27 +2021,20 @@
       return Array.from({ length: lines.length }, (_, i) => String(i + 1));
     }
 
-    function syncEditorArea(textarea, gutter, mirror) {
+    function syncEditorArea(textarea, gutter) {
       textarea.style.height = "auto";
       const next = Math.max(420, textarea.scrollHeight);
       textarea.style.height = `${next}px`;
       gutter.style.height = `${next}px`;
-      if (mirror) mirror.style.height = `${next}px`;
 
       const labels = buildEditorGutterLabels(textarea.value, state.editorGutterMode);
       gutter.textContent = labels.length ? labels.join("\n") : "1";
-
-      if (mirror) {
-        mirror.innerHTML = renderMemoPreview(textarea.value);
-        mirror.scrollTop = textarea.scrollTop;
-        mirror.scrollLeft = textarea.scrollLeft;
-      }
     }
 
     let editorRaf = 0;
-    const scheduleEditorSync = (textarea, gutter, mirror) => {
+    const scheduleEditorSync = (textarea, gutter) => {
       cancelAnimationFrame(editorRaf);
-      editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter, mirror));
+      editorRaf = requestAnimationFrame(() => syncEditorArea(textarea, gutter));
     };
 
     function caretCoordinates(textarea, pos) {
@@ -2655,16 +2502,16 @@
 
     function buildCodeText(docData) {
       const parts = [];
-      if (docData.rawText) parts.push(stripMemoSegments(docData.rawText));
+      if (docData.rawText) parts.push(docData.rawText);
       for (const item of docData.items || []) {
-        if (item.section) parts.push(stripMemoSegments(item.section));
-        parts.push(stripMemoSegments(item.question || ""));
-        if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(o.text)).join(" "));
+        if (item.section) parts.push(item.section);
+        parts.push(item.question || "");
+        if (item.mode === "choice") parts.push((item.options || []).map(o => o.text).join(" "));
         else {
           const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
             ? item.answerGroups.map(group => group.join(" ")).join(" ")
             : (item.answers || []).join(" ");
-          parts.push(stripMemoSegments(answerText));
+          parts.push(answerText);
         }
       }
       return parts.join(" ").toLowerCase();
@@ -2950,8 +2797,7 @@
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
                 <b>[color(#ff0000)]</b> で文字色を変えられる。<br>
                 <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。<br>
-                <b>[picture(1)]</b> で画像も入れられるよ。<br>
-                <b>;</b> でメモを入れられるよ。
+                <b>[picture(1)]</b> で画像も入れられるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -3076,7 +2922,7 @@
             <div class="row" style="justify-content:space-between;align-items:center;">
               <div id="editorInfo" class="note"></div>
               <div class="row" style="justify-content:flex-end;align-items:center;">
-                <select id="gutterModeSelect" class="input smallSelect">
+                <select id="gutterModeSelect" class="input tabSelect" style="height:44px;min-width:160px;max-width:180px">
                   <option value="line">行数</option>
                   <option value="question">問題数</option>
                 </select>
@@ -3089,9 +2935,7 @@
               <div class="editorHost">
                 <div class="gridEditor">
                   <div id="gutter" class="gutter"></div>
-                  <div class="editorTextWrap">
-                    <div id="editorMirror" class="editorMirror"></div>
-                    <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
+                  <textarea id="problemText" class="textarea" wrap="off" spellcheck="false" placeholder="例:
 [open] [random]
 日本について
 首都=東京
@@ -3099,9 +2943,7 @@
 [number] 123+456=579
 [ONorOFF:random]
 あい[color(#ff0000)]うえ お=こたえ
-1+1=2↵2
-;ここはメモ">${esc(d.rawText)}</textarea>
-                  </div>
+1+1=2↵2">${esc(d.rawText)}</textarea>
                 </div>
                 <div id="tagSuggestBox" class="floatSuggest hide"></div>
               </div>
@@ -3115,7 +2957,6 @@
                 答え側にそれらを入れると、答える枠を複数にできる。<br>
                 <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
                 <b>[picture(1)]</b> で画像を入れられる。<br>
-                <b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br>
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
@@ -3127,7 +2968,6 @@
       const subInput = document.getElementById("subInput");
       const problemText = document.getElementById("problemText");
       const gutter = document.getElementById("gutter");
-      const mirror = document.getElementById("editorMirror");
       const keyBtn = document.getElementById("keyBtn");
       const saveBtn = document.getElementById("saveBtn");
       const deleteBtn = document.getElementById("deleteBtn");
@@ -3159,18 +2999,14 @@
 
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
-      problemText.addEventListener("input", e => {
-        d.rawText = e.target.value;
-        scheduleEditorSync(problemText, gutter, mirror);
-      });
-      problemText.addEventListener("scroll", () => scheduleEditorSync(problemText, gutter, mirror));
+      problemText.addEventListener("input", e => { d.rawText = e.target.value; scheduleEditorSync(problemText, gutter); });
 
       if (gutterModeSelect) {
         gutterModeSelect.value = state.editorGutterMode;
         gutterModeSelect.addEventListener("change", () => {
           state.editorGutterMode = gutterModeSelect.value;
           localStorage.setItem(LOCAL_GUTTER_KEY, state.editorGutterMode);
-          syncEditorArea(problemText, gutter, mirror);
+          syncEditorArea(problemText, gutter);
         });
       }
 
@@ -3225,9 +3061,6 @@
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
-          const usedPics = getPictureRefsFromTexts(d.rawText, subtitle);
-          const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
-
           const payload = {
             title: finalTitle,
             subtitle,
@@ -3241,7 +3074,7 @@
             slug: newId,
             createdAt: existingCreatedAt,
             updatedAt: Date.now(),
-            pictures: prunedPictures,
+            pictures: normalizePictures(state.draftPictures || {}),
             comments: existingComments
           };
 
@@ -3260,7 +3093,6 @@
 
             state.docId = newId;
             state.doc = { ...payload, items, comments: sortComments(existingComments) };
-            state.draftPictures = { ...prunedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -3303,7 +3135,7 @@
       if (deleteBtn) deleteBtn.addEventListener("click", openDeleteConfirmThenDelete);
       if (leaveBtn) leaveBtn.addEventListener("click", openLeaveConfirmThenLeave);
 
-      syncEditorArea(problemText, gutter, mirror);
+      scheduleEditorSync(problemText, gutter);
       setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox);
       refreshKeyStatus();
       titleInput.focus();
@@ -3322,7 +3154,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(stripMemoSegments(state.doc.subtitle || ""), { pictureMap: getPictureMap() })}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: getPictureMap() })}</div>
               </div>
             </div>
             <div class="row">
@@ -3424,7 +3256,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(stripMemoSegments(state.doc.subtitle || ""), { pictureMap: pics })}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: pics })}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3441,8 +3273,8 @@
                 <div>${state.quiz.items.length}問中</div>
               </div>
               <div style="height:12px"></div>
-              ${q.item.section ? `<div class="sectionText">${renderRichText(stripMemoSegments(q.item.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
-              <div class="question">${renderRichText(stripMemoSegments(q.item.question), { pictureMap: pics })}</div>
+              ${q.item.section ? `<div class="sectionText">${renderRichText(q.item.section, { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
+              <div class="question">${renderRichText(q.item.question, { pictureMap: pics })}</div>
             </div>
 
             <div class="card" style="display:grid;gap:10px">
@@ -3561,7 +3393,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(stripMemoSegments(state.doc.subtitle || ""), { pictureMap: pics })}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: pics })}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3575,15 +3407,15 @@
             <div class="${r.correct ? "good" : "bad"}">${r.correct ? "正解！" : "ちがう！"}</div>
 
             <div class="card">
-              ${q.section ? `<div class="sectionText">${renderRichText(stripMemoSegments(q.section), { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
+              ${q.section ? `<div class="sectionText">${renderRichText(q.section, { pictureMap: pics })}</div><div style="height:10px"></div>` : ""}
               <div class="label">問題</div>
-              <div class="question" style="font-size:22px">${renderRichText(stripMemoSegments(q.question), { pictureMap: pics })}</div>
+              <div class="question" style="font-size:22px">${renderRichText(q.question, { pictureMap: pics })}</div>
               <div style="height:12px"></div>
               <div class="label">答え</div>
-              <div class="explain">${renderRichText(stripMemoSegments(answerText), { pictureMap: pics })}</div>
+              <div class="explain">${renderRichText(answerText, { pictureMap: pics })}</div>
               <div style="height:12px"></div>
               <div class="label">あなたの答え</div>
-              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(stripMemoSegments(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(stripMemoSegments(String(r.given ?? "")), { pictureMap: pics })}</div>
+              <div class="explain">${Array.isArray(r.given) ? r.given.map(v => renderRichText(String(v), { pictureMap: pics })).join("<br>") : renderRichText(String(r.given ?? ""), { pictureMap: pics })}</div>
             </div>
 
             <div class="actions">
@@ -3684,7 +3516,7 @@
 
               <div class="commentInputHost">
                 <div class="label">コメント</div>
-                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:auto;color:var(--text);background:var(--panel);" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
+                <textarea id="commentText" class="textarea" style="min-height:120px;overflow:auto;" placeholder="感想やメモを書いてね">${esc(state.commentDraft?.text || "")}</textarea>
                 ${scoreBox}
               </div>
 
@@ -3726,7 +3558,7 @@
             <div class="titleArea">
               <div class="titleBlock">
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
-                <div class="sub">${renderRichText(stripMemoSegments(state.doc.subtitle || ""), { pictureMap: pics })}</div>
+                <div class="sub">${renderRichText(state.doc.subtitle || "", { pictureMap: pics })}</div>
               </div>
               ${helpButtonHtml()}
             </div>
@@ -3764,10 +3596,10 @@
                   const given = attempt?.given ?? "未回答";
                   return `
                     <div class="reviewItem ${cls}">
-                      ${item.section ? `<div class="reviewSection">${renderRichText(stripMemoSegments(item.section), { pictureMap: pics })}</div>` : ""}
-                      <div class="reviewQ">${renderRichText(stripMemoSegments(item.question), { pictureMap: pics })}</div>
-                      <div class="reviewA">正解: ${renderRichText(stripMemoSegments(answerText), { pictureMap: pics })}</div>
-                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(stripMemoSegments(String(v)), { pictureMap: pics })).join("<br>") : renderRichText(stripMemoSegments(String(given)), { pictureMap: pics })}</div>
+                      ${item.section ? `<div class="reviewSection">${renderRichText(item.section, { pictureMap: pics })}</div>` : ""}
+                      <div class="reviewQ">${renderRichText(item.question, { pictureMap: pics })}</div>
+                      <div class="reviewA">正解: ${renderRichText(answerText, { pictureMap: pics })}</div>
+                      <div class="reviewA">あなたの答え: ${Array.isArray(given) ? given.map(v => renderRichText(String(v), { pictureMap: pics })).join("<br>") : renderRichText(String(given), { pictureMap: pics })}</div>
                     </div>
                   `;
                 }).join("")}
@@ -3955,7 +3787,7 @@
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>改行・色・画像・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。</p>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。</p>
             </div>
           `
         },
