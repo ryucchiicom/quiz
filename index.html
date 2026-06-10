@@ -40,9 +40,7 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
+    html, body{ overflow-x:auto; }
 
     *{box-sizing:border-box}
     body{
@@ -100,6 +98,7 @@
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
+      word-break:break-word;
     }
 
     .card{
@@ -180,7 +179,7 @@
 
     .gridEditor{
       display:grid;
-      grid-template-columns:64px 1fr;
+      grid-template-columns:42px 1fr;
       border:1px solid var(--line);
       border-radius:18px;
       overflow:hidden;
@@ -192,7 +191,7 @@
     .gutter{
       background:rgba(127,127,127,.07);
       border-right:1px solid var(--line);
-      padding:14px 8px 14px 0;
+      padding:14px 6px 14px 0;
       text-align:right;
       color:#8a93a8;
       font:600 15px/1.8 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -551,23 +550,10 @@
       color:var(--text);
     }
 
-    .scoreToken{
-      color:#14994a;
-      font-weight:900;
-    }
-
-    .timeToken{
-      color:#2f6fed;
-      font-weight:900;
-    }
-
-    body.dark .scoreToken{
-      color:#66e08d;
-    }
-
-    body.dark .timeToken{
-      color:#8db2ff;
-    }
+    .scoreToken{ color:#14994a; font-weight:900; }
+    .timeToken{ color:#2f6fed; font-weight:900; }
+    body.dark .scoreToken{ color:#66e08d; }
+    body.dark .timeToken{ color:#8db2ff; }
 
     .commentItem{
       border:1px solid var(--line);
@@ -777,13 +763,8 @@
       flex:none;
     }
 
-    body.dark .toggleSwitch{
-      background:#42506a;
-    }
-
-    .toggleSwitch.on{
-      background:var(--accent);
-    }
+    body.dark .toggleSwitch{ background:#42506a; }
+    .toggleSwitch.on{ background:var(--accent); }
 
     .toggleKnob{
       position:absolute;
@@ -797,9 +778,7 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{
-      transform:translateX(24px);
-    }
+    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
 
     .settingHeader{
       display:grid;
@@ -819,16 +798,14 @@
       line-height:1.6;
     }
 
-    #tutorialLayer,
-    #partnerLayer{
+    #tutorialLayer,#partnerLayer{
       position:fixed;
       inset:0;
       z-index:1000;
       pointer-events:none;
     }
 
-    .tutorialOverlay,
-    .partnerOverlay{
+    .tutorialOverlay,.partnerOverlay{
       position:fixed;
       inset:0;
       pointer-events:auto;
@@ -841,14 +818,12 @@
       transition:opacity .22s ease, transform .22s ease;
     }
 
-    .tutorialOverlay.closing,
-    .partnerOverlay.closing{
+    .tutorialOverlay.closing,.partnerOverlay.closing{
       opacity:0;
       transform:translateY(18px);
     }
 
-    .tutorialPanel,
-    .partnerPanel{
+    .tutorialPanel,.partnerPanel{
       width:min(860px, 100%);
       max-height:min(86vh, 860px);
       overflow:hidden;
@@ -861,8 +836,7 @@
       grid-template-rows:auto 1fr auto;
     }
 
-    .tutorialTop,
-    .partnerTop{
+    .tutorialTop,.partnerTop{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
@@ -870,24 +844,21 @@
       padding:16px 18px 0;
     }
 
-    .tutorialTitle,
-    .partnerTitle{
+    .tutorialTitle,.partnerTitle{
       font-size:24px;
       font-weight:1000;
       line-height:1.1;
       margin:0;
     }
 
-    .tutorialSub,
-    .partnerSub{
+    .tutorialSub,.partnerSub{
       margin-top:6px;
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    .tutorialClose,
-    .partnerClose{
+    .tutorialClose,.partnerClose{
       width:44px;
       height:44px;
       border-radius:14px;
@@ -898,8 +869,7 @@
       font-weight:900;
     }
 
-    .tutorialBody,
-    .partnerBody{
+    .tutorialBody,.partnerBody{
       padding:14px 18px 6px;
       overflow:auto;
     }
@@ -962,8 +932,7 @@
       background:#0a1220;
     }
 
-    .tutorialFooter,
-    .partnerFooter{
+    .tutorialFooter,.partnerFooter{
       display:flex;
       justify-content:space-between;
       gap:10px;
@@ -1069,7 +1038,7 @@
     @media (max-width:640px){
       .page{padding:14px}
       .title{font-size:22px}
-      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
+      .gridEditor{grid-template-columns:36px 1fr;min-height:380px}
       .question{font-size:22px}
       .answer{font-size:16px}
       .bigBtn{width:100%}
@@ -1189,6 +1158,7 @@
         activeFlags: {},
         settingValues: {},
         onOffControls: [],
+        samePairs: [],
         items: [],
         pendingOrder: null,
         pendingOnlyWrong: false
@@ -1245,19 +1215,60 @@
         .toLowerCase();
     }
 
-    function splitAnswers(text) {
-      return String(text ?? "")
-        .split(/[、,]/)
-        .map(v => v.trim())
-        .filter(Boolean);
+    function splitOutsideQuotes(text, separators) {
+      const src = String(text ?? "");
+      const seps = Array.isArray(separators) ? separators : [separators];
+      const out = [];
+      let buf = "";
+      let inQuote = false;
+
+      for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+
+        if (ch === '"') {
+          inQuote = !inQuote;
+          continue;
+        }
+
+        if (!inQuote) {
+          let matched = null;
+          for (const sep of seps) {
+            if (!sep) continue;
+            if (src.startsWith(sep, i)) {
+              matched = sep;
+              break;
+            }
+          }
+          if (matched !== null) {
+            out.push(buf);
+            buf = "";
+            i += matched.length - 1;
+            continue;
+          }
+        }
+
+        buf += ch;
+      }
+
+      out.push(buf);
+      return out;
     }
 
-    function splitSearchTerms(q) {
-      return String(q ?? "")
-        .trim()
-        .split(/[\s\u3000]+/)
-        .map(v => v.trim())
-        .filter(Boolean);
+    function unquoteLiteral(text) {
+      const s = String(text ?? "");
+      if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1);
+      return s;
+    }
+
+    function splitAnswers(text) {
+      return splitOutsideQuotes(text, [",", "、"])
+        .map(v => unquoteLiteral(v).trim())
+        .filter(v => v.length > 0 || String(v) === "");
+    }
+
+    function splitAnswerFields(text) {
+      return splitOutsideQuotes(String(text ?? ""), ["↵", "↩︎", "\\n"])
+        .map(v => unquoteLiteral(v).trim());
     }
 
     function normalizeOnOffTarget(raw) {
@@ -1316,15 +1327,6 @@
       }
       flush();
       return html;
-    }
-
-    function splitAnswerFields(text) {
-      return String(text ?? "")
-        .replace(/\s*\\n\s*/g, "\n")
-        .replace(/\s*↵\s*/g, "\n")
-        .replace(/\s*↩︎\s*/g, "\n")
-        .split("\n")
-        .map(v => v.trim());
     }
 
     function normalizePictures(obj) {
@@ -1438,12 +1440,20 @@
       return groups.map(group => group.join(" / ")).join(" ↵ ");
     }
 
-    function parseLeadingSettings(line) {
+    function splitLeadingTags(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
       const onOffControls = [];
+      const samePairs = [];
 
       while (rest.startsWith("[")) {
+        const sameMatch = rest.match(/^\[same\((.*?)\)\((.*?)\)\]/);
+        if (sameMatch) {
+          samePairs.push([unquoteLiteral(sameMatch[1]), unquoteLiteral(sameMatch[2])]);
+          rest = rest.slice(sameMatch[0].length).trimStart();
+          continue;
+        }
+
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
 
@@ -1466,7 +1476,12 @@
         break;
       }
 
-      return { tags, onOffControls: Array.from(new Set(onOffControls)), rest };
+      return {
+        tags,
+        onOffControls: Array.from(new Set(onOffControls)),
+        samePairs,
+        rest
+      };
     }
 
     function mergeFlags(base, tags) {
@@ -1492,42 +1507,104 @@
       return { mode: "text", randomChoice: false };
     }
 
-    function parseQuestionLine(line, globalFlags) {
-      const { tags, onOffControls, rest } = parseLeadingSettings(line);
+    function mergeSamePairs(basePairs = [], addPairs = []) {
+      return [...(basePairs || []), ...(addPairs || [])];
+    }
+
+    function normalizeKeyForCompare(value, mode = "text") {
+      if (mode === "number") {
+        return String(value ?? "").replace(/[^\d.-]/g, "").trim();
+      }
+      return String(value ?? "")
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    function makeSameMatcher(samePairs = []) {
+      const groups = [];
+      const findGroup = (x) => groups.find(g => g.has(x));
+
+      for (const pair of samePairs || []) {
+        const a = normalizeKeyForCompare(pair[0]);
+        const b = normalizeKeyForCompare(pair[1]);
+        if (!a || !b) continue;
+
+        const ga = findGroup(a);
+        const gb = findGroup(b);
+
+        if (ga && gb && ga !== gb) {
+          const merged = new Set([...ga, ...gb]);
+          groups.splice(groups.indexOf(ga), 1);
+          groups.splice(groups.indexOf(gb), 1);
+          groups.push(merged);
+        } else if (ga) {
+          ga.add(b);
+        } else if (gb) {
+          gb.add(a);
+        } else {
+          groups.push(new Set([a, b]));
+        }
+      }
+
+      return (a, b, mode = "text") => {
+        const na = normalizeKeyForCompare(a, mode);
+        const nb = normalizeKeyForCompare(b, mode);
+        if (na === nb) return true;
+        return groups.some(g => g.has(na) && g.has(nb));
+      };
+    }
+
+    function parseQuestionLine(line, globalFlags, globalSamePairs = []) {
+      const { tags, onOffControls, samePairs, rest } = splitLeadingTags(line);
       const raw = rest.trim();
       if (!raw) return null;
-      const parts = raw.split(/[=＝]/);
+      const parts = splitOutsideQuotes(raw, ["=", "＝"]);
       if (parts.length < 2) return null;
-      const question = parts[0].trim();
+      const question = unquoteLiteral(parts[0]).trim();
       if (!question) return null;
       const { mode, randomChoice } = pickMode(globalFlags, tags);
+      const localSamePairs = mergeSamePairs(globalSamePairs, samePairs);
 
       if (mode === "choice") {
         const rawOptions = splitAnswers(parts.slice(1).join("=").trim());
         const options = rawOptions.map(opt => {
-          let text = opt.trim(), correct = false;
+          let text = unquoteLiteral(opt).trim();
+          let correct = false;
           if (text.startsWith("!") || text.startsWith("*") || text.startsWith("＊")) {
             correct = true;
             text = text.slice(1).trim();
           }
           return { text, correct };
-        }).filter(o => o.text);
+        }).filter(o => o.text.length > 0 || o.text === "");
         if (!options.length) return null;
         if (!options.some(o => o.correct)) options[options.length - 1].correct = true;
-        return { type: "question", mode: "choice", question, options, randomChoice, localTags: tags, localOnOffControls: onOffControls };
-      }
-
-      if (mode === "number") {
-        const answerText = parts.slice(1).join("=").trim();
-        const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
-        if (!answerGroups.some(g => g.some(Boolean))) return null;
-        return { type: "question", mode: "number", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls };
+        return {
+          type: "question",
+          mode: "choice",
+          question,
+          options,
+          randomChoice,
+          localTags: tags,
+          localOnOffControls: onOffControls,
+          samePairs: localSamePairs
+        };
       }
 
       const answerText = parts.slice(1).join("=").trim();
       const answerGroups = splitAnswerFields(answerText).map(v => splitAnswers(v));
-      if (!answerGroups.some(g => g.some(Boolean))) return null;
-      return { type: "question", mode: "text", question, answerGroups, answers: answerGroups[0] || [], localTags: tags, localOnOffControls: onOffControls };
+      if (!answerGroups.some(g => g.some(Boolean) || (g.length === 1 && g[0] === ""))) return null;
+
+      return {
+        type: "question",
+        mode: mode === "number" ? "number" : "text",
+        question,
+        answerGroups,
+        answers: answerGroups[0] || [],
+        localTags: tags,
+        localOnOffControls: onOffControls,
+        samePairs: localSamePairs
+      };
     }
 
     function parseItems(text, overrideFlags = null) {
@@ -1536,6 +1613,7 @@
       const items = [];
       let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
       let onOffControls = [];
+      let samePairs = [];
 
       let i = 0;
       while (i < lines.length && !String(lines[i]).trim()) i++;
@@ -1545,10 +1623,11 @@
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
 
-        const parsed = parseLeadingSettings(raw);
-        if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length)) {
+        const parsed = splitLeadingTags(raw);
+        if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.samePairs.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
           onOffControls = Array.from(new Set([...onOffControls, ...parsed.onOffControls]));
+          samePairs = mergeSamePairs(samePairs, parsed.samePairs);
           i++;
           continue;
         }
@@ -1562,14 +1641,15 @@
         const trimmed = line.trim();
         if (!trimmed) continue;
 
-        const parsedSettings = parseLeadingSettings(line);
-        if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length)) {
+        const parsedSettings = splitLeadingTags(line);
+        if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length || parsedSettings.samePairs.length)) {
           globalFlags = mergeFlags(globalFlags, parsedSettings.tags);
           onOffControls = Array.from(new Set([...onOffControls, ...parsedSettings.onOffControls]));
+          samePairs = mergeSamePairs(samePairs, parsedSettings.samePairs);
           continue;
         }
 
-        const parsed = parseQuestionLine(line, overrideFlags || globalFlags);
+        const parsed = parseQuestionLine(line, overrideFlags || globalFlags, samePairs);
         if (parsed) {
           items.push({ id: uid(), section: currentSection, ...parsed });
           continue;
@@ -1578,7 +1658,7 @@
         if (!trimmed.startsWith("[")) currentSection = trimmed;
       }
 
-      return { globalFlags, onOffControls, items };
+      return { globalFlags, onOffControls, samePairs, items };
     }
 
     function packItemForFirestore(item) {
@@ -1596,7 +1676,8 @@
           })).filter(o => o.text),
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
-          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : []
+          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
+          samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
         };
       }
 
@@ -1609,7 +1690,8 @@
         question: String(item.question || ""),
         answerGroupsText: groups.map(group => Array.isArray(group) ? group.map(v => String(v ?? "")).join(",") : String(group ?? "")),
         localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
-        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : []
+        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
+        samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
       };
     }
 
@@ -1627,7 +1709,8 @@
             : [],
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
-          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : []
+          localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : [],
+          samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
         };
       }
 
@@ -1646,11 +1729,12 @@
         answerGroups,
         answers: answerGroups[0] || [],
         localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
-        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : []
+        localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.map(String) : [],
+        samePairs: Array.isArray(item.samePairs) ? item.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : []
       };
     }
 
-    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls = []) {
+    function itemsToRawText(items, globalFlags = { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls = [], samePairs = []) {
       const lines = [];
       const gf = [];
       if (globalFlags.open) gf.push("[open]");
@@ -1660,6 +1744,7 @@
       if (globalFlags.number) gf.push("[number]");
       if (gf.length) lines.push(gf.join(" "));
       if (onOffControls?.length) lines.push(onOffControls.map(t => `[ONorOFF:${t}]`).join(" "));
+      if (samePairs?.length) lines.push(samePairs.map(p => `[same(${p[0]})(${p[1]})]`).join(" "));
 
       let lastSection = null;
       for (const item of items || []) {
@@ -1667,9 +1752,12 @@
           lines.push(item.section);
           lastSection = item.section;
         }
-        let prefix = "";
-        if (item.mode === "choice") prefix = item.randomChoice ? "[random choice] " : "[choice] ";
-        if (item.mode === "number") prefix = "[number] ";
+        const samePrefix = Array.isArray(item.samePairs) && item.samePairs.length
+          ? item.samePairs.map(p => `[same(${p[0]})(${p[1]})]`).join(" ") + " "
+          : "";
+        let prefix = samePrefix;
+        if (item.mode === "choice") prefix += item.randomChoice ? "[random choice] " : "[choice] ";
+        if (item.mode === "number") prefix += "[number] ";
         if (item.mode === "choice") {
           const opts = (item.options || []).map(o => `${o.correct ? "!" : ""}${o.text}`).join(",");
           lines.push(`${prefix}${item.question}=${opts}`);
@@ -1955,7 +2043,7 @@
       state.draft = {
         title: state.doc?.title || "",
         subtitle: state.doc?.subtitle || "",
-        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
+        rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || [], state.doc?.samePairs || []),
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
@@ -1986,7 +2074,7 @@
     function beginQuizRun(orderIndices = null, onlyWrong = false) {
       const activeFlags = buildActiveFlagsFromSettings();
       const parsed = parseItems(
-        state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
+        state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || [], state.doc?.samePairs || []),
         activeFlags
       );
 
@@ -1997,6 +2085,7 @@
       state.quiz.activeFlags = activeFlags;
       state.quiz.items = quizItems;
       state.quiz.order = order;
+      state.quiz.samePairs = parsed.samePairs || [];
       state.quiz.index = 0;
       state.quiz.typedAnswer = "";
       state.quiz.typedAnswers = [];
@@ -2040,6 +2129,7 @@
 
       state.quiz.baseFlags = { ...(docData.globalFlags || {}) };
       state.quiz.onOffControls = Array.from(new Set(docData.onOffControls || []));
+      state.quiz.samePairs = Array.isArray(docData.samePairs) ? docData.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : [];
       applyOnOffDefaultsToQuiz();
       state.quiz.pendingOrder = orderIndices || null;
       state.quiz.pendingOnlyWrong = !!onlyWrong;
@@ -2099,19 +2189,26 @@
       render();
     }
 
-    function normalizeForMode(v, mode) {
-      if (mode === "number") return String(v ?? "").replace(/[^\d.-]/g, "").trim();
-      return norm(v);
-    }
-
-    function isCorrectByGroups(givenFields, answerGroups, mode) {
+    function isCorrectByGroups(givenFields, answerGroups, mode, samePairs = []) {
       const groups = Array.isArray(answerGroups) ? answerGroups : [];
       if (!groups.length) return false;
-      if (groups.length === 1 && (givenFields.length === 1)) {
-        return (groups[0] || []).map(v => normalizeForMode(v, mode)).includes(normalizeForMode(givenFields[0], mode));
+
+      const sameMatch = makeSameMatcher(samePairs);
+
+      const fieldMatches = (given, target) => {
+        const g = normalizeKeyForCompare(given, mode);
+        const t = normalizeKeyForCompare(target, mode);
+        if (g === t) return true;
+        return sameMatch(g, t, mode);
+      };
+
+      if (groups.length === 1 && givenFields.length === 1) {
+        return (groups[0] || []).some(ans => fieldMatches(givenFields[0], ans));
       }
+
       if (givenFields.length !== groups.length) return false;
-      return groups.every((group, i) => (group || []).map(v => normalizeForMode(v, mode)).includes(normalizeForMode(givenFields[i], mode)));
+
+      return groups.every((group, i) => (group || []).some(ans => fieldMatches(givenFields[i], ans)));
     }
 
     function submitAnswer() {
@@ -2131,7 +2228,7 @@
 
       const fieldCount = Math.max(1, Array.isArray(q.item.answerGroups) ? q.item.answerGroups.length : 1);
       const givenFields = Array.from({ length: fieldCount }, (_, i) => String(state.quiz.typedAnswers?.[i] ?? ""));
-      const correct = isCorrectByGroups(givenFields, q.item.answerGroups || [q.item.answers || []], q.item.mode);
+      const correct = isCorrectByGroups(givenFields, q.item.answerGroups || [q.item.answers || []], q.item.mode, q.item.samePairs || []);
       const givenDisplay = fieldCount > 1 ? givenFields : (givenFields[0] || "");
       state.quiz.attempts[q.idx] = { given: givenDisplay, givenFields, correct };
       state.quiz.lastResult = { idx: q.idx, given: givenDisplay, givenFields, correct };
@@ -2153,8 +2250,8 @@
           const trimmed = line.trim();
           if (!trimmed) { labels.push(""); i++; continue; }
 
-          const parsed = parseLeadingSettings(line);
-          if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length)) {
+          const parsed = splitLeadingTags(line);
+          if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.samePairs.length)) {
             globalFlags = mergeFlags(globalFlags, parsed.tags);
             labels.push("");
             i++;
@@ -2381,6 +2478,25 @@
       return sortComments(nextComments);
     }
 
+    async function asyncUploadPicturesForDoc(docId, pictures) {
+      const out = {};
+      const entries = Object.entries(normalizePictures(pictures || {}));
+
+      for (const [num, value] of entries) {
+        if (typeof value === "string" && !value.startsWith("data:image/")) {
+          out[num] = value;
+          continue;
+        }
+        if (typeof value === "string" && value.startsWith("data:image/")) {
+          const path = `quiz_pictures/${docId}/picture-${num}.webp`;
+          const sRef = storageRef(storage, path);
+          await uploadString(sRef, value, "data_url");
+          out[num] = await getDownloadURL(sRef);
+        }
+      }
+      return out;
+    }
+
     async function persistComments(nextComments) {
       if (!state.docId) return;
       const sorted = sortCommentsForPersist(nextComments);
@@ -2425,13 +2541,11 @@
       (async () => {
         try {
           if (state.doc?.pictures) {
-            for (const [num, url] of Object.entries(state.doc.pictures)) {
-              if (typeof url === "string" && url.includes("firebasestorage.googleapis.com")) {
-                try {
-                  const path = `quiz_pictures/${state.docId}/picture-${num}.webp`;
-                  await deleteObject(storageRef(storage, path));
-                } catch {}
-              }
+            for (const [num] of Object.entries(state.doc.pictures)) {
+              try {
+                const path = `quiz_pictures/${state.docId}/picture-${num}.webp`;
+                await deleteObject(storageRef(storage, path));
+              } catch {}
             }
           }
 
@@ -2511,7 +2625,8 @@
             { label: "[random choice]", value: "[random choice]" },
             { label: "[number]", value: "[number]" },
             { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-            { label: `[picture(${next})]`, value: `[picture(${next})]` }
+            { label: `[picture(${next})]`, value: `[picture(${next})]` },
+            { label: `[same(A)(B)]`, value: `[same(A)(B)]` }
           ];
         },
         onPick: (value) => {
@@ -2651,7 +2766,7 @@
     }
 
     function normalizeDoc(id, data) {
-      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
+      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], samePairs: [], items: [] };
       const items = Array.isArray(data.items) && data.items.length
         ? data.items.map(unpackItemFromFirestore).filter(Boolean)
         : parsed.items;
@@ -2670,6 +2785,7 @@
         rawText: data.rawText || "",
         globalFlags,
         onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
+        samePairs: Array.isArray(data.samePairs) ? data.samePairs.map(p => [String(p?.[0] || ""), String(p?.[1] || "")]) : (parsed.samePairs || []),
         keyMode: data.keyMode || "key",
         key: data.key || "",
         ownerToken: data.ownerToken || "",
@@ -2977,9 +3093,11 @@
                 1行目のタグで <b>[open]</b> <b>[random]</b> <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前にON/OFFを選べるよ。<br>
                 <b>[color(#ff0000)]</b> で文字色を変えられる。<br>
-                <b>↵</b> / <b>↩︎</b> / <b>\n</b> で改行できるよ。<br>
+                <b>↵</b> / <b>↩︎</b> / <b>\\n</b> で改行できるよ。<br>
                 <b>[picture(1)]</b> で画像も入れられるよ。<br>
-                <b>;</b> でメモを入れられるよ。
+                <b>;</b> でメモを入れられるよ。<br>
+                <b>[same(A)(B)]</b> で A と B を同じ答えとして扱えるよ。<br>
+                <b>"</b> で囲むと記号をそのまま答えにできるよ。
               </p>
               <div style="height:14px"></div>
               <button class="bigBtn" id="createBtn" type="button">作成</button>
@@ -3074,24 +3192,8 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
-    function asyncUploadPicturesForDoc(docId, pictures) {
-      return (async () => {
-        const out = {};
-        const entries = Object.entries(normalizePictures(pictures || {}));
-        for (const [num, value] of entries) {
-          if (typeof value === "string" && !value.startsWith("data:image/")) {
-            out[num] = value;
-            continue;
-          }
-          if (typeof value === "string" && value.startsWith("data:image/")) {
-            const path = `quiz_pictures/${docId}/picture-${num}.webp`;
-            const sRef = storageRef(storage, path);
-            await uploadString(sRef, value, "data_url");
-            out[num] = await getDownloadURL(sRef);
-          }
-        }
-        return out;
-      })();
+    async function uploadAllPictures(docId, pictures) {
+      return asyncUploadPicturesForDoc(docId, pictures);
     }
 
     function renderEditor() {
@@ -3150,6 +3252,7 @@
 [choice] 好きな色=赤,青,!緑
 [number] 123+456=579
 [ONorOFF:random]
+[same(. )(.)] こんにちは=こんにちは
 あい[color(#ff0000)]うえ お=こたえ
 1+1=2↵2
 ;ここはメモ">${esc(d.rawText)}</textarea>
@@ -3163,12 +3266,14 @@
                 <b>[open]</b> で公開クイズになる。<br>
                 <b>[choice]</b> <b>[random choice]</b> <b>[number]</b> も使える。<br>
                 <b>[ONorOFF:random]</b> みたいに書くと、開始前に設定画面を出せる。<br>
-                問題文に <b>↵</b> / <b>↩︎</b> / <b>\n</b> を入れると改行できる。<br>
+                <b>[same(A)(B)]</b> で A と B を同じ答えとして扱える。<br>
+                問題文に <b>↵</b> / <b>↩︎</b> / <b>\\n</b> を入れると改行できる。<br>
                 答え側にそれらを入れると、答える枠を複数にできる。<br>
                 <b>[color(#ff0000)]</b> で、その後の半角スペースまで文字色を変えられる。<br>
                 <b>[picture(1)]</b> で画像を入れられる。<br>
                 <b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。<br>
-                問題欄で <b>#</b> を打つと候補が出るよ。
+                問題欄で <b>#</b> を打つと候補が出るよ。<br>
+                <b>"</b> で囲んだ中は記号をそのまま表示できるよ。
               </div>
             </div>
           </div>
@@ -3249,6 +3354,7 @@
           const items = parsed.items;
           const globalFlags = parsed.globalFlags;
           const onOffControls = parsed.onOffControls;
+          const samePairs = parsed.samePairs || [];
 
           if (!title) return alert("タイトルを入れてね");
           if (!items.length) return alert("問題が1つも読めなかったよ。");
@@ -3284,7 +3390,7 @@
           saveBtn.textContent = "保存中...";
 
           try {
-            const uploadedPictures = await asyncUploadPicturesForDoc(newId, prunedPictures);
+            const uploadedPictures = await uploadAllPictures(newId, prunedPictures);
 
             const payload = {
               title: finalTitle,
@@ -3293,6 +3399,7 @@
               rawText: d.rawText,
               globalFlags,
               onOffControls,
+              samePairs,
               keyMode: effectiveKeyMode,
               key: effectiveKey,
               ownerToken,
@@ -4004,12 +4111,20 @@
               <p>1行目に書くと、始める前にON/OFFを選べる項目になる。<br>このサイトでは今は <b>[ONorOFF:random]</b> だけを使う。</p>
             </div>
             <div class="tutorialCard tutorialHero">
+              <h2>[same(A)(B)]</h2>
+              <p>A と B を同じ答えとして扱うよ。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
               <h2>個別の行に書くタグ</h2>
               <p>問題文の行のいちばん前に書く。<br>タグのあとには半角スペースを1つ入れてから問題文を書く。<br>そのあとに <b>=</b> と答えを書く。<br>1行目の設定より、個別の指定が優先される。</p>
             </div>
             <div class="tutorialCard tutorialHero">
               <h2>改行・色・画像・答えの枠</h2>
-              <p><b>↵</b> / <b>↩︎</b> / <b>\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。</p>
+              <p><b>↵</b> / <b>↩︎</b> / <b>\\n</b> を問題文に入れると改行できる。<br>答え側にそれらを入れると、答える枠が複数になる。<br><b>[color(#ff0000)]</b> を入れると、その後の半角スペースまで文字色を変えられる。<br><b>[picture(1)]</b> で画像を入れられる。<br><b>;</b> のあとはメモとして扱うよ。もう一度 <b>;</b> か改行で戻る。</p>
+            </div>
+            <div class="tutorialCard tutorialHero">
+              <h2>"で囲む</h2>
+              <p>記号を文字としてそのまま表示したいときは <b>"</b> で囲む。</p>
             </div>
           `
         },
