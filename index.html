@@ -40,9 +40,8 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{ overflow-x:auto; }
-    *{ box-sizing:border-box; }
-
+    *{box-sizing:border-box}
+    html,body{overflow-x:auto}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -51,7 +50,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea,select{ font:inherit; }
+    button,input,textarea,select{font:inherit}
     button{
       border:none;
       border-radius:14px;
@@ -59,18 +58,18 @@
       cursor:pointer;
     }
 
-    .hide{ display:none !important; }
-    .page{ max-width:980px; margin:0 auto; padding:16px; min-height:100vh; }
-
-    .titleArea{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      min-width:0;
+    .hide{display:none !important;}
+    .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
     }
-    .titleBlock{ min-width:0; }
-
+    .titleArea{display:flex;gap:12px;align-items:center;flex-wrap:wrap;min-width:0}
+    .titleBlock{min-width:0}
     .topbar{
       display:flex;
       justify-content:space-between;
@@ -82,7 +81,6 @@
       backdrop-filter:blur(8px);
       z-index:5;
     }
-
     .title{
       font-size:28px;
       font-weight:900;
@@ -92,68 +90,12 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-
     .sub{
       margin-top:4px;
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
-
-    .card{
-      background:var(--panel);
-      border:1px solid rgba(15,23,42,.08);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-
-    .hero{
-      max-width:860px;
-      margin:36px auto 0;
-      display:grid;
-      gap:16px;
-    }
-
-    .bigBtn,.primary{
-      background:var(--accent);
-      color:#fff;
-      font-weight:800;
-    }
-
-    .ghost{
-      background:#eef3ff;
-      color:#244a9c;
-      border:1px solid #d7e2ff;
-      font-weight:700;
-    }
-
-    body.dark .ghost{
-      background:#182133;
-      color:#d7e5ff;
-      border-color:#2d3a4f;
-    }
-
-    .danger{
-      background:#ffeded;
-      color:#a72b2b;
-      border:1px solid #ffc7c7;
-      font-weight:800;
-    }
-
-    body.dark .danger{
-      background:#2a1620;
-      color:#ffaaaa;
-      border-color:#5b2a39;
-    }
-
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
     .input{
       width:100%;
       border:1px solid var(--line);
@@ -163,18 +105,115 @@
       background:var(--panel);
       color:var(--text);
     }
-
     .input:focus{
       border-color:#9ab8ff;
       box-shadow:0 0 0 4px rgba(47,111,237,.08);
     }
-
     .label{
       font-size:12px;
       color:var(--muted);
       font-weight:700;
       margin-bottom:6px;
     }
+    .ghost{
+      background:#eef3ff;
+      color:#244a9c;
+      border:1px solid #d7e2ff;
+      font-weight:700;
+    }
+    body.dark .ghost{
+      background:#182133;
+      color:#d7e5ff;
+      border-color:#2d3a4f;
+    }
+    .primary,.bigBtn,.submit{
+      background:var(--accent);
+      color:#fff;
+      font-weight:800;
+    }
+    .danger{
+      background:#ffeded;
+      color:#a72b2b;
+      border:1px solid #ffc7c7;
+      font-weight:800;
+    }
+    body.dark .danger{
+      background:#2a1620;
+      color:#ffaaaa;
+      border-color:#5b2a39;
+    }
+
+    .hero{
+      max-width:860px;
+      margin:36px auto 0;
+      display:grid;
+      gap:16px;
+    }
+
+    .homeControls{display:grid;gap:10px;}
+    .homeTopRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .tabSelect{min-width:220px;max-width:100%;height:48px;}
+    .searchWrap{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex:1;
+      min-width:220px;
+    }
+    .searchInput{flex:1;height:48px;}
+    .homeSectionTitle{
+      font-size:16px;
+      font-weight:900;
+      margin:0 0 10px;
+      color:var(--text);
+    }
+    .dividerLine{
+      text-align:center;
+      color:var(--muted);
+      font-weight:900;
+      margin:10px 0 6px;
+      user-select:none;
+    }
+    .listGrid{display:grid;gap:10px;margin-top:12px;}
+    .listItem{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      padding:14px 15px;
+    }
+    .listMeta{min-width:0;display:grid;gap:4px;flex:1;}
+    .listActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+    .miniAction{padding:10px 12px;font-size:13px;border-radius:12px;white-space:nowrap;}
+    .metaLine{font-size:12px;color:var(--muted);line-height:1.6;word-break:break-word;}
+    .reviewQ{font-weight:900;font-size:16px;word-break:break-word;}
+    .reviewA{font-size:14px;color:var(--muted);line-height:1.6;word-break:break-word;}
+    .publicBadge{
+      font-size:12px;
+      font-weight:900;
+      color:var(--accent);
+      border:1px solid rgba(47,111,237,.2);
+      background:rgba(47,111,237,.08);
+      padding:4px 8px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    body.dark .publicBadge{
+      color:#a9c0ff;
+      border-color:rgba(91,140,255,.28);
+      background:rgba(91,140,255,.10);
+    }
+    .homeMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
     .gridEditor{
       display:grid;
@@ -186,7 +225,6 @@
       background:var(--panel);
       align-items:stretch;
     }
-
     .gutter{
       background:rgba(127,127,127,.07);
       border-right:1px solid var(--line);
@@ -200,14 +238,7 @@
       align-self:stretch;
       min-height:420px;
     }
-
-    .editorTextWrap{
-      position:relative;
-      min-height:420px;
-      overflow:hidden;
-      background:var(--panel);
-    }
-
+    .editorTextWrap{position:relative;min-height:420px;overflow:hidden;background:var(--panel);}
     .editorMirror{
       position:absolute;
       inset:0;
@@ -220,10 +251,8 @@
       z-index:1;
       scrollbar-gutter:stable;
     }
-
-    .editorMirror .memoText{ color:#98a0af; }
-    body.dark .editorMirror .memoText{ color:#7e8798; }
-
+    .editorMirror .memoText{color:#98a0af;}
+    body.dark .editorMirror .memoText{color:#7e8798;}
     .textarea{
       position:relative;
       z-index:2;
@@ -256,7 +285,6 @@
       display:grid;
       gap:14px;
     }
-
     .progress{
       display:flex;
       justify-content:space-between;
@@ -265,7 +293,6 @@
       font-size:13px;
       font-weight:700;
     }
-
     .sectionText{
       font-size:18px;
       font-weight:900;
@@ -274,8 +301,7 @@
       word-break:break-word;
       white-space:normal;
     }
-    body.dark .sectionText{ color:#d7def0; }
-
+    body.dark .sectionText{color:#d7def0;}
     .question{
       font-size:clamp(22px,4vw,32px);
       font-weight:900;
@@ -283,7 +309,6 @@
       word-break:break-word;
       white-space:normal;
     }
-
     .answer{
       width:100%;
       font-size:18px;
@@ -294,13 +319,7 @@
       background:var(--panel);
       color:var(--text);
     }
-
-    .answerFields{
-      display:grid;
-      gap:10px;
-      grid-template-columns:1fr;
-    }
-
+    .answerFields{display:grid;gap:10px;grid-template-columns:1fr;}
     .actions{
       display:flex;
       gap:10px;
@@ -308,25 +327,6 @@
       justify-content:flex-end;
       align-items:center;
     }
-
-    .submit{
-      background:var(--accent);
-      color:#fff;
-      font-weight:900;
-      padding:14px 20px;
-      border-radius:16px;
-      min-width:116px;
-    }
-
-    .next{
-      background:#1c9c59;
-      color:#fff;
-      font-weight:900;
-      padding:14px 20px;
-      border-radius:16px;
-      min-width:116px;
-    }
-
     .good{
       border:1px solid rgba(47,111,237,.22);
       background:#eef4ff;
@@ -341,7 +341,6 @@
       background:#13264a;
       color:#9ebdff;
     }
-
     .bad{
       border:1px solid rgba(211,60,60,.22);
       background:#fff3f3;
@@ -351,7 +350,6 @@
       font-weight:900;
       font-size:18px;
     }
-
     .explain{
       background:#f8faff;
       border:1px solid #dbe4fb;
@@ -373,18 +371,12 @@
       display:grid;
       gap:14px;
     }
-
     .score{
       font-size:28px;
       font-weight:1000;
       line-height:1.2;
     }
-
-    .reviewList{
-      display:grid;
-      gap:10px;
-    }
-
+    .reviewList{display:grid;gap:10px;}
     .reviewItem{
       border:1px solid var(--line);
       border-radius:16px;
@@ -393,17 +385,14 @@
       display:grid;
       gap:6px;
     }
-
     .reviewItem.reviewGood{
       border-color:rgba(47,111,237,.35);
       background:rgba(47,111,237,.06);
     }
-
     .reviewItem.reviewBad{
       border-color:rgba(211,60,60,.35);
       background:rgba(211,60,60,.06);
     }
-
     body.dark .reviewItem.reviewGood{
       border-color:rgba(91,140,255,.40);
       background:rgba(91,140,255,.10);
@@ -412,84 +401,16 @@
       border-color:rgba(255,118,118,.35);
       background:rgba(255,118,118,.08);
     }
-
     .reviewSection{
       font-size:15px;
       font-weight:900;
       color:#334155;
       line-height:1.4;
     }
-    body.dark .reviewSection{ color:#d7def0; }
+    body.dark .reviewSection{color:#d7def0;}
 
-    .reviewQ{
-      font-weight:900;
-      font-size:16px;
-      word-break:break-word;
-    }
-
-    .reviewA{
-      font-size:14px;
-      color:var(--muted);
-      line-height:1.6;
-      word-break:break-word;
-    }
-
-    .listGrid{
-      display:grid;
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .listItem{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:var(--panel);
-      box-shadow:var(--shadow);
-      padding:14px 15px;
-    }
-
-    .listMeta{
-      min-width:0;
-      display:grid;
-      gap:4px;
-      flex:1;
-    }
-
-    .listActions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .miniAction{
-      padding:10px 12px;
-      font-size:13px;
-      border-radius:12px;
-      white-space:nowrap;
-    }
-
-    .metaLine{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.6;
-      word-break:break-word;
-    }
-
-    .commentWrap{
-      display:grid;
-      gap:12px;
-    }
-
-    .commentForm{
-      display:grid;
-      gap:10px;
-    }
-
+    .commentWrap{display:grid;gap:12px;}
+    .commentForm{display:grid;gap:10px;}
     .commentHeader{
       display:flex;
       justify-content:space-between;
@@ -497,14 +418,12 @@
       align-items:center;
       flex-wrap:wrap;
     }
-
     .commentToggleRow{
       display:flex;
       gap:8px;
       flex-wrap:wrap;
       align-items:center;
     }
-
     .commentBadge{
       display:inline-flex;
       align-items:center;
@@ -516,37 +435,25 @@
       background:rgba(127,127,127,.08);
       color:var(--text);
     }
-
     .commentPrivateNote{
       font-size:12px;
       color:var(--muted);
     }
-
     .commentMask{
       font-weight:900;
       font-size:18px;
       line-height:1.4;
     }
-
     .commentBody{
       white-space:pre-wrap;
       line-height:1.8;
       word-break:break-word;
       color:var(--text);
     }
-
-    .scoreToken{
-      color:#14994a;
-      font-weight:900;
-    }
-
-    .timeToken{
-      color:#2f6fed;
-      font-weight:900;
-    }
-    body.dark .scoreToken{ color:#66e08d; }
-    body.dark .timeToken{ color:#8db2ff; }
-
+    .scoreToken{color:#14994a;font-weight:900;}
+    .timeToken{color:#2f6fed;font-weight:900;}
+    body.dark .scoreToken{color:#66e08d;}
+    body.dark .timeToken{color:#8db2ff;}
     .commentItem{
       border:1px solid var(--line);
       border-radius:16px;
@@ -555,17 +462,14 @@
       display:grid;
       gap:6px;
     }
-
     .commentOwner{
       border-color:var(--ownerLine);
       background:var(--ownerBg);
     }
-
     .commentEditor{
       border-color:var(--editorLine);
       background:var(--editorBg);
     }
-
     .commentViewer{
       border-color:var(--line);
       background:var(--panel);
@@ -576,19 +480,16 @@
       gap:10px;
       grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
     }
-
     .choiceBtn{
       text-align:center;
       width:100%;
     }
-
     .choiceBtn.selected{
       background:#dfe9ff !important;
       border-color:#9ab8ff !important;
       box-shadow:0 0 0 4px rgba(47,111,237,.08);
       color:#173a88 !important;
     }
-
     body.dark .choiceBtn.selected{
       background:#31445f !important;
       border-color:#6b92ff !important;
@@ -596,82 +497,7 @@
       color:#f3f7ff !important;
     }
 
-    .homeControls{
-      display:grid;
-      gap:10px;
-    }
-
-    .homeTopRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .tabSelect{
-      min-width:220px;
-      max-width:100%;
-      height:48px;
-    }
-
-    .searchWrap{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex:1;
-      min-width:220px;
-    }
-
-    .searchInput{
-      flex:1;
-      height:48px;
-    }
-
-    .homeSectionTitle{
-      font-size:16px;
-      font-weight:900;
-      margin:0 0 10px;
-      color:var(--text);
-    }
-
-    .dividerLine{
-      text-align:center;
-      color:var(--muted);
-      font-weight:900;
-      margin:10px 0 6px;
-      user-select:none;
-    }
-
-    .publicBadge{
-      font-size:12px;
-      font-weight:900;
-      color:var(--accent);
-      border:1px solid rgba(47,111,237,.2);
-      background:rgba(47,111,237,.08);
-      padding:4px 8px;
-      border-radius:999px;
-      white-space:nowrap;
-    }
-
-    body.dark .publicBadge{
-      color:#a9c0ff;
-      border-color:rgba(91,140,255,.28);
-      background:rgba(91,140,255,.10);
-    }
-
-    .homeMeta{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .editorHost,
-    .commentInputHost{
-      position:relative;
-    }
-
+    .editorHost,.commentInputHost{position:relative;}
     .floatSuggest{
       position:absolute;
       z-index:40;
@@ -684,31 +510,6 @@
       border-radius:14px;
       box-shadow:var(--shadow);
       max-width:min(420px, calc(100% - 16px));
-    }
-
-    .replyBox{
-      border:1px solid var(--line);
-      background:rgba(127,127,127,.06);
-      border-radius:14px;
-      padding:10px 12px;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-    }
-
-    .replyLabel{ font-size:13px; font-weight:900; color:var(--text); }
-    .replyHint{ font-size:12px; color:var(--muted); }
-    .timeOnlyNote{ font-size:12px; color:var(--muted); }
-
-    .settingsScreen{
-      display:grid;
-      gap:14px;
-    }
-
-    .settingList{
-      display:grid;
-      gap:10px;
     }
 
     .settingRow{
@@ -725,26 +526,9 @@
       box-shadow:var(--shadow);
       color:var(--text);
     }
-
-    .settingText{
-      display:grid;
-      gap:4px;
-      min-width:0;
-      flex:1;
-    }
-
-    .settingLabel{
-      font-size:16px;
-      font-weight:900;
-      line-height:1.2;
-    }
-
-    .settingHint{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
-    }
-
+    .settingText{display:grid;gap:4px;min-width:0;flex:1;}
+    .settingLabel{font-size:16px;font-weight:900;line-height:1.2;}
+    .settingHint{font-size:12px;color:var(--muted);line-height:1.5;}
     .toggleSwitch{
       position:relative;
       width:58px;
@@ -754,9 +538,8 @@
       transition:.2s background;
       flex:none;
     }
-    body.dark .toggleSwitch{ background:#42506a; }
-    .toggleSwitch.on{ background:var(--accent); }
-
+    body.dark .toggleSwitch{background:#42506a;}
+    .toggleSwitch.on{background:var(--accent);}
     .toggleKnob{
       position:absolute;
       top:3px;
@@ -768,217 +551,26 @@
       box-shadow:0 4px 10px rgba(0,0,0,.15);
       transition:.2s transform;
     }
-    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
-
-    .settingHeader{
-      display:grid;
-      gap:8px;
-    }
-
+    .toggleSwitch.on .toggleKnob{transform:translateX(24px);}
+    .settingHeader{display:grid;gap:8px;}
     .settingTitle{
       font-size:26px;
       font-weight:1000;
       line-height:1.1;
       margin:0;
     }
-
     .settingSub{
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    #tutorialLayer,
-    #partnerLayer{
-      position:fixed;
-      inset:0;
-      z-index:1000;
-      pointer-events:none;
-    }
-
-    .tutorialOverlay,
-    .partnerOverlay{
-      position:fixed;
-      inset:0;
-      pointer-events:auto;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      background:rgba(6,10,18,.64);
-      backdrop-filter:blur(8px);
-      transition:opacity .22s ease, transform .22s ease;
-    }
-
-    .tutorialOverlay.closing,
-    .partnerOverlay.closing{
-      opacity:0;
-      transform:translateY(18px);
-    }
-
-    .tutorialPanel,
-    .partnerPanel{
-      width:min(860px, 100%);
-      max-height:min(86vh, 860px);
-      overflow:hidden;
-      border-radius:28px;
-      background:var(--panel);
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 30px 80px rgba(0,0,0,.38);
-      display:grid;
-      grid-template-rows:auto 1fr auto;
-    }
-
-    .tutorialTop,
-    .partnerTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      padding:16px 18px 0;
-    }
-
-    .tutorialTitle,
-    .partnerTitle{
-      font-size:24px;
-      font-weight:1000;
-      line-height:1.1;
-      margin:0;
-    }
-
-    .tutorialSub,
-    .partnerSub{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
-    }
-
-    .tutorialClose,
-    .partnerClose{
-      width:44px;
+    .smallSelect{
+      min-width:92px;
+      max-width:92px;
+      width:92px;
       height:44px;
-      border-radius:14px;
-      padding:0;
-      background:rgba(127,127,127,.10);
-      color:var(--text);
-      font-size:22px;
-      font-weight:900;
-    }
-
-    .tutorialBody,
-    .partnerBody{
-      padding:14px 18px 6px;
-      overflow:auto;
-    }
-
-    .tutorialPage{
-      min-height:340px;
-      display:grid;
-      gap:14px;
-      animation-duration:.26s;
-      animation-fill-mode:both;
-    }
-
-    .tutorialPage.anim-open{ animation-name:tutInOpen; }
-    .tutorialPage.anim-next{ animation-name:tutInRight; }
-    .tutorialPage.anim-prev{ animation-name:tutInLeft; }
-    .tutorialPage.anim-close{ animation-name:tutOutDown; }
-
-    .tutorialCard{
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:16px;
-      background:rgba(127,127,127,.05);
-    }
-    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
-
-    .tutorialHero{
-      display:grid;
-      gap:8px;
-    }
-
-    .tutorialHero h2{
-      margin:0;
-      font-size:28px;
-      line-height:1.1;
-      letter-spacing:-.03em;
-    }
-
-    .tutorialHero p{
-      margin:0;
-      line-height:1.8;
-      color:var(--muted);
-      font-size:15px;
-    }
-
-    .tutorialCode{
-      background:#0f172a;
-      color:#e8f0ff;
-      border-radius:16px;
-      padding:14px 16px;
-      overflow:auto;
-      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    body.dark .tutorialCode{ background:#0a1220; }
-
-    .tutorialFooter,
-    .partnerFooter{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      padding:0 18px 18px;
-      flex-wrap:wrap;
-    }
-
-    .tutorialDots{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:center;
-      flex:1;
-    }
-
-    .dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:rgba(127,127,127,.35);
-    }
-    .dot.active{ background:var(--accent); }
-
-    .tutorialNavBtn{
-      min-width:110px;
-      font-weight:900;
-    }
-
-    .partnerMenu{
-      display:grid;
-      gap:10px;
-      padding:4px 0 0;
-    }
-
-    .partnerMenuBtn{
-      width:100%;
-      text-align:left;
-      padding:16px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
-      box-shadow:var(--shadow);
-      font-weight:900;
-    }
-
-    .partnerMenuBtn.primary{
-      background:var(--accent);
-      color:#fff;
-      border-color:transparent;
+      padding:0 10px;
     }
 
     .inlinePicture{
@@ -991,7 +583,6 @@
       margin:2px 0;
       box-shadow:0 8px 18px rgba(0,0,0,.10);
     }
-
     .pictureMissing{
       display:inline-block;
       padding:2px 8px;
@@ -1002,53 +593,156 @@
       vertical-align:middle;
     }
 
-    .smallSelect{
-      min-width:92px;
-      max-width:92px;
-      width:92px;
-      height:44px;
-      padding:0 10px;
+    .tutorialOverlay,.partnerOverlay{
+      position:fixed;inset:0;pointer-events:auto;
+      display:flex;align-items:center;justify-content:center;
+      padding:16px;
+      background:rgba(6,10,18,.64);
+      backdrop-filter:blur(8px);
+      transition:opacity .22s ease, transform .22s ease;
+    }
+    .tutorialOverlay.closing,.partnerOverlay.closing{
+      opacity:0;transform:translateY(18px);
+    }
+    .tutorialPanel,.partnerPanel{
+      width:min(860px, 100%);
+      max-height:min(86vh, 860px);
+      overflow:hidden;
+      border-radius:28px;
+      background:var(--panel);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 30px 80px rgba(0,0,0,.38);
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+    .tutorialTop,.partnerTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:16px 18px 0;
+    }
+    .tutorialTitle,.partnerTitle{
+      font-size:24px;
+      font-weight:1000;
+      line-height:1.1;
+      margin:0;
+    }
+    .tutorialSub,.partnerSub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+    .tutorialClose,.partnerClose{
+      width:44px;height:44px;border-radius:14px;padding:0;
+      background:rgba(127,127,127,.10);
+      color:var(--text);
+      font-size:22px;font-weight:900;
+    }
+    .tutorialBody,.partnerBody{padding:14px 18px 6px;overflow:auto;}
+    .tutorialPage{
+      min-height:340px;
+      display:grid;
+      gap:14px;
+      animation-duration:.26s;
+      animation-fill-mode:both;
+    }
+    .tutorialPage.anim-open{animation-name:tutInOpen;}
+    .tutorialPage.anim-next{animation-name:tutInRight;}
+    .tutorialPage.anim-prev{animation-name:tutInLeft;}
+    .tutorialPage.anim-close{animation-name:tutOutDown;}
+    .tutorialCard{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      background:rgba(127,127,127,.05);
+    }
+    body.dark .tutorialCard{background:rgba(255,255,255,.03);}
+    .tutorialHero{display:grid;gap:8px;}
+    .tutorialHero h2{margin:0;font-size:28px;line-height:1.1;letter-spacing:-.03em;}
+    .tutorialHero p{margin:0;line-height:1.8;color:var(--muted);font-size:15px;}
+    .tutorialCode{
+      background:#0f172a;
+      color:#e8f0ff;
+      border-radius:16px;
+      padding:14px 16px;
+      overflow:auto;
+      font:600 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    body.dark .tutorialCode{background:#0a1220;}
+    .tutorialFooter,.partnerFooter{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:0 18px 18px;
+      flex-wrap:wrap;
+    }
+    .tutorialDots{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(127,127,127,.35);
+    }
+    .dot.active{background:var(--accent);}
+    .tutorialNavBtn{min-width:110px;font-weight:900;}
+    .partnerMenu{
+      display:grid;gap:10px;padding:4px 0 0;
+    }
+    .partnerMenuBtn{
+      width:100%;
+      text-align:left;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      font-weight:900;
+    }
+    .partnerMenuBtn.primary{
+      background:var(--accent);
+      color:#fff;
+      border-color:transparent;
     }
 
-    @keyframes tutInRight{
-      from{ opacity:0; transform:translateX(28px); }
-      to{ opacity:1; transform:translateX(0); }
-    }
-    @keyframes tutInLeft{
-      from{ opacity:0; transform:translateX(-28px); }
-      to{ opacity:1; transform:translateX(0); }
-    }
-    @keyframes tutInOpen{
-      from{ opacity:0; transform:translateY(14px) scale(.985); }
-      to{ opacity:1; transform:translateY(0) scale(1); }
-    }
-    @keyframes tutOutDown{
-      from{ opacity:1; transform:translateY(0) scale(1); }
-      to{ opacity:0; transform:translateY(30px) scale(.98); }
-    }
+    @keyframes tutInRight{from{opacity:0;transform:translateX(28px);}to{opacity:1;transform:translateX(0);}}
+    @keyframes tutInLeft{from{opacity:0;transform:translateX(-28px);}to{opacity:1;transform:translateX(0);}}
+    @keyframes tutInOpen{from{opacity:0;transform:translateY(14px) scale(.985);}to{opacity:1;transform:translateY(0) scale(1);}}
+    @keyframes tutOutDown{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(30px) scale(.98);}}
 
     @media (max-width:640px){
-      .page{ padding:14px; }
-      .title{ font-size:22px; }
-      .gridEditor{ grid-template-columns:52px 1fr; min-height:380px; }
-      .question{ font-size:22px; }
-      .answer{ font-size:16px; }
-      .bigBtn{ width:100%; }
-      .actions{ justify-content:stretch; }
-      .actions button{ flex:1; }
-      .topbar{ align-items:flex-start; }
-      .listItem{ align-items:flex-start; flex-direction:column; }
-      .listActions{ justify-content:flex-start; }
-      .tabSelect,.searchInput{ min-width:0; }
-      .homeTopRow{ align-items:stretch; }
-      .searchWrap{ min-width:0; }
-      .tutorialTop,.partnerTop{ padding:14px 14px 0; }
-      .tutorialBody,.partnerBody{ padding:12px 14px 6px; }
-      .tutorialFooter,.partnerFooter{ padding:0 14px 14px; }
-      .tutorialTitle,.partnerTitle{ font-size:20px; }
-      .tutorialHero h2{ font-size:24px; }
-      .tutorialNavBtn{ min-width:88px; }
-      .settingTitle{ font-size:22px; }
+      .page{padding:14px}
+      .title{font-size:22px}
+      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
+      .question{font-size:22px}
+      .answer{font-size:16px}
+      .bigBtn{width:100%}
+      .actions{justify-content:stretch}
+      .actions button{flex:1}
+      .topbar{align-items:flex-start}
+      .listItem{align-items:flex-start;flex-direction:column}
+      .listActions{justify-content:flex-start}
+      .tabSelect,.searchInput{min-width:0}
+      .homeTopRow{align-items:stretch}
+      .searchWrap{min-width:0}
+      .tutorialTop,.partnerTop{padding:14px 14px 0}
+      .tutorialBody,.partnerBody{padding:12px 14px 6px}
+      .tutorialFooter,.partnerFooter{padding:0 14px 14px}
+      .tutorialTitle,.partnerTitle{font-size:20px}
+      .tutorialHero h2{font-size:24px}
+      .tutorialNavBtn{min-width:88px}
+      .settingTitle{font-size:22px}
       .smallSelect{
         min-width:78px;
         max-width:78px;
@@ -1090,7 +784,6 @@
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
-    if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
@@ -1105,9 +798,6 @@
     const SETTINGS_DOC_ID = "main";
     const TAGS = ["random", "choice", "random choice", "number", "open", "same"];
     const LOCAL_GUTTER_KEY = "qb_editor_gutter_mode";
-
-    const CONTROL_LABELS = { random: "問題順ランダム" };
-    const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
     const state = {
       screen: "loading",
@@ -1124,9 +814,10 @@
       homeVisibleCount: { library: 20, public: 12 },
       publicOrder: [],
       editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
+      selectedPicture: "1",
+      refreshFlash: { comments: false, quiz: false },
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      refreshFlash: { comments: false },
       quiz: {
         phase: "question",
         order: [],
@@ -1158,6 +849,8 @@
       partnerModal: { open: false }
     };
 
+    let currentQuestion = null;
+    let currentScoreMeta = null;
     let resultEnterHandler = null;
     let homeObserver = null;
     const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
@@ -1199,127 +892,11 @@
         .toLowerCase();
     }
 
-    function splitAnswers(text) {
-      return String(text ?? "")
-        .split(/[、,]/)
-        .map(v => v.trim())
-        .filter(Boolean);
-    }
+    function safeLocalGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
+    function safeLocalSet(key, value) { try { localStorage.setItem(key, value); } catch {} }
 
     function splitSearchTerms(q) {
-      return String(q ?? "")
-        .trim()
-        .split(/[\s\u3000]+/)
-        .map(v => v.trim())
-        .filter(Boolean);
-    }
-
-    function normalizeOnOffTarget(raw) {
-      const t = String(raw ?? "").trim().toLowerCase();
-      if (t === "random") return t;
-      return null;
-    }
-
-    function stripMemoSegments(text) {
-      const s = String(text ?? "");
-      let out = "";
-      let memo = false;
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        if (ch === "\n") {
-          out += ch;
-          memo = false;
-          continue;
-        }
-        if (ch === ";") {
-          memo = !memo;
-          continue;
-        }
-        if (!memo) out += ch;
-      }
-      return out;
-    }
-
-    function renderMemoPreview(text) {
-      const s = String(text ?? "");
-      let html = "";
-      let memo = false;
-      let buf = "";
-
-      const flush = () => {
-        if (!buf) return;
-        html += memo ? `<span class="memoText">${esc(buf)}</span>` : esc(buf);
-        buf = "";
-      };
-
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        if (ch === "\n") {
-          flush();
-          html += "<br>";
-          memo = false;
-          continue;
-        }
-        if (ch === ";") {
-          flush();
-          html += `<span class="memoText">;</span>`;
-          memo = !memo;
-          continue;
-        }
-        buf += ch;
-      }
-      flush();
-      return html;
-    }
-
-    function splitAnswerFields(text) {
-      return String(text ?? "")
-        .replace(/\s*\\n\s*/g, "\n")
-        .replace(/\s*↵\s*/g, "\n")
-        .replace(/\s*↩︎\s*/g, "\n")
-        .split("\n")
-        .map(v => v.trim());
-    }
-
-    function normalizePictures(obj) {
-      const out = {};
-      if (!obj || typeof obj !== "object") return out;
-      for (const [k, v] of Object.entries(obj)) {
-        if (typeof v === "string" && v.startsWith("data:image/")) out[String(k)] = v;
-      }
-      return out;
-    }
-
-    function getPictureMap() {
-      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
-    }
-
-    function getNextPictureNumber(text, pictures) {
-      const nums = [];
-      String(text || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => { nums.push(Number(n)); return ""; });
-      for (const k of Object.keys(pictures || {})) nums.push(Number(k));
-      const max = nums.length ? Math.max(...nums.filter(n => Number.isFinite(n))) : 0;
-      return max + 1;
-    }
-
-    function getPictureRefsFromTexts(...texts) {
-      const set = new Set();
-      for (const t of texts) {
-        String(t || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => {
-          set.add(String(n));
-          return "";
-        });
-      }
-      return set;
-    }
-
-    function prunePicturesMap(pictures, refs) {
-      const out = {};
-      const keep = refs instanceof Set ? refs : new Set(refs || []);
-      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))) {
-        if (keep.has(String(k))) out[String(k)] = v;
-      }
-      return out;
+      return String(q ?? "").trim().split(/[\s\u3000]+/).map(v => v.trim()).filter(Boolean);
     }
 
     function splitRespectingQuotes(text, separators) {
@@ -1328,21 +905,13 @@
       const out = [];
       let buf = "";
       let inQuotes = false;
-
       for (let i = 0; i < s.length;) {
         const ch = s[i];
-        if (ch === '"') {
-          inQuotes = !inQuotes;
-          i++;
-          continue;
-        }
+        if (ch === '"') { inQuotes = !inQuotes; i++; continue; }
         if (!inQuotes) {
           let matched = "";
           for (const sep of seps) {
-            if (sep && s.startsWith(sep, i)) {
-              matched = sep;
-              break;
-            }
+            if (sep && s.startsWith(sep, i)) { matched = sep; break; }
           }
           if (matched) {
             out.push(buf);
@@ -1362,6 +931,11 @@
       return String(s ?? "").replace(/^"(.*)"$/s, "$1");
     }
 
+    function splitAnswerValues(text) {
+      const fields = splitRespectingQuotes(text, ["↵", "↩︎", "\\n"]);
+      return fields.map(field => splitRespectingQuotes(field, [",", "、"]).map(v => unquoteAnswerLiteral(v.trim())).filter(Boolean));
+    }
+
     function normalizeAnswerText(s) {
       return norm(unquoteAnswerLiteral(s));
     }
@@ -1378,30 +952,104 @@
       return groups.length >= 2 ? groups : [];
     }
 
-    function sameMatches(a, b, sameGroups, mode) {
-      const na = normalizeForMode(a, mode);
-      const nb = normalizeForMode(b, mode);
-      if (na === nb) return true;
-      for (const group of sameGroups || []) {
-        const g = group.map(v => normalizeForMode(v, mode));
-        if (g.includes(na) && g.includes(nb)) return true;
-      }
-      return false;
+    function normalizeOnOffTarget(raw) {
+      const t = String(raw ?? "").trim().toLowerCase();
+      return t === "random" ? t : null;
     }
 
-    function splitAnswerValues(text) {
-      const fields = splitRespectingQuotes(text, ["↵", "↩︎", "\\n"]);
-      return fields.map(field => splitRespectingQuotes(field, [",", "、"]).map(v => unquoteAnswerLiteral(v.trim())).filter(Boolean));
+    function normalizePictures(obj) {
+      const out = {};
+      if (!obj || typeof obj !== "object") return out;
+      for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === "string" && v.startsWith("data:image/")) out[String(k)] = v;
+      }
+      return out;
+    }
+
+    function loadPicturesJson(picturesJson) {
+      if (!picturesJson) return {};
+      if (typeof picturesJson === "object") return normalizePictures(picturesJson);
+      if (typeof picturesJson !== "string") return {};
+      try {
+        const parsed = JSON.parse(picturesJson);
+        return normalizePictures(parsed);
+      } catch {
+        return {};
+      }
+    }
+
+    function dumpPicturesJson(pictures) {
+      return JSON.stringify(normalizePictures(pictures || {}));
+    }
+
+    function getPictureMap() {
+      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
+    }
+
+    function getNextPictureNumber(text, pictures) {
+      const nums = [];
+      String(text || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => { nums.push(Number(n)); return ""; });
+      for (const k of Object.keys(pictures || {})) nums.push(Number(k));
+      const max = nums.length ? Math.max(...nums.filter(n => Number.isFinite(n))) : 0;
+      return max + 1;
+    }
+
+    function getPictureRefsFromTexts(...texts) {
+      const set = new Set();
+      for (const t of texts) {
+        String(t || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => { set.add(String(n)); return ""; });
+      }
+      return set;
+    }
+
+    function prunePicturesMap(pictures, refs) {
+      const out = {};
+      const keep = refs instanceof Set ? refs : new Set(refs || []);
+      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))) {
+        if (keep.has(String(k))) out[String(k)] = v;
+      }
+      return out;
+    }
+
+    function stripMemoSegments(text) {
+      const s = String(text ?? "");
+      let out = "";
+      let memo = false;
+      for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === "\n") { out += ch; memo = false; continue; }
+        if (ch === ";") { memo = !memo; continue; }
+        if (!memo) out += ch;
+      }
+      return out;
+    }
+
+    function renderMemoPreview(text) {
+      const s = String(text ?? "");
+      let html = "";
+      let memo = false;
+      let buf = "";
+      const flush = () => {
+        if (!buf) return;
+        html += memo ? `<span class="memoText">${esc(buf)}</span>` : esc(buf);
+        buf = "";
+      };
+      for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === "\n") { flush(); html += "<br>"; memo = false; continue; }
+        if (ch === ";") { flush(); html += `<span class="memoText">;</span>`; memo = !memo; continue; }
+        buf += ch;
+      }
+      flush();
+      return html;
     }
 
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
       let s = String(text ?? "");
       s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
-
       let out = "";
       let color = null;
       let buf = "";
-
       const flush = () => {
         if (!buf) return;
         const safe = esc(buf);
@@ -1425,30 +1073,15 @@
           flush();
           const n = pm[1];
           const src = pictureMap[String(n)];
-          if (src) {
-            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
-          } else {
-            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
-          }
+          if (src) out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          else out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
           i += pm[0].length;
           continue;
         }
 
         const ch = s[i];
-        if (ch === "\n") {
-          flush();
-          out += "<br>";
-          color = null;
-          i++;
-          continue;
-        }
-        if (ch === " ") {
-          flush();
-          out += " ";
-          color = null;
-          i++;
-          continue;
-        }
+        if (ch === "\n") { flush(); out += "<br>"; color = null; i++; continue; }
+        if (ch === " ") { flush(); out += " "; color = null; i++; continue; }
         buf += ch;
         i++;
       }
@@ -1462,12 +1095,26 @@
       return groups.map(group => group.join(" / ")).join(" ↵ ");
     }
 
+    function findFirstUnquoted(text, targets) {
+      const s = String(text ?? "");
+      const t = [...targets].sort((a, b) => b.length - a.length);
+      let inQuotes = false;
+      for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '"') { inQuotes = !inQuotes; continue; }
+        if (inQuotes) continue;
+        for (const target of t) {
+          if (s.startsWith(target, i)) return i;
+        }
+      }
+      return -1;
+    }
+
     function parseLeadingSettings(line) {
       let rest = String(line ?? "").trimStart();
       const tags = [];
       const onOffControls = [];
       const sameGroups = [];
-
       while (rest.startsWith("[")) {
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
@@ -1498,7 +1145,6 @@
 
         break;
       }
-
       return { tags, onOffControls: Array.from(new Set(onOffControls)), sameGroups, rest };
     }
 
@@ -1525,24 +1171,6 @@
       return { mode: "text", randomChoice: false };
     }
 
-    function findFirstUnquoted(text, targets) {
-      const s = String(text ?? "");
-      const t = [...targets].sort((a, b) => b.length - a.length);
-      let inQuotes = false;
-      for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-        if (ch === '"') {
-          inQuotes = !inQuotes;
-          continue;
-        }
-        if (inQuotes) continue;
-        for (const target of t) {
-          if (s.startsWith(target, i)) return i;
-        }
-      }
-      return -1;
-    }
-
     function parseQuestionLine(line, globalFlags, globalSameGroups = []) {
       const { tags, onOffControls, sameGroups, rest } = parseLeadingSettings(line);
       const raw = rest.trim();
@@ -1552,7 +1180,6 @@
       const question = raw.slice(0, eqIdx).trim();
       if (!question) return null;
       const { mode, randomChoice } = pickMode(globalFlags, tags);
-
       const mergedSameGroups = [...(globalSameGroups || []), ...(sameGroups || [])];
 
       if (mode === "choice") {
@@ -1598,7 +1225,6 @@
         const raw = String(lines[i] ?? "");
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
-
         const parsed = parseLeadingSettings(raw);
         if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -1607,7 +1233,6 @@
           i++;
           continue;
         }
-
         break;
       }
 
@@ -1646,10 +1271,7 @@
           type: item.type || "question",
           mode: "choice",
           question: String(item.question || ""),
-          options: (item.options || []).map(o => ({
-            text: String(o?.text || ""),
-            correct: !!o?.correct
-          })).filter(o => o.text),
+          options: (item.options || []).map(o => ({ text: String(o?.text || ""), correct: !!o?.correct })).filter(o => o.text),
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.filter(Boolean).map(String) : [],
           localOnOffControls: Array.isArray(item.localOnOffControls) ? item.localOnOffControls.filter(Boolean).map(String) : [],
@@ -1673,15 +1295,11 @@
 
     function unpackItemFromFirestore(item) {
       if (!item || typeof item !== "object") return item;
-
       if (item.mode === "choice") {
         return {
           ...item,
           options: Array.isArray(item.options)
-            ? item.options.map(o => ({
-                text: String(o?.text || ""),
-                correct: !!o?.correct
-              })).filter(o => o.text)
+            ? item.options.map(o => ({ text: String(o?.text || ""), correct: !!o?.correct })).filter(o => o.text)
             : [],
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
@@ -1743,19 +1361,9 @@
       return lines.join("\n");
     }
 
-    const shuffle = (arr) => {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    };
-
     function setCookie(name, value, days = 3650) {
       document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${days * 24 * 60 * 60}; SameSite=Lax`;
     }
-
     function getCookie(name) {
       const parts = document.cookie ? document.cookie.split("; ") : [];
       for (const part of parts) {
@@ -1766,9 +1374,6 @@
       return "";
     }
 
-    function safeLocalGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
-    function safeLocalSet(key, value) { try { localStorage.setItem(key, value); } catch {} }
-
     function loadMyList() {
       try {
         const raw = safeLocalGet(MY_KEY);
@@ -1776,7 +1381,6 @@
         return Array.isArray(list) ? list : [];
       } catch { return []; }
     }
-
     function saveMyList(list) { safeLocalSet(MY_KEY, JSON.stringify(list.slice(0, 50))); }
 
     function loadAccessList() {
@@ -1786,7 +1390,6 @@
         return Array.isArray(list) ? list : [];
       } catch { return []; }
     }
-
     function saveAccessList(list) { safeLocalSet(ACCESS_KEY, JSON.stringify(list.slice(0, 50))); }
 
     function findAccessRecord(id) { return loadAccessList().find(v => v.id === id) || null; }
@@ -1870,82 +1473,8 @@
       }
     }
 
-    function enableResultEnterHandler() {
-      clearResultEnterHandler();
-      const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
-      if (!isDesktop) return;
-
-      resultEnterHandler = (e) => {
-        if (e.key !== "Enter") return;
-        const active = document.activeElement;
-        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
-        e.preventDefault();
-        nextQuestion();
-      };
-
-      window.addEventListener("keydown", resultEnterHandler);
-    }
-
-    const basePath = () => {
-      const p = location.pathname;
-      if (p.endsWith("/")) return p;
-      const i = p.lastIndexOf("/");
-      return i >= 0 ? p.slice(0, i + 1) : "/";
-    };
-
-    const prettyLink = (id) => `${location.origin}${basePath()}#/${id}`;
-
-    function route() {
-      const raw = location.hash.replace(/^#/, "");
-      const parts = raw.split("/").filter(Boolean);
-      if (!parts.length) return { name: "home" };
-      if (parts[0] === "create") return { name: "create" };
-      if (parts[0] === "edit" && parts[1]) return { name: "edit", id: decodeURIComponent(parts[1]) };
-      return { name: "quiz", id: decodeURIComponent(parts[0]) };
-    }
-
-    function getCommentToken() {
-      let token = safeLocalGet(COMMENT_TOKEN_KEY);
-      if (!token) {
-        token = uid();
-        safeLocalSet(COMMENT_TOKEN_KEY, token);
-      }
-      return token;
-    }
-
-    function getCommentName() {
-      const n = safeLocalGet(COMMENT_NAME_KEY);
-      if (!n) {
-        safeLocalSet(COMMENT_NAME_KEY, "匿名");
-        return "匿名";
-      }
-      return n;
-    }
-
-    function setCommentName(name) {
-      safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
-    }
-
-    function sortComments(comments) {
-      return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
-    }
-
-    function isPerfectScore() {
-      const m = currentScoreMeta();
-      return m.total > 0 && m.correctCount === m.total;
-    }
-
-    function canViewComment(comment) {
-      if (!comment?.isPrivate) return true;
-      if (!state.doc) return false;
-      if (state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open") return true;
-      return comment.authorToken && comment.authorToken === getCommentToken();
-    }
-
-    function canManageComment(comment) {
-      if (!comment || !state.doc) return false;
-      if (state.accessMode === "owner") return true;
-      return comment.authorToken && comment.authorToken === getCommentToken();
+    function isOwner() {
+      return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
     }
 
     function setAccessModeForDoc(docData, id) {
@@ -1965,29 +1494,26 @@
       state.accessMode = "none";
     }
 
-    function isOwner() {
-      return !!(state.doc?.ownerToken && getCookie(OWNER_COOKIE) === state.doc.ownerToken);
-    }
-
     function canEdit() {
       if (!state.doc) return false;
       if (state.doc.keyMode === "open" || state.doc.globalFlags?.open) return true;
       return state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open";
     }
 
-    const canManageQuiz = () => canEdit();
-
-    function currentQuestion() {
+    function currentQuestionMeta() {
       if (!state.quiz?.items?.length) return null;
       const idx = state.quiz.order[state.quiz.index];
       if (idx === undefined) return null;
       return { idx, item: state.quiz.items[idx] };
     }
 
-    function currentScoreMeta() {
-      const total = state.quiz.order.length || (state.quiz.items?.length || 0);
-      const correctCount = Object.values(state.quiz.attempts || {}).filter(v => v.correct).length;
-      return { correctCount, total, label: `${correctCount}/${total}` };
+    function setCurrentQuestionCache() {
+      currentQuestion = currentQuestionMeta();
+      currentScoreMeta = () => {
+        const total = state.quiz.order.length || (state.quiz.items?.length || 0);
+        const correctCount = Object.values(state.quiz.attempts || {}).filter(v => v.correct).length;
+        return { correctCount, total, label: `${correctCount}/${total}` };
+      };
     }
 
     function makeCommentSuggestionItems() {
@@ -1996,8 +1522,13 @@
       return items;
     }
 
+    function isPerfectScore() {
+      const m = currentScoreMeta();
+      return m.total > 0 && m.correctCount === m.total;
+    }
+
     function blankDraft() {
-      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
+      return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "", pictures: {}, selectedPicture: "1" };
     }
 
     function openCreate() {
@@ -2006,6 +1537,7 @@
       state.accessMode = "none";
       state.draft = blankDraft();
       state.draftPictures = {};
+      state.selectedPicture = "1";
       state.showComments = false;
       state.screen = "editor";
       render();
@@ -2017,9 +1549,11 @@
         subtitle: state.doc?.subtitle || "",
         rawText: state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
         keyMode: state.doc?.keyMode || "key",
-        key: state.doc?.key || ""
+        key: state.doc?.key || "",
+        selectedPicture: "1"
       };
       state.draftPictures = { ...(state.doc?.pictures || {}) };
+      state.selectedPicture = Object.keys(state.draftPictures)[0] || "1";
       state.screen = "editor";
       render();
     }
@@ -2050,7 +1584,12 @@
         activeFlags
       );
 
-      const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
+      let quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
+      if (!quizItems.length && String(state.doc?.rawText || "").trim()) {
+        const fallback = String(state.doc.rawText).split(/\r?\n/).map(s => s.trim()).filter(Boolean)[0] || "";
+        if (fallback) quizItems = [{ id: uid(), type: "question", mode: "text", question: fallback, answerGroups: [[fallback]], answers: [fallback], section: "", localTags: [], localOnOffControls: [], sameGroups: [] }];
+      }
+
       const allIndices = quizItems.map((_, i) => i);
       const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
 
@@ -2087,7 +1626,6 @@
           updatedAt: normalizeTs(docData.updatedAt) || Date.now()
         });
       }
-
       if (state.accessMode === "owner") {
         upsertMyMeta({
           id,
@@ -2134,7 +1672,7 @@
 
     function forceFinishAsWrong() {
       if (!state.doc) return;
-      const q = currentQuestion();
+      const q = currentQuestion;
       if (q && !state.quiz.attempts[q.idx]) state.quiz.attempts[q.idx] = { given: "", correct: false };
       const nextIndex = state.quiz.phase === "question" ? state.quiz.index + 1 : state.quiz.index;
       for (const idx of state.quiz.order.slice(nextIndex)) {
@@ -2164,6 +1702,17 @@
       return norm(v);
     }
 
+    function sameMatches(a, b, sameGroups, mode) {
+      const na = normalizeForMode(a, mode);
+      const nb = normalizeForMode(b, mode);
+      if (na === nb) return true;
+      for (const group of sameGroups || []) {
+        const g = group.map(v => normalizeForMode(v, mode));
+        if (g.includes(na) && g.includes(nb)) return true;
+      }
+      return false;
+    }
+
     function isCorrectByGroups(givenFields, answerGroups, mode, sameGroups = []) {
       const groups = Array.isArray(answerGroups) ? answerGroups : [];
       if (!groups.length) return false;
@@ -2176,7 +1725,7 @@
     }
 
     function submitAnswer() {
-      const q = currentQuestion();
+      const q = currentQuestion;
       if (!q) return;
 
       if (q.item.mode === "choice") {
@@ -2206,7 +1755,6 @@
         const labels = [];
         let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
         let q = 0;
-
         let i = 0;
         while (i < lines.length && !String(lines[i]).trim()) { labels.push(""); i++; }
         while (i < lines.length) {
@@ -2315,14 +1863,12 @@
         if (!active) return hide();
 
         const list = typeof items === "function" ? items() : items;
-
         box.classList.remove("hide");
         box.innerHTML = list.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
 
         const hostRect = host.getBoundingClientRect();
         const taRect = textarea.getBoundingClientRect();
         const caret = caretCoordinates(textarea, pos);
-
         let left = taRect.left - hostRect.left + caret.left + 10;
         let top = taRect.top - hostRect.top + caret.top + caret.height + 8;
 
@@ -2410,10 +1956,7 @@
       const result = await new Promise(resolve => {
         input.addEventListener("change", async () => {
           const file = input.files && input.files[0];
-          if (!file) {
-            resolve(null);
-            return;
-          }
+          if (!file) { resolve(null); return; }
           try {
             const dataUrl = await fileToWebpDataUrl(file);
             resolve(dataUrl || null);
@@ -2422,7 +1965,6 @@
             resolve(null);
           }
         }, { once: true });
-
         input.click();
       });
 
@@ -2430,12 +1972,412 @@
 
       if (result) {
         state.draftPictures[String(number)] = result;
+        state.selectedPicture = String(number);
         safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
+        render();
       }
     }
 
     function isOpenDoc(docData) {
       return !!(docData?.globalFlags?.open || docData?.keyMode === "open");
+    }
+
+    function sortComments(comments) {
+      return (comments || []).slice().sort((a, b) => (normalizeTs(b.createdAt) || 0) - (normalizeTs(a.createdAt) || 0));
+    }
+
+    function canViewComment(comment) {
+      if (!comment?.isPrivate) return true;
+      if (!state.doc) return false;
+      if (state.accessMode === "owner" || state.accessMode === "key" || state.accessMode === "open") return true;
+      return comment.authorToken && comment.authorToken === getCommentToken();
+    }
+
+    function canManageComment(comment) {
+      if (!comment || !state.doc) return false;
+      if (state.accessMode === "owner") return true;
+      return comment.authorToken && comment.authorToken === getCommentToken();
+    }
+
+    function getCommentToken() {
+      let token = safeLocalGet(COMMENT_TOKEN_KEY);
+      if (!token) {
+        token = uid();
+        safeLocalSet(COMMENT_TOKEN_KEY, token);
+      }
+      return token;
+    }
+
+    function getCommentName() {
+      const n = safeLocalGet(COMMENT_NAME_KEY);
+      if (!n) {
+        safeLocalSet(COMMENT_NAME_KEY, "匿名");
+        return "匿名";
+      }
+      return n;
+    }
+
+    function setCommentName(name) {
+      safeLocalSet(COMMENT_NAME_KEY, name || "匿名");
+    }
+
+    function normalizeSubtitlePreview(text) {
+      return stripMemoSegments(String(text ?? ""));
+    }
+
+    function updateCatalogDocFromState() {
+      if (!state.docId || !state.doc) return;
+      const idx = state.allDocs.findIndex(d => d.id === state.docId);
+      const normalized = normalizeDoc(state.docId, state.doc);
+      if (idx >= 0) state.allDocs[idx] = normalized;
+      else state.allDocs.unshift(normalized);
+      rebuildPublicOrder();
+    }
+
+    function normalizeDoc(id, data) {
+      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
+      const items = Array.isArray(data.items) && data.items.length
+        ? data.items.map(unpackItemFromFirestore).filter(Boolean)
+        : parsed.items;
+      const globalFlags = {
+        random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
+        choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
+        randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
+        number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
+        open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
+      };
+      return {
+        id,
+        title: data.title || "問題",
+        subtitle: data.subtitle || "",
+        items,
+        rawText: data.rawText || "",
+        globalFlags,
+        onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
+        keyMode: data.keyMode || "key",
+        key: data.key || "",
+        ownerToken: data.ownerToken || "",
+        slug: data.slug || id,
+        createdAt: data.createdAt || null,
+        updatedAt: data.updatedAt || null,
+        pictures: loadPicturesJson(data.picturesJson ?? data.pictures ?? {}),
+        comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
+      };
+    }
+
+    function scoreDocForQuery(docData, query) {
+      const terms = splitSearchTerms(query);
+      if (!terms.length) return null;
+      const title = String(docData.title || "").toLowerCase();
+      const subtitle = String(docData.subtitle || "").toLowerCase();
+      const code = buildCodeText(docData);
+      let group = 3, score = 0;
+      for (const termRaw of terms) {
+        const term = termRaw.toLowerCase();
+        if (title.includes(term)) { score += term.length * 10; group = Math.min(group, 0); }
+        else if (subtitle.includes(term)) { score += term.length * 5; group = Math.min(group, 1); }
+        else if (code.includes(term)) { score += term.length * 1; group = Math.min(group, 2); }
+        else return null;
+      }
+      return { group, score };
+    }
+
+    function buildCodeText(docData) {
+      const parts = [];
+      if (docData.rawText) parts.push(stripMemoSegments(docData.rawText));
+      for (const item of docData.items || []) {
+        if (item.section) parts.push(stripMemoSegments(item.section));
+        parts.push(stripMemoSegments(item.question || ""));
+        if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(o.text)).join(" "));
+        else {
+          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
+            ? item.answerGroups.map(group => group.join(" ")).join(" ")
+            : (item.answers || []).join(" ");
+          parts.push(stripMemoSegments(answerText));
+        }
+      }
+      return parts.join(" ").toLowerCase();
+    }
+
+    function getLibraryDocs() {
+      const mineIds = new Set(loadMyList().map(v => v.id));
+      const accessIds = new Set(loadAccessList().map(v => v.id));
+      const ownerToken = getCookie(OWNER_COOKIE);
+      const mine = [], access = [];
+      for (const d of state.allDocs) {
+        const ownedByMe = !!(ownerToken && d.ownerToken && d.ownerToken === ownerToken) || mineIds.has(d.id);
+        const accessed = accessIds.has(d.id);
+        if (ownedByMe) mine.push(d);
+        else if (accessed) access.push(d);
+      }
+      mine.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
+      access.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
+      return { mine, access };
+    }
+
+    function getPublicDocs() {
+      return state.allDocs.filter(isOpenDoc);
+    }
+
+    function canEditDocMeta(docData) {
+      if (docData.globalFlags?.open || docData.keyMode === "open") return true;
+      const ownerToken = getCookie(OWNER_COOKIE);
+      if (ownerToken && docData.ownerToken && ownerToken === docData.ownerToken) return true;
+      const rec = findAccessRecord(docData.id);
+      return !!(rec && docData.key && rec.key === docData.key);
+    }
+
+    function searchDocs(docs, query) {
+      const q = String(query || "").trim();
+      if (!q) return docs.slice();
+      const ranked = [];
+      for (const d of docs) {
+        const result = scoreDocForQuery(d, q);
+        if (!result) continue;
+        ranked.push({ doc: d, ...result });
+      }
+      ranked.sort((a, b) => a.group !== b.group ? a.group - b.group : b.score !== a.score ? b.score - a.score : (normalizeTs(b.doc.updatedAt) || 0) - (normalizeTs(a.doc.updatedAt) || 0));
+      return ranked.map(r => r.doc);
+    }
+
+    function getSearchResultsForHomeTab() {
+      const tab = state.homeTab;
+      const query = state.homeQueries[tab] || "";
+      if (tab === "library") {
+        const { mine, access } = getLibraryDocs();
+        const union = [];
+        const seen = new Set();
+        const add = (docData, source) => {
+          if (seen.has(docData.id)) return;
+          seen.add(docData.id);
+          union.push({ ...docData, source });
+        };
+        searchDocs(mine, query).forEach(d => add(d, "mine"));
+        searchDocs(access, query).forEach(d => add(d, "access"));
+        return union;
+      }
+      return searchDocs(getPublicDocs(), query);
+    }
+
+    function resetHomePaging(tab) {
+      state.homeVisibleCount[tab] = tab === "public" ? 12 : 20;
+    }
+
+    function setHomeQuery(query) {
+      state.homeQueries[state.homeTab] = query;
+      resetHomePaging(state.homeTab);
+      render();
+    }
+
+    function setHomeTab(tab) {
+      state.homeTab = tab;
+      localStorage.setItem("qb_home_tab", tab);
+      resetHomePaging(tab);
+      render();
+    }
+
+    function rebuildPublicOrder() {
+      state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id));
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function attachHomeObserver(tab, hasMore) {
+      if (homeObserver) {
+        homeObserver.disconnect();
+        homeObserver = null;
+      }
+      const sentinel = document.getElementById("homeSentinel");
+      if (!sentinel || !hasMore || !("IntersectionObserver" in window)) return;
+      homeObserver = new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting)) {
+          state.homeVisibleCount[tab] += tab === "public" ? 12 : 20;
+          render();
+        }
+      }, { rootMargin: "220px" });
+      homeObserver.observe(sentinel);
+    }
+
+    async function loadCatalog(force = false) {
+      if (state.catalogLoaded && !force) return;
+      const snap = await getDocs(collection(db, COLLECTION));
+      state.allDocs = snap.docs.map(d => normalizeDoc(d.id, d.data() || {}));
+      state.catalogLoaded = true;
+      rebuildPublicOrder();
+    }
+
+    async function loadSiteSettings() {
+      try {
+        const snap = await getDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID));
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        if (typeof data.partnerLink === "string" && data.partnerLink.trim()) {
+          state.partnerLink = data.partnerLink.trim();
+          safeLocalSet(PARTNER_LINK_LOCAL_KEY, state.partnerLink);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function savePartnerLink(nextLink) {
+      const value = String(nextLink || "").trim();
+      if (!value) throw new Error("empty partner link");
+      state.partnerLink = value;
+      safeLocalSet(PARTNER_LINK_LOCAL_KEY, value);
+      await setDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID), { partnerLink: value, updatedAt: Date.now() }, { merge: true });
+    }
+
+    function isPartnerAdmin() {
+      const cookieAdmin = (getCookie(PARTNER_ADMIN_COOKIE) || "").trim() === "仮";
+      const myQuizAdmin = loadMyList().some(v => String(v.title || "").trim() === "仮");
+      return cookieAdmin || myQuizAdmin;
+    }
+
+    function openPartnerAction() {
+      if (isPartnerAdmin()) {
+        openPartnerModal();
+        return;
+      }
+      if (!state.partnerLink) {
+        alert("パートナーリンクはまだ未設定だよ");
+        return;
+      }
+      window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+    }
+
+    function bindGlobalButtons() {
+      const helpBtn = document.getElementById("helpBtn");
+      if (helpBtn) helpBtn.onclick = () => openTutorial(false);
+
+      const partnerBtn = document.getElementById("partnerBtn");
+      if (partnerBtn) partnerBtn.onclick = () => openPartnerAction();
+
+      const topBtn = document.getElementById("topBtn");
+      if (topBtn) topBtn.onclick = () => { location.hash = ""; };
+    }
+
+    function renderDocActions(docData) {
+      const canEditHere = canEditDocMeta(docData);
+      const buttons = [`<button class="ghost miniAction" data-open-quiz="${esc(docData.id)}" type="button">開く</button>`];
+      if (canEditHere) buttons.push(`<button class="ghost miniAction" data-edit-quiz="${esc(docData.id)}" type="button">編集</button>`);
+      buttons.push(`<button class="ghost miniAction" data-copy-quiz="${esc(docData.id)}" type="button">コピー</button>`);
+      return buttons.join("");
+    }
+
+    function renderDocCard(docData, sourceLabel = "") {
+      const updated = formatMinute(docData.updatedAt);
+      const created = formatMinute(docData.createdAt);
+      return `
+        <div class="listItem">
+          <div class="listMeta">
+            <div class="homeMeta">
+              <div class="reviewQ">${esc(docData.title || "無題")}</div>
+              ${sourceLabel ? `<span class="publicBadge">${esc(sourceLabel)}</span>` : ""}
+              ${isOpenDoc(docData) ? `<span class="publicBadge">公開</span>` : ""}
+            </div>
+            <div class="reviewA">${esc(docData.subtitle || "")}</div>
+            <div class="metaLine">作成: ${esc(created)}</div>
+            <div class="metaLine">最終編集: ${esc(updated)}</div>
+          </div>
+          <div class="listActions">${renderDocActions(docData)}</div>
+        </div>
+      `;
+    }
+
+    function renderLibraryHome() {
+      const { mine, access } = getLibraryDocs();
+      const query = state.homeQueries.library || "";
+      const results = getSearchResultsForHomeTab();
+      const visible = results.slice(0, state.homeVisibleCount.library);
+      const hasMore = results.length > visible.length;
+
+      if (query) {
+        return `
+          <div class="card">
+            <div class="homeSectionTitle">検索結果</div>
+            <div class="listGrid">
+              ${visible.length ? visible.map(d => renderDocCard(d, d.source === "mine" ? "マイクイズ" : "共同編集")).join("") : `<div class="note">見つからなかったよ。</div>`}
+            </div>
+            ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="card">
+          <div class="homeSectionTitle">マイクイズ</div>
+          <div class="listGrid">
+            ${mine.length ? mine.map(d => renderDocCard(d, "マイクイズ")).join("") : `<div class="note">まだないよ。作成ボタンからどうぞ。</div>`}
+          </div>
+
+          <div class="dividerLine">───</div>
+
+          <div class="homeSectionTitle">共同編集</div>
+          <div class="listGrid">
+            ${access.length ? access.map(d => renderDocCard(d, "共同編集")).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`}
+          </div>
+          ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
+        </div>
+      `;
+    }
+
+    function renderPublicHome() {
+      const query = state.homeQueries.public || "";
+      const docs = getSearchResultsForHomeTab();
+      const order = state.publicOrder.length ? state.publicOrder : docs.map(d => d.id);
+      const ordered = order.map(id => docs.find(d => d.id === id)).filter(Boolean);
+      const visible = ordered.slice(0, state.homeVisibleCount.public);
+      const hasMore = ordered.length > visible.length;
+      return `
+        <div class="card">
+          <div class="homeSectionTitle">オンライン公開クイズ</div>
+          <div class="listGrid">
+            ${visible.length ? visible.map(d => renderDocCard(d, "公開")).join("") : `<div class="note">${query ? "見つからなかったよ。" : "まだ公開クイズがないよ。"}</div>`}
+          </div>
+          ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
+        </div>
+      `;
+    }
+
+    function refreshMarkHtml(flash = false) {
+      return flash ? "✓" : "⟳";
+    }
+
+    async function refreshCurrentDoc({ keepCommentsVisible = true } = {}) {
+      if (!state.docId) return;
+      const currentShowComments = !!state.showComments;
+      try {
+        const snap = await getDoc(doc(db, COLLECTION, state.docId));
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        const normalized = normalizeDoc(state.docId, data);
+        state.doc = normalized;
+        const idx = state.allDocs.findIndex(d => d.id === state.docId);
+        if (idx >= 0) state.allDocs[idx] = normalized;
+        else state.allDocs.unshift(normalized);
+        rebuildPublicOrder();
+        if (keepCommentsVisible) state.showComments = currentShowComments;
+        render();
+      } catch (err) {
+        console.error(err);
+        alert(`更新で失敗したよ: ${err?.message || err}`);
+      } finally {
+        state.showComments = keepCommentsVisible ? currentShowComments : state.showComments;
+        state.refreshFlash.comments = true;
+        render();
+        setTimeout(() => {
+          state.refreshFlash.comments = false;
+          render();
+        }, 800);
+      }
     }
 
     async function persistComments(nextComments) {
@@ -2466,50 +2408,88 @@
       render();
     }
 
-    function startFlash(kind, ms = 800) {
-      state.refreshFlash[kind] = true;
-      render();
-      setTimeout(() => {
-        state.refreshFlash[kind] = false;
-        render();
-      }, ms);
+    function latestCommentNameConflict(name) {
+      const clean = String(name || "").trim();
+      if (!clean || clean === "匿名") return false;
+      return (state.doc?.comments || []).some(c => String(c.authorName || "").trim() === clean);
     }
 
-    async function refreshCurrentDoc({ keepCommentsVisible = true } = {}) {
-      if (!state.docId) return;
-      const currentShowComments = !!state.showComments;
-      try {
-        const snap = await getDoc(doc(db, COLLECTION, state.docId));
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        const normalized = normalizeDoc(state.docId, data);
-        state.doc = normalized;
-        const idx = state.allDocs.findIndex(d => d.id === state.docId);
-        if (idx >= 0) state.allDocs[idx] = normalized;
-        else state.allDocs.unshift(normalized);
-        rebuildPublicOrder();
-        if (keepCommentsVisible) state.showComments = currentShowComments;
-        if (state.screen === "quiz" && state.quiz.phase === "done") {
-          // 結果画面はそのまま維持
-        }
-        render();
-      } catch (err) {
-        console.error(err);
-        alert(`更新で失敗したよ: ${err?.message || err}`);
-      } finally {
-        state.showComments = keepCommentsVisible ? currentShowComments : state.showComments;
-        startFlash("comments", 800);
+    async function addComment() {
+      if (!state.docId || !state.doc) return;
+
+      let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
+      const text = (state.commentDraft?.text || "").trim();
+      const isPrivate = !!state.commentDraft?.isPrivate;
+      const replyTo = String(state.commentDraft?.replyTo || "");
+      if (!text) return alert("コメントを書いてね");
+
+      if (name !== "匿名" && latestCommentNameConflict(name)) {
+        const yes = confirm(`「${name}」はもう使われてるよ。\n後ろに -uuid(4桁) を追加して投稿する？`);
+        if (yes) name = `${name}-${suffix4()}`;
       }
+
+      const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
+      const proofs = {};
+      if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
+      if (text.includes("[[TIME]]") && isPerfectScore()) {
+        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
+      }
+
+      const comment = {
+        id: uid(),
+        authorToken: getCommentToken(),
+        authorName: name,
+        authorRole: role,
+        text,
+        isPrivate,
+        parentId: replyTo || null,
+        proofs,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+
+      setCommentName(name);
+      const next = sortComments([...(state.doc.comments || []), comment]);
+      await persistComments(next);
+
+      state.commentDraft.text = "";
+      state.commentDraft.isPrivate = false;
+      state.commentDraft.name = name;
+      state.commentDraft.replyTo = "";
+      state.commentDraft.scoreWanted = false;
+      state.showComments = true;
+      render();
     }
+
+    async function toggleCommentVisibility(commentId) {
+      if (!state.doc?.comments?.length) return;
+      const next = state.doc.comments.map(c => c.id === commentId ? { ...c, isPrivate: !c.isPrivate, updatedAt: Date.now() } : c);
+      await persistComments(next);
+      state.showComments = true;
+      render();
+    }
+
+    async function deleteComment(commentId) {
+      if (!state.doc?.comments?.length) return;
+      if (!confirm("このコメントを削除する？")) return;
+      await persistComments(state.doc.comments.filter(c => c.id !== commentId && c.parentId !== commentId));
+      state.showComments = true;
+      render();
+    }
+
+    const quizCommentsToggleLabel = (comments) => {
+      const total = comments.length;
+      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
+      if (state.showComments) return "コメントを閉じる";
+      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
+    };
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
-
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
-
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
 
       const btn = document.getElementById("deleteBtn");
@@ -2603,438 +2583,6 @@
       });
     }
 
-    function updateCatalogDocFromState() {
-      if (!state.docId || !state.doc) return;
-      const idx = state.allDocs.findIndex(d => d.id === state.docId);
-      const normalized = normalizeDoc(state.docId, state.doc);
-      if (idx >= 0) state.allDocs[idx] = normalized;
-      else state.allDocs.unshift(normalized);
-      rebuildPublicOrder();
-    }
-
-    function latestCommentNameConflict(name) {
-      const clean = String(name || "").trim();
-      if (!clean || clean === "匿名") return false;
-      return (state.doc?.comments || []).some(c => String(c.authorName || "").trim() === clean);
-    }
-
-    async function addComment() {
-      if (!state.docId || !state.doc) return;
-
-      let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
-      const text = (state.commentDraft?.text || "").trim();
-      const isPrivate = !!state.commentDraft?.isPrivate;
-      const replyTo = String(state.commentDraft?.replyTo || "");
-      if (!text) return alert("コメントを書いてね");
-
-      if (name !== "匿名" && latestCommentNameConflict(name)) {
-        const yes = confirm(`「${name}」はもう使われてるよ。\n後ろに -uuid(4桁) を追加して投稿する？`);
-        if (yes) name = `${name}-${suffix4()}`;
-      }
-
-      const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
-      const proofs = {};
-      if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()) {
-        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
-      }
-
-      const comment = {
-        id: uid(),
-        authorToken: getCommentToken(),
-        authorName: name,
-        authorRole: role,
-        text,
-        isPrivate,
-        parentId: replyTo || null,
-        proofs,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      setCommentName(name);
-      const next = sortComments([...(state.doc.comments || []), comment]);
-      await persistComments(next);
-
-      state.commentDraft.text = "";
-      state.commentDraft.isPrivate = false;
-      state.commentDraft.name = name;
-      state.commentDraft.replyTo = "";
-      state.commentDraft.scoreWanted = false;
-      state.showComments = true;
-      render();
-    }
-
-    async function toggleCommentVisibility(commentId) {
-      if (!state.doc?.comments?.length) return;
-      const next = state.doc.comments.map(c => c.id === commentId ? { ...c, isPrivate: !c.isPrivate, updatedAt: Date.now() } : c);
-      await persistComments(next);
-      state.showComments = true;
-      render();
-    }
-
-    async function deleteComment(commentId) {
-      if (!state.doc?.comments?.length) return;
-      if (!confirm("このコメントを削除する？")) return;
-      await persistComments(state.doc.comments.filter(c => c.id !== commentId && c.parentId !== commentId));
-      state.showComments = true;
-      render();
-    }
-
-    const quizCommentsToggleLabel = (comments) => {
-      const total = comments.length;
-      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      if (state.showComments) return "コメントを閉じる";
-      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
-    };
-
-    const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
-    const homeButtonsHtml = () => helpButtonHtml();
-
-    const editorActionHtml = () => {
-      const buttons = [];
-      if (state.doc) {
-        if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn" type="button">削除</button>`);
-        else if (state.accessMode === "key") buttons.push(`<button class="danger" id="leaveBtn" type="button">脱退</button>`);
-      }
-      buttons.push(`<button class="primary" id="saveBtn" type="button">保存</button>`);
-      return buttons.join("");
-    };
-
-    async function ensureUniqueTitleAndId(baseTitle, currentId = "") {
-      let candidateTitle = baseTitle.trim();
-      while (true) {
-        const candidateId = slugify(candidateTitle);
-        const snap = await getDocs(collection(db, COLLECTION));
-        const exists = snap.docs.some(d => {
-          if (d.id === currentId) return false;
-          const data = d.data() || {};
-          const docTitle = String(data.title || "").trim();
-          return d.id === candidateId || docTitle === candidateTitle;
-        });
-        if (!exists) return { title: candidateTitle, id: candidateId };
-        const yes = confirm(`「${candidateTitle}」はもうあるよ。\n後ろに -uuid(4桁) を追加しますか？`);
-        if (!yes) throw new Error("SAVE_CANCELLED");
-        candidateTitle = `${candidateTitle}-${suffix4()}`;
-      }
-    }
-
-    async function loadCatalog(force = false) {
-      if (state.catalogLoaded && !force) return;
-      const snap = await getDocs(collection(db, COLLECTION));
-      state.allDocs = snap.docs.map(d => normalizeDoc(d.id, d.data() || {}));
-      state.catalogLoaded = true;
-      rebuildPublicOrder();
-    }
-
-    function rebuildPublicOrder() {
-      state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id));
-    }
-
-    function normalizeDoc(id, data) {
-      const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
-      const items = Array.isArray(data.items) && data.items.length
-        ? data.items.map(unpackItemFromFirestore).filter(Boolean)
-        : parsed.items;
-      const globalFlags = {
-        random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
-        choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
-        randomChoice: !!(data.globalFlags?.randomChoice ?? parsed.globalFlags?.randomChoice),
-        number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
-        open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
-      };
-      return {
-        id,
-        title: data.title || "問題",
-        subtitle: data.subtitle || "",
-        items,
-        rawText: data.rawText || "",
-        globalFlags,
-        onOffControls: Array.from(new Set(data.onOffControls || parsed.onOffControls || [])),
-        keyMode: data.keyMode || "key",
-        key: data.key || "",
-        ownerToken: data.ownerToken || "",
-        slug: data.slug || id,
-        createdAt: data.createdAt || null,
-        updatedAt: data.updatedAt || null,
-        pictures: normalizePictures(data.pictures || {}),
-        comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
-      };
-    }
-
-    function buildCodeText(docData) {
-      const parts = [];
-      if (docData.rawText) parts.push(stripMemoSegments(docData.rawText));
-      for (const item of docData.items || []) {
-        if (item.section) parts.push(stripMemoSegments(item.section));
-        parts.push(stripMemoSegments(item.question || ""));
-        if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(o.text)).join(" "));
-        else {
-          const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
-            ? item.answerGroups.map(group => group.join(" ")).join(" ")
-            : (item.answers || []).join(" ");
-          parts.push(stripMemoSegments(answerText));
-        }
-      }
-      return parts.join(" ").toLowerCase();
-    }
-
-    function scoreDocForQuery(docData, query) {
-      const terms = splitSearchTerms(query);
-      if (!terms.length) return null;
-      const title = String(docData.title || "").toLowerCase();
-      const subtitle = String(docData.subtitle || "").toLowerCase();
-      const code = buildCodeText(docData);
-      let group = 3, score = 0;
-      for (const termRaw of terms) {
-        const term = termRaw.toLowerCase();
-        if (title.includes(term)) { score += term.length * 10; group = Math.min(group, 0); }
-        else if (subtitle.includes(term)) { score += term.length * 5; group = Math.min(group, 1); }
-        else if (code.includes(term)) { score += term.length * 1; group = Math.min(group, 2); }
-        else return null;
-      }
-      return { group, score };
-    }
-
-    function getLibraryDocs() {
-      const mineIds = new Set(loadMyList().map(v => v.id));
-      const accessIds = new Set(loadAccessList().map(v => v.id));
-      const ownerToken = getCookie(OWNER_COOKIE);
-      const mine = [], access = [];
-      for (const d of state.allDocs) {
-        const ownedByMe = !!(ownerToken && d.ownerToken && d.ownerToken === ownerToken) || mineIds.has(d.id);
-        const accessed = accessIds.has(d.id);
-        if (ownedByMe) mine.push(d);
-        else if (accessed) access.push(d);
-      }
-      mine.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
-      access.sort((a, b) => (normalizeTs(b.updatedAt) || 0) - (normalizeTs(a.updatedAt) || 0));
-      return { mine, access };
-    }
-
-    const getPublicDocs = () => state.allDocs.filter(isOpenDoc);
-
-    function canEditDocMeta(docData) {
-      if (docData.globalFlags?.open || docData.keyMode === "open") return true;
-      const ownerToken = getCookie(OWNER_COOKIE);
-      if (ownerToken && docData.ownerToken && ownerToken === docData.ownerToken) return true;
-      const rec = findAccessRecord(docData.id);
-      return !!(rec && docData.key && rec.key === docData.key);
-    }
-
-    function searchDocs(docs, query) {
-      const q = String(query || "").trim();
-      if (!q) return docs.slice();
-      const ranked = [];
-      for (const d of docs) {
-        const result = scoreDocForQuery(d, q);
-        if (!result) continue;
-        ranked.push({ doc: d, ...result });
-      }
-      ranked.sort((a, b) => a.group !== b.group ? a.group - b.group : b.score !== a.score ? b.score - a.score : (normalizeTs(b.doc.updatedAt) || 0) - (normalizeTs(a.doc.updatedAt) || 0));
-      return ranked.map(r => r.doc);
-    }
-
-    function getSearchResultsForHomeTab() {
-      const tab = state.homeTab;
-      const query = state.homeQueries[tab] || "";
-      if (tab === "library") {
-        const { mine, access } = getLibraryDocs();
-        const union = [];
-        const seen = new Set();
-        const add = (docData, source) => {
-          if (seen.has(docData.id)) return;
-          seen.add(docData.id);
-          union.push({ ...docData, source });
-        };
-        searchDocs(mine, query).forEach(d => add(d, "mine"));
-        searchDocs(access, query).forEach(d => add(d, "access"));
-        return union;
-      }
-      return searchDocs(getPublicDocs(), query);
-    }
-
-    function resetHomePaging(tab) {
-      state.homeVisibleCount[tab] = tab === "public" ? 12 : 20;
-    }
-
-    const getHomeQuery = () => state.homeQueries[state.homeTab] || "";
-
-    function setHomeQuery(query) {
-      state.homeQueries[state.homeTab] = query;
-      resetHomePaging(state.homeTab);
-      render();
-    }
-
-    function setHomeTab(tab) {
-      state.homeTab = tab;
-      localStorage.setItem("qb_home_tab", tab);
-      resetHomePaging(tab);
-      render();
-    }
-
-    function attachHomeObserver(tab, hasMore) {
-      if (homeObserver) {
-        homeObserver.disconnect();
-        homeObserver = null;
-      }
-      const sentinel = document.getElementById("homeSentinel");
-      if (!sentinel || !hasMore || !("IntersectionObserver" in window)) return;
-      homeObserver = new IntersectionObserver(entries => {
-        if (entries.some(e => e.isIntersecting)) {
-          state.homeVisibleCount[tab] += tab === "public" ? 12 : 20;
-          render();
-        }
-      }, { rootMargin: "220px" });
-      homeObserver.observe(sentinel);
-    }
-
-    async function refreshPublicFeed() {
-      await loadCatalog(true);
-      resetHomePaging("public");
-      render();
-    }
-
-    function renderDocActions(docData) {
-      const canEditHere = canEditDocMeta(docData);
-      const buttons = [`<button class="ghost miniAction" data-open-quiz="${esc(docData.id)}" type="button">開く</button>`];
-      if (canEditHere) buttons.push(`<button class="ghost miniAction" data-edit-quiz="${esc(docData.id)}" type="button">編集</button>`);
-      buttons.push(`<button class="ghost miniAction" data-copy-quiz="${esc(docData.id)}" type="button">コピー</button>`);
-      return buttons.join("");
-    }
-
-    function renderDocCard(docData, sourceLabel = "") {
-      const updated = formatMinute(docData.updatedAt);
-      const created = formatMinute(docData.createdAt);
-      return `
-        <div class="listItem">
-          <div class="listMeta">
-            <div class="homeMeta">
-              <div class="reviewQ">${esc(docData.title || "無題")}</div>
-              ${sourceLabel ? `<span class="publicBadge">${esc(sourceLabel)}</span>` : ""}
-              ${isOpenDoc(docData) ? `<span class="publicBadge">公開</span>` : ""}
-            </div>
-            <div class="reviewA">${esc(docData.subtitle || "")}</div>
-            <div class="metaLine">作成: ${esc(created)}</div>
-            <div class="metaLine">最終編集: ${esc(updated)}</div>
-          </div>
-          <div class="listActions">${renderDocActions(docData)}</div>
-        </div>
-      `;
-    }
-
-    function renderLibraryHome() {
-      const { mine, access } = getLibraryDocs();
-      const query = getHomeQuery();
-      const results = getSearchResultsForHomeTab();
-      const visible = results.slice(0, state.homeVisibleCount.library);
-      const hasMore = results.length > visible.length;
-
-      if (query) {
-        return `
-          <div class="card">
-            <div class="homeSectionTitle">検索結果</div>
-            <div class="listGrid">
-              ${visible.length ? visible.map(d => renderDocCard(d, d.source === "mine" ? "マイクイズ" : "共同編集")).join("") : `<div class="note">見つからなかったよ。</div>`}
-            </div>
-            ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
-          </div>
-        `;
-      }
-
-      return `
-        <div class="card">
-          <div class="homeSectionTitle">マイクイズ</div>
-          <div class="listGrid">
-            ${mine.length ? mine.map(d => renderDocCard(d, "マイクイズ")).join("") : `<div class="note">まだないよ。作成ボタンからどうぞ。</div>`}
-          </div>
-
-          <div class="dividerLine">───</div>
-
-          <div class="homeSectionTitle">共同編集</div>
-          <div class="listGrid">
-            ${access.length ? access.map(d => renderDocCard(d, "共同編集")).join("") : `<div class="note">まだないよ。Key を入れたものがここに出るよ。</div>`}
-          </div>
-          ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
-        </div>
-      `;
-    }
-
-    function renderPublicHome() {
-      const query = getHomeQuery();
-      const docs = getSearchResultsForHomeTab();
-      const order = state.publicOrder.length ? state.publicOrder : docs.map(d => d.id);
-      const ordered = order.map(id => docs.find(d => d.id === id)).filter(Boolean);
-      const visible = ordered.slice(0, state.homeVisibleCount.public);
-      const hasMore = ordered.length > visible.length;
-      return `
-        <div class="card">
-          <div class="homeSectionTitle">オンライン公開クイズ</div>
-          <div class="listGrid">
-            ${visible.length ? visible.map(d => renderDocCard(d, "公開")).join("") : `<div class="note">${query ? "見つからなかったよ。" : "まだ公開クイズがないよ。"}</div>`}
-          </div>
-          ${hasMore ? `<div id="homeSentinel" class="note" style="padding-top:12px;">読み込み中…</div>` : ""}
-        </div>
-      `;
-    }
-
-    function isPartnerAdmin() {
-      const cookieAdmin = (getCookie(PARTNER_ADMIN_COOKIE) || "").trim() === "仮";
-      const myQuizAdmin = loadMyList().some(v => String(v.title || "").trim() === "仮");
-      return cookieAdmin || myQuizAdmin;
-    }
-
-    async function loadSiteSettings() {
-      try {
-        const snap = await getDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID));
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        if (typeof data.partnerLink === "string" && data.partnerLink.trim()) {
-          state.partnerLink = data.partnerLink.trim();
-          safeLocalSet(PARTNER_LINK_LOCAL_KEY, state.partnerLink);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    async function savePartnerLink(nextLink) {
-      const value = String(nextLink || "").trim();
-      if (!value) throw new Error("empty partner link");
-      state.partnerLink = value;
-      safeLocalSet(PARTNER_LINK_LOCAL_KEY, value);
-      await setDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID), {
-        partnerLink: value,
-        updatedAt: Date.now()
-      }, { merge: true });
-    }
-
-    function openPartnerAction() {
-      if (isPartnerAdmin()) {
-        openPartnerModal();
-        return;
-      }
-
-      if (!state.partnerLink) {
-        alert("パートナーリンクはまだ未設定だよ");
-        return;
-      }
-
-      window.open(state.partnerLink, "_blank", "noopener,noreferrer");
-    }
-
-    function bindGlobalButtons() {
-      const helpBtn = document.getElementById("helpBtn");
-      if (helpBtn) helpBtn.onclick = () => openTutorial(false);
-
-      const partnerBtn = document.getElementById("partnerBtn");
-      if (partnerBtn) partnerBtn.onclick = () => openPartnerAction();
-
-      const topBtn = document.getElementById("topBtn");
-      if (topBtn) topBtn.onclick = () => { location.hash = ""; };
-    }
-
     function renderHome() {
       clearResultEnterHandler();
       document.title = "問題作成サイト";
@@ -3046,7 +2594,10 @@
                 <h1 class="title">問題作成サイト</h1>
                 <div class="sub">作って、そのまま遊べる</div>
               </div>
-              ${homeButtonsHtml()}
+              <div class="row">
+                <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+                <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
+              </div>
             </div>
           </div>
 
@@ -3081,18 +2632,19 @@
                 <div class="searchWrap">
                   <input id="homeSearchInput" class="input searchInput" type="text" placeholder="🔍 検索">
                   <button id="homeSearchBtn" class="ghost" type="button">検索</button>
-                  ${state.homeTab === "public" ? `<button id="homeReloadBtn" class="ghost" type="button" title="再読み込み">↻</button>` : ""}
+                  ${state.homeTab === "public" ? `<button id="homeReloadBtn" class="ghost" type="button" title="再読み込み">⟳</button>` : ""}
                 </div>
               </div>
-
               ${state.homeTab === "library" ? renderLibraryHome() : renderPublicHome()}
             </div>
           </div>
         </div>
       `;
 
-      const createBtn = document.getElementById("createBtn");
-      if (createBtn) createBtn.addEventListener("click", () => { location.hash = "#/create"; openCreate(); });
+      document.getElementById("createBtn").addEventListener("click", () => {
+        location.hash = "#/create";
+        openCreate();
+      });
       bindGlobalButtons();
       bindHomeActions();
     }
@@ -3109,7 +2661,7 @@
       }
 
       if (searchInput) {
-        searchInput.value = getHomeQuery();
+        searchInput.value = state.homeQueries[state.homeTab] || "";
         searchInput.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
@@ -3123,7 +2675,7 @@
       }
 
       if (reloadBtn) {
-        reloadBtn.addEventListener("click", refreshPublicFeed);
+        reloadBtn.addEventListener("click", refreshCurrentDoc);
       }
 
       document.querySelectorAll("[data-open-quiz]").forEach(btn => {
@@ -3154,32 +2706,24 @@
       attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
     }
 
-    function normalizeSubtitlePreview(text) {
-      return stripMemoSegments(String(text ?? ""));
-    }
-
-    function asyncUploadPicturesForDoc(docId, pictures) {
-      return (async () => {
-        const out = {};
-        const entries = Object.entries(normalizePictures(pictures || {}));
-        for (const [num, value] of entries) {
-          if (typeof value === "string" && !value.startsWith("data:image/")) {
-            out[num] = value;
-            continue;
-          }
-          if (typeof value === "string" && value.startsWith("data:image/")) {
-            const path = `quiz_pictures/${docId}/picture-${num}.webp`;
-            out[num] = value;
-          }
-        }
-        return out;
+    function prettyLink(id) {
+      const basePath = (() => {
+        const p = location.pathname;
+        if (p.endsWith("/")) return p;
+        const i = p.lastIndexOf("/");
+        return i >= 0 ? p.slice(0, i + 1) : "/";
       })();
+      return `${location.origin}${basePath}#/${id}`;
     }
 
     function renderEditor() {
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
+
+      const selectedNumber = state.selectedPicture || "1";
+      const allPictureNums = Object.keys(state.draftPictures || {}).sort((a,b) => Number(a)-Number(b));
+      const nextPicture = getNextPictureNumber(d.rawText || "", state.draftPictures || {});
 
       root.innerHTML = `
         <div class="page">
@@ -3190,7 +2734,7 @@
                 <div class="sub">タイトルの右に Key ボタン</div>
               </div>
             </div>
-            <div class="row">${topButtonHtml()}</div>
+            <div class="row"><button class="ghost" id="topBtn" type="button">トップ</button></div>
           </div>
 
           <div class="card" style="display:grid;gap:14px">
@@ -3210,11 +2754,9 @@
             <div class="row" style="justify-content:space-between;align-items:center;">
               <div id="editorInfo" class="note"></div>
               <div class="row" style="justify-content:flex-end;align-items:center;">
-                <select id="gutterModeSelect" class="input smallSelect">
-                  <option value="line">行数</option>
-                  <option value="question">問題数</option>
-                </select>
-                ${editorActionHtml()}
+                <button class="ghost" id="deleteBtn" type="button" ${state.doc ? "" : "style='display:none'"}>削除</button>
+                <button class="ghost" id="leaveBtn" type="button" ${state.doc && state.accessMode === "key" ? "" : "style='display:none'"}>脱退</button>
+                <button class="primary" id="saveBtn" type="button">保存</button>
               </div>
             </div>
 
@@ -3256,6 +2798,35 @@
                 問題欄で <b>#</b> を打つと候補が出るよ。
               </div>
             </div>
+
+            <div class="card" style="background:rgba(127,127,127,.04)">
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <div style="font-weight:900">画像と表示設定</div>
+                <div class="row">
+                  <select id="gutterModeSelect" class="input smallSelect">
+                    <option value="line">行数</option>
+                    <option value="question">問題数</option>
+                  </select>
+                </div>
+              </div>
+              <div style="height:10px"></div>
+              <div class="row" style="align-items:flex-start">
+                <div style="flex:1;min-width:220px">
+                  <div class="label">[picture(n)] を選ぶ</div>
+                  <select id="pictureSelect" class="input">
+                    ${Array.from(new Set([...(allPictureNums.length ? allPictureNums : []), String(nextPicture), String(selectedNumber)])).sort((a,b)=>Number(a)-Number(b)).map(n => `<option value="${esc(n)}" ${String(n)===String(selectedNumber) ? "selected" : ""}>[picture(${esc(n)})]</option>`).join("")}
+                  </select>
+                </div>
+                <div style="flex:1;min-width:220px">
+                  <div class="label">再アップロード</div>
+                  <input id="pictureUpload" class="input" type="file" accept="image/*">
+                </div>
+                <div style="flex:1;min-width:220px">
+                  <div class="label">現在の画像</div>
+                  <div id="picturePreview" style="min-height:48px;border:1px dashed var(--line);border-radius:14px;padding:8px;display:flex;align-items:center;justify-content:center;overflow:hidden"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -3273,6 +2844,9 @@
       const tagSuggestBox = document.getElementById("tagSuggestBox");
       const editorHost = document.querySelector(".editorHost");
       const gutterModeSelect = document.getElementById("gutterModeSelect");
+      const pictureSelect = document.getElementById("pictureSelect");
+      const pictureUpload = document.getElementById("pictureUpload");
+      const picturePreview = document.getElementById("picturePreview");
 
       function refreshKeyStatus() {
         if (!state.doc) {
@@ -3294,6 +2868,16 @@
         }
       }
 
+      function renderPicturePreview() {
+        const num = String(state.selectedPicture || "1");
+        const src = state.draftPictures?.[num];
+        if (src) {
+          picturePreview.innerHTML = `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(num)}">`;
+        } else {
+          picturePreview.innerHTML = `<div class="note">まだ画像がないよ</div>`;
+        }
+      }
+
       titleInput.addEventListener("input", e => d.title = e.target.value);
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
       problemText.addEventListener("input", e => {
@@ -3311,6 +2895,27 @@
         });
       }
 
+      if (pictureSelect) {
+        pictureSelect.addEventListener("change", () => {
+          state.selectedPicture = pictureSelect.value;
+          renderPicturePreview();
+        });
+      }
+
+      if (pictureUpload) {
+        pictureUpload.addEventListener("change", async () => {
+          const file = pictureUpload.files && pictureUpload.files[0];
+          if (!file) return;
+          const dataUrl = await fileToWebpDataUrl(file);
+          if (!dataUrl) return alert("画像の読み込みに失敗したよ");
+          const num = String(state.selectedPicture || pictureSelect?.value || "1");
+          state.draftPictures[num] = dataUrl;
+          renderPicturePreview();
+          scheduleEditorSync(problemText, gutter, mirror);
+          pictureUpload.value = "";
+        });
+      }
+
       keyBtn.addEventListener("click", () => {
         if (state.doc && !isOwner()) return;
         const cur = d.keyMode === "open" ? "open" : (d.key || "");
@@ -3323,19 +2928,24 @@
         refreshKeyStatus();
       });
 
-      const topBtn = document.getElementById("topBtn");
-      if (topBtn) topBtn.addEventListener("click", () => { location.hash = ""; });
+      document.getElementById("topBtn").addEventListener("click", () => { location.hash = ""; });
 
       if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
           const title = d.title.trim();
           const subtitle = d.subtitle.trim();
           const parsed = parseItems(d.rawText);
-          const items = parsed.items;
+          let items = parsed.items;
           const globalFlags = parsed.globalFlags;
           const onOffControls = parsed.onOffControls;
 
           if (!title) return alert("タイトルを入れてね");
+          if (!items.length && String(d.rawText || "").trim()) {
+            const loose = String(d.rawText).split(/\r?\n/).map(v => v.trim()).filter(Boolean)[0] || "";
+            if (loose) {
+              items = [{ id: uid(), type: "question", mode: "text", question: loose, answerGroups: [[loose]], answers: [loose], section: "", localTags: [], localOnOffControls: [], sameGroups: [] }];
+            }
+          }
           if (!items.length) return alert("問題が1つも読めなかったよ。");
 
           const oldId = state.docId || "";
@@ -3369,8 +2979,6 @@
           saveBtn.textContent = "保存中...";
 
           try {
-            const uploadedPictures = await asyncUploadPicturesForDoc(newId, prunedPictures);
-
             const payload = {
               title: finalTitle,
               subtitle,
@@ -3384,7 +2992,7 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictures: uploadedPictures,
+              picturesJson: dumpPicturesJson(prunedPictures),
               comments: existingComments
             };
 
@@ -3398,8 +3006,8 @@
             }
 
             state.docId = newId;
-            state.doc = { ...payload, items, comments: sortComments(existingComments) };
-            state.draftPictures = { ...uploadedPictures };
+            state.doc = { ...payload, pictures: prunedPictures, items, comments: sortComments(existingComments) };
+            state.draftPictures = { ...prunedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -3445,6 +3053,7 @@
       syncEditorArea(problemText, gutter, mirror);
       setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox);
       refreshKeyStatus();
+      renderPicturePreview();
       titleInput.focus();
       bindGlobalButtons();
     }
@@ -3465,7 +3074,7 @@
               </div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn" type="button">トップ</button>
               <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -3488,8 +3097,8 @@
                   return `
                     <button class="settingRow" type="button" data-toggle-setting="${esc(target)}">
                       <div class="settingText">
-                        <div class="settingLabel">${esc(CONTROL_LABELS[target] || target)}</div>
-                        <div class="settingHint">${esc(CONTROL_HINTS[target] || "")}</div>
+                        <div class="settingLabel">${esc(target === "random" ? "問題順ランダム" : target)}</div>
+                        <div class="settingHint">${esc(target === "random" ? "問題の順番をランダムにする" : "")}</div>
                       </div>
                       <div class="toggleSwitch ${enabled ? "on" : ""}" aria-checked="${enabled}">
                         <div class="toggleKnob"></div>
@@ -3540,15 +3149,14 @@
       });
 
       const startQuizBtn = document.getElementById("startQuizBtn");
-      if (startQuizBtn) {
-        startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
-      }
+      if (startQuizBtn) startQuizBtn.addEventListener("click", () => beginQuizRun(state.quiz.pendingOrder, state.quiz.pendingOnlyWrong));
     }
 
     function renderQuestion() {
       clearResultEnterHandler();
-      const q = currentQuestion();
+      const q = currentQuestion;
       if (!q) { state.quiz.phase = "done"; render(); return; }
+
       document.title = state.doc.title ? `${state.doc.title} | 問題作成サイト` : "問題作成サイト";
       const pics = getPictureMap();
       const modeLabel = q.item.mode === "choice" ? "選択してね" : q.item.mode === "number" ? "数字で答えてね" : "答え";
@@ -3565,10 +3173,13 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
               </div>
-              ${helpButtonHtml()}
+              <div class="row">
+                <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+                <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
+              </div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn" type="button">トップ</button>
               <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -3586,9 +3197,7 @@
 
             <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
-              ${q.item.mode === "choice" ? `
-                <div id="choiceGrid" class="choiceGrid"></div>
-              ` : `
+              ${q.item.mode === "choice" ? `<div id="choiceGrid" class="choiceGrid"></div>` : `
                 <div class="answerFields" style="grid-template-columns:1fr;">
                   ${Array.from({ length: fieldCount }, (_, i) => `
                     <input
@@ -3605,7 +3214,7 @@
                 </div>
               `}
               <div class="actions">
-                ${canManageQuiz() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
+                ${canEdit() ? `<button class="ghost" id="forceEndBtn" type="button">残りを×で終わる</button>` : ""}
                 <button class="submit" id="submitBtn" type="button">✅</button>
               </div>
             </div>
@@ -3668,11 +3277,8 @@
             }
             if (e.key === "Enter") {
               e.preventDefault();
-              if (i < inputs.length - 1) {
-                inputs[i + 1].focus();
-              } else {
-                submitAnswer();
-              }
+              if (i < inputs.length - 1) inputs[i + 1].focus();
+              else submitAnswer();
             }
           });
         });
@@ -3702,10 +3308,13 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
               </div>
-              ${helpButtonHtml()}
+              <div class="row">
+                <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+                <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
+              </div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn" type="button">トップ</button>
               <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -3757,32 +3366,6 @@
       enableResultEnterHandler();
     }
 
-    function renderCommentNode(comment, comments, depth = 0) {
-      if (!canViewComment(comment)) return `<div class="commentItem" style="margin-left:${depth * 14}px"><div class="commentMask">🫥</div></div>`;
-      const role = comment.authorRole || "viewer";
-      const roleLabel = commentRoleLabel(role);
-      const roleClass = commentRoleClass(role);
-      const canManage = canManageComment(comment);
-      const parent = comment.parentId ? comments.find(c => c.id === comment.parentId) : null;
-      const children = comments.filter(c => c.parentId === comment.id).sort((a, b) => (normalizeTs(a.createdAt) || 0) - (normalizeTs(b.createdAt) || 0));
-      const replyLine = parent ? `<div class="metaLine">↳ ${esc(parent.authorName || "匿名")} への返信</div>` : "";
-
-      return `
-        <div class="commentItem ${roleClass}" style="margin-left:${depth * 14}px">
-          ${replyLine}
-          <div class="reviewQ">${esc(comment.authorName || "匿名")} <span class="commentBadge">${esc(roleLabel)}</span>${comment.isPrivate ? ` <span class="commentBadge">🫥</span>` : ""}</div>
-          <div class="metaLine">${esc(formatMinute(comment.createdAt))}</div>
-          <div class="commentBody">${renderCommentBody(comment)}</div>
-          <div class="row" style="justify-content:flex-end;">
-            <button class="ghost miniAction" data-reply-comment="${esc(comment.id)}" type="button">返信</button>
-            ${canManage ? `<button class="ghost miniAction" data-toggle-comment="${esc(comment.id)}" type="button">${comment.isPrivate ? "公開にする" : "非公開にする"}</button>` : ""}
-            ${canManage ? `<button class="danger miniAction" data-delete-comment="${esc(comment.id)}" type="button">削除</button>` : ""}
-          </div>
-          ${children.length ? `<div class="reviewList" style="margin-top:8px">${children.map(child => renderCommentNode(child, comments, depth + 1)).join("")}</div>` : ""}
-        </div>
-      `;
-    }
-
     function renderCommentsPanel(comments) {
       const visibleComments = comments.filter(c => canViewComment(c));
       const hiddenCount = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
@@ -3797,7 +3380,7 @@
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
         : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
 
-      const refreshLabel = state.refreshFlash.comments ? "✓" : "更新";
+      const refreshIcon = refreshMarkHtml(state.refreshFlash.comments);
 
       return `
         <div class="commentWrap">
@@ -3814,10 +3397,10 @@
               </div>
 
               ${replyTarget ? `
-                <div class="replyBox">
+                <div class="replyBox" style="border:1px solid var(--line);background:rgba(127,127,127,.06);border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center;">
                   <div>
-                    <div class="replyLabel">返信先: ${esc(replyTarget.authorName || "匿名")}</div>
-                    <div class="replyHint">${esc(replyTarget.text || "")}</div>
+                    <div style="font-size:13px;font-weight:900;color:var(--text);">返信先: ${esc(replyTarget.authorName || "匿名")}</div>
+                    <div style="font-size:12px;color:var(--muted);">${esc(replyTarget.text || "")}</div>
                   </div>
                   <button class="ghost miniAction" id="cancelReplyBtn" type="button">解除</button>
                 </div>
@@ -3843,7 +3426,7 @@
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
               <div class="commentToggleRow">
-                <button class="ghost miniAction" id="commentsRefreshBtn" type="button">${esc(refreshLabel)}</button>
+                <button class="ghost miniAction" id="commentsRefreshBtn" type="button">${refreshIcon}</button>
                 <span class="commentBadge">表示 ${visibleComments.length}</span>
                 ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
               </div>
@@ -3870,10 +3453,13 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
               </div>
-              ${helpButtonHtml()}
+              <div class="row">
+                <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+                <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
+              </div>
             </div>
             <div class="row">
-              ${topButtonHtml()}
+              <button class="ghost" id="topBtn" type="button">トップ</button>
               <button class="ghost" id="editBtn" type="button">${canEdit() ? "編集" : "Keyを入力して編集"}</button>
             </div>
           </div>
@@ -3999,6 +3585,7 @@
     }
 
     function render() {
+      setCurrentQuestionCache();
       if (state.screen === "loading") {
         renderLoading();
       } else if (state.screen === "home") {
@@ -4183,7 +3770,6 @@
           renderTutorialLayer();
         });
       }
-
       if (nextBtn) {
         nextBtn.addEventListener("click", () => {
           if (isLast) {
@@ -4209,7 +3795,6 @@
       state.tutorial.closing = true;
       state.tutorial.motion = "close";
       renderTutorialLayer();
-
       setTimeout(() => {
         state.tutorial.open = false;
         state.tutorial.closing = false;
@@ -4275,11 +3860,8 @@
 
       if (closeBtn) closeBtn.addEventListener("click", () => closePartnerModal());
       if (openBtn) openBtn.addEventListener("click", () => {
-        if (state.partnerLink) {
-          window.open(state.partnerLink, "_blank", "noopener,noreferrer");
-        } else {
-          alert("パートナーリンクはまだ未設定だよ");
-        }
+        if (state.partnerLink) window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        else alert("パートナーリンクはまだ未設定だよ");
         closePartnerModal();
       });
       if (editBtn) editBtn.addEventListener("click", async () => {
@@ -4311,7 +3893,6 @@
     async function openEditRoute(id) {
       state.screen = "loading";
       render();
-
       try {
         const snap = await getDoc(doc(db, COLLECTION, id));
         if (!snap.exists()) { state.screen = "home"; render(); return; }
@@ -4352,9 +3933,10 @@
       applySystemTheme();
       loadTutorialSeenState();
       await loadSiteSettings();
-      const r = route();
+      const raw = location.hash.replace(/^#/, "");
+      const parts = raw.split("/").filter(Boolean);
 
-      if (r.name === "home") {
+      if (!parts.length) {
         try { await loadCatalog(); } catch (e) { console.error(e); }
         state.screen = "home";
         state.showComments = false;
@@ -4363,32 +3945,45 @@
         return;
       }
 
-      if (r.name === "create") { openCreate(); maybeAutoOpenTutorial(); return; }
-      if (r.name === "edit") { await openEditRoute(r.id); maybeAutoOpenTutorial(); return; }
+      if (parts[0] === "create") { openCreate(); maybeAutoOpenTutorial(); return; }
+      if (parts[0] === "edit" && parts[1]) { await openEditRoute(decodeURIComponent(parts[1])); maybeAutoOpenTutorial(); return; }
 
-      if (r.name === "quiz") {
-        state.screen = "loading";
-        state.showComments = false;
+      state.screen = "loading";
+      state.showComments = false;
+      render();
+      try {
+        const id = decodeURIComponent(parts[0]);
+        const snap = await getDoc(doc(db, COLLECTION, id));
+        if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
+        const data = snap.data() || {};
+        startQuiz(normalizeDoc(id, data), id);
+        maybeAutoOpenTutorial();
+      } catch (err) {
+        console.error(err);
+        state.screen = "home";
         render();
-        try {
-          const snap = await getDoc(doc(db, COLLECTION, r.id));
-          if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
-          const data = snap.data() || {};
-          startQuiz(normalizeDoc(r.id, data), r.id);
-          maybeAutoOpenTutorial();
-        } catch (err) {
-          console.error(err);
-          state.screen = "home";
-          render();
-          maybeAutoOpenTutorial();
-        }
+        maybeAutoOpenTutorial();
       }
+    }
+
+    function ensureCommentRefreshMarks() {
+      if (!state.refreshFlash) state.refreshFlash = { comments: false, quiz: false };
     }
 
     if (systemDark) {
       const onThemeChange = () => { applySystemTheme(); render(); };
       if (systemDark.addEventListener) systemDark.addEventListener("change", onThemeChange);
       else if (systemDark.addListener) systemDark.addListener(onThemeChange);
+    }
+
+    function startRefreshFlash(kind) {
+      ensureCommentRefreshMarks();
+      state.refreshFlash[kind] = true;
+      render();
+      setTimeout(() => {
+        state.refreshFlash[kind] = false;
+        render();
+      }, 800);
     }
 
     window.addEventListener("hashchange", loadRoute);
