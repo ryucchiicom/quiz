@@ -40,9 +40,10 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{ overflow-x:auto; }
-    *{ box-sizing:border-box; }
-
+    html, body{
+      overflow-x:auto;
+    }
+    *{box-sizing:border-box}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -51,7 +52,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea,select{ font:inherit; }
+    button,input,textarea,select{font:inherit}
     button{
       border:none;
       border-radius:14px;
@@ -59,8 +60,8 @@
       cursor:pointer;
     }
 
-    .hide{ display:none !important; }
-    .page{ max-width:980px; margin:0 auto; padding:16px; min-height:100vh; }
+    .hide{display:none !important;}
+    .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
 
     .titleArea{
       display:flex;
@@ -69,7 +70,7 @@
       flex-wrap:wrap;
       min-width:0;
     }
-    .titleBlock{ min-width:0; }
+    .titleBlock{min-width:0}
 
     .topbar{
       display:flex;
@@ -221,8 +222,13 @@
       scrollbar-gutter:stable;
     }
 
-    .editorMirror .memoText{ color:#98a0af; }
-    body.dark .editorMirror .memoText{ color:#7e8798; }
+    .editorMirror .memoText{
+      color:#98a0af;
+    }
+
+    body.dark .editorMirror .memoText{
+      color:#7e8798;
+    }
 
     .textarea{
       position:relative;
@@ -275,7 +281,9 @@
       white-space:normal;
     }
 
-    body.dark .sectionText{ color:#d7def0; }
+    body.dark .sectionText{
+      color:#d7def0;
+    }
 
     .question{
       font-size:clamp(22px,4vw,32px);
@@ -424,7 +432,9 @@
       line-height:1.4;
     }
 
-    body.dark .reviewSection{ color:#d7def0; }
+    body.dark .reviewSection{
+      color:#d7def0;
+    }
 
     .reviewQ{
       font-weight:900;
@@ -550,8 +560,13 @@
       font-weight:900;
     }
 
-    body.dark .scoreToken{ color:#66e08d; }
-    body.dark .timeToken{ color:#8db2ff; }
+    body.dark .scoreToken{
+      color:#66e08d;
+    }
+
+    body.dark .timeToken{
+      color:#8db2ff;
+    }
 
     .commentItem{
       border:1px solid var(--line);
@@ -703,9 +718,9 @@
       align-items:center;
     }
 
-    .replyLabel{ font-size:13px; font-weight:900; color:var(--text); }
-    .replyHint{ font-size:12px; color:var(--muted); }
-    .timeOnlyNote{ font-size:12px; color:var(--muted); }
+    .replyLabel{font-size:13px;font-weight:900;color:var(--text);}
+    .replyHint{font-size:12px;color:var(--muted);}
+    .timeOnlyNote{font-size:12px;color:var(--muted);}
 
     .settingsScreen{
       display:grid;
@@ -761,8 +776,13 @@
       flex:none;
     }
 
-    body.dark .toggleSwitch{ background:#42506a; }
-    .toggleSwitch.on{ background:var(--accent); }
+    body.dark .toggleSwitch{
+      background:#42506a;
+    }
+
+    .toggleSwitch.on{
+      background:var(--accent);
+    }
 
     .toggleKnob{
       position:absolute;
@@ -776,7 +796,9 @@
       transition:.2s transform;
     }
 
-    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
+    .toggleSwitch.on .toggleKnob{
+      transform:translateX(24px);
+    }
 
     .settingHeader{
       display:grid;
@@ -889,10 +911,10 @@
       animation-fill-mode:both;
     }
 
-    .tutorialPage.anim-open{ animation-name:tutInOpen; }
-    .tutorialPage.anim-next{ animation-name:tutInRight; }
-    .tutorialPage.anim-prev{ animation-name:tutInLeft; }
-    .tutorialPage.anim-close{ animation-name:tutOutDown; }
+    .tutorialPage.anim-open{animation-name:tutInOpen;}
+    .tutorialPage.anim-next{animation-name:tutInRight;}
+    .tutorialPage.anim-prev{animation-name:tutInLeft;}
+    .tutorialPage.anim-close{animation-name:tutOutDown;}
 
     .tutorialCard{
       border:1px solid var(--line);
@@ -901,7 +923,9 @@
       background:rgba(127,127,127,.05);
     }
 
-    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
+    body.dark .tutorialCard{
+      background:rgba(255,255,255,.03);
+    }
 
     .tutorialHero{
       display:grid;
@@ -933,7 +957,9 @@
       word-break:break-word;
     }
 
-    body.dark .tutorialCode{ background:#0a1220; }
+    body.dark .tutorialCode{
+      background:#0a1220;
+    }
 
     .tutorialFooter,
     .partnerFooter{
@@ -955,12 +981,11 @@
     }
 
     .dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
+      width:8px;height:8px;border-radius:999px;
       background:rgba(127,127,127,.35);
     }
-    .dot.active{ background:var(--accent); }
+
+    .dot.active{background:var(--accent);}
 
     .tutorialNavBtn{
       min-width:110px;
@@ -1021,7 +1046,7 @@
     }
 
     .pictureSelect{
-      min-width:180px;
+      min-width:160px;
       flex:1;
       height:44px;
     }
@@ -1039,44 +1064,44 @@
     }
 
     @keyframes tutInRight{
-      from{ opacity:0; transform:translateX(28px); }
-      to{ opacity:1; transform:translateX(0); }
+      from{opacity:0;transform:translateX(28px);}
+      to{opacity:1;transform:translateX(0);}
     }
     @keyframes tutInLeft{
-      from{ opacity:0; transform:translateX(-28px); }
-      to{ opacity:1; transform:translateX(0); }
+      from{opacity:0;transform:translateX(-28px);}
+      to{opacity:1;transform:translateX(0);}
     }
     @keyframes tutInOpen{
-      from{ opacity:0; transform:translateY(14px) scale(.985); }
-      to{ opacity:1; transform:translateY(0) scale(1); }
+      from{opacity:0;transform:translateY(14px) scale(.985);}
+      to{opacity:1;transform:translateY(0) scale(1);}
     }
     @keyframes tutOutDown{
-      from{ opacity:1; transform:translateY(0) scale(1); }
-      to{ opacity:0; transform:translateY(30px) scale(.98); }
+      from{opacity:1;transform:translateY(0) scale(1);}
+      to{opacity:0;transform:translateY(30px) scale(.98);}
     }
 
     @media (max-width:640px){
-      .page{ padding:14px; }
-      .title{ font-size:22px; }
-      .gridEditor{ grid-template-columns:52px 1fr; min-height:380px; }
-      .question{ font-size:22px; }
-      .answer{ font-size:16px; }
-      .bigBtn{ width:100%; }
-      .actions{ justify-content:stretch; }
-      .actions button{ flex:1; }
-      .topbar{ align-items:flex-start; }
-      .listItem{ align-items:flex-start; flex-direction:column; }
-      .listActions{ justify-content:flex-start; }
-      .tabSelect,.searchInput{ min-width:0; }
-      .homeTopRow{ align-items:stretch; }
-      .searchWrap{ min-width:0; }
-      .tutorialTop,.partnerTop{ padding:14px 14px 0; }
-      .tutorialBody,.partnerBody{ padding:12px 14px 6px; }
-      .tutorialFooter,.partnerFooter{ padding:0 14px 14px; }
-      .tutorialTitle,.partnerTitle{ font-size:20px; }
-      .tutorialHero h2{ font-size:24px; }
-      .tutorialNavBtn{ min-width:88px; }
-      .settingTitle{ font-size:22px; }
+      .page{padding:14px}
+      .title{font-size:22px}
+      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
+      .question{font-size:22px}
+      .answer{font-size:16px}
+      .bigBtn{width:100%}
+      .actions{justify-content:stretch}
+      .actions button{flex:1}
+      .topbar{align-items:flex-start}
+      .listItem{align-items:flex-start;flex-direction:column}
+      .listActions{justify-content:flex-start}
+      .tabSelect,.searchInput{min-width:0}
+      .homeTopRow{align-items:stretch}
+      .searchWrap{min-width:0}
+      .tutorialTop,.partnerTop{padding:14px 14px 0}
+      .tutorialBody,.partnerBody{padding:12px 14px 6px}
+      .tutorialFooter,.partnerFooter{padding:0 14px 14px}
+      .tutorialTitle,.partnerTitle{font-size:20px}
+      .tutorialHero h2{font-size:24px}
+      .tutorialNavBtn{min-width:88px}
+      .settingTitle{font-size:22px}
       .smallSelect{
         min-width:78px;
         max-width:78px;
@@ -1157,7 +1182,7 @@
       editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      refreshFlash: { comments: false, home: false },
+      refreshFlash: { home: false },
       pictureChoice: "1",
       quiz: {
         phase: "question",
@@ -1317,9 +1342,7 @@
       const out = {};
       if (!obj || typeof obj !== "object") return out;
       for (const [k, v] of Object.entries(obj)) {
-        if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) {
-          out[String(k)] = v;
-        }
+        if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) out[String(k)] = v;
       }
       return out;
     }
@@ -1330,16 +1353,21 @@
 
     function getNextPictureNumber(text, pictures) {
       const nums = [];
-      String(text || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => { nums.push(Number(n)); return ""; });
-      for (const k of Object.keys(pictures || {})) nums.push(Number(k));
-      const max = nums.length ? Math.max(...nums.filter(n => Number.isFinite(n))) : 0;
-      return max + 1;
+      String(text || "").replace(/\[picture\(([^)]+)\)\]/g, (_, n) => { nums.push(n); return ""; });
+      for (const k of Object.keys(pictures || {})) nums.push(k);
+      if (!nums.length) return "1";
+      const numeric = nums.map(v => Number(v)).filter(n => Number.isFinite(n));
+      if (numeric.length) return String(Math.max(...numeric) + 1);
+      const s = new Set(nums.map(v => String(v)));
+      let i = 1;
+      while (s.has(String(i))) i++;
+      return String(i);
     }
 
     function getPictureRefsFromTexts(...texts) {
       const set = new Set();
       for (const t of texts) {
-        String(t || "").replace(/\[picture\((\d+)\)\]/g, (_, n) => {
+        String(t || "").replace(/\[picture\(([^)]+)\)\]/g, (_, n) => {
           set.add(String(n));
           return "";
         });
@@ -1361,18 +1389,8 @@
     }
 
     function decodePictures(entries) {
-      let arr = [];
-      if (Array.isArray(entries)) arr = entries;
-      else if (typeof entries === "string" && entries.trim()) {
-        try {
-          const parsed = JSON.parse(entries);
-          arr = Array.isArray(parsed) ? parsed : [];
-        } catch {
-          arr = [];
-        }
-      }
       const out = {};
-      for (const item of arr) {
+      for (const item of entries || []) {
         if (typeof item !== "string") continue;
         const idx = item.indexOf("|||");
         if (idx < 1) continue;
@@ -1481,7 +1499,7 @@
           }
         }
 
-        const pm = s.slice(i).match(/^\[picture\((\d+)\)\]/);
+        const pm = s.slice(i).match(/^\[picture\(([^)]+)\)\]/);
         if (pm) {
           flush();
           const n = pm[1];
@@ -2073,7 +2091,6 @@
       state.draftPictures = {};
       state.showComments = false;
       state.screen = "editor";
-      state.pictureChoice = "1";
       render();
     }
 
@@ -2563,7 +2580,7 @@
         alert(`更新で失敗したよ: ${err?.message || err}`);
       } finally {
         state.showComments = keepCommentsVisible ? currentShowComments : state.showComments;
-        startFlash("comments", 800);
+        startFlash("home", 800);
       }
     }
 
@@ -2651,21 +2668,18 @@
         triggerChar: "#",
         items: () => {
           const next = getNextPictureNumber(textarea.value, state.draftPictures);
-          const pictureNumbers = Object.keys(state.draftPictures || {}).sort((a, b) => Number(a) - Number(b));
-          const menu = [
+          return [
             { label: "[open]", value: "[open]" },
             { label: "[random]", value: "[random]" },
             { label: "[choice]", value: "[choice]" },
             { label: "[random choice]", value: "[random choice]" },
             { label: "[number]", value: "[number]" },
-            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" }
+            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
+            { label: `[picture(${next})]`, value: `[picture(${next})]` }
           ];
-          for (const n of pictureNumbers) menu.push({ label: `[picture(${n})]`, value: `[picture(${n})]` });
-          if (!pictureNumbers.includes(String(next))) menu.push({ label: `[picture(${next})]`, value: `[picture(${next})]` });
-          return menu;
         },
         onPick: (value) => {
-          const m = String(value || "").match(/^\[picture\((\d+)\)\]$/);
+          const m = String(value || "").match(/^\[picture\(([^)]+)\)\]$/);
           if (m) void pickPictureAndStore(m[1]);
         }
       });
@@ -2812,8 +2826,6 @@
         number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
         open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
       };
-      const decodedPictures = decodePictures(data.pictureEntriesText);
-      const pics = Object.keys(decodedPictures).length ? decodedPictures : normalizePictures(data.pictures || {});
       return {
         id,
         title: data.title || "問題",
@@ -2828,7 +2840,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictures: pics,
+        pictures: decodePictures(data.pictureEntriesText) || normalizePictures(data.pictures || {}),
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -3231,16 +3243,22 @@
 
     function renderPicturePanel() {
       const pictureMap = normalizePictures(state.draftPictures || {});
-      const keys = Object.keys(pictureMap).sort((a, b) => Number(a) - Number(b));
+      const keys = Object.keys(pictureMap);
       const current = state.pictureChoice || keys[0] || "1";
       const next = getNextPictureNumber("", pictureMap);
-      const allChoices = Array.from(new Set([...keys, String(next)])).sort((a, b) => Number(a) - Number(b));
+      const allChoices = Array.from(new Set([...keys, String(next)])).sort((a, b) => {
+        const an = Number(a), bn = Number(b);
+        if (Number.isFinite(an) && Number.isFinite(bn)) return an - bn;
+        if (Number.isFinite(an)) return -1;
+        if (Number.isFinite(bn)) return 1;
+        return String(a).localeCompare(String(b), "ja");
+      });
       const currentSrc = pictureMap[current] || "";
       return `
         <div class="card" style="display:grid;gap:12px">
           <div class="row" style="justify-content:space-between;align-items:flex-end;">
             <div style="min-width:0;flex:1">
-              <div class="label">表示</div>
+              <div class="label">行表示</div>
               <select id="gutterModeSelect" class="input smallSelect">
                 <option value="line">行数</option>
                 <option value="question">問題数</option>
@@ -3252,7 +3270,7 @@
                 <select id="pictureSelect" class="input pictureSelect">
                   ${allChoices.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("")}
                 </select>
-                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" title="再アップロード" aria-label="再アップロード">⟳</button>
+                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📷</button>
               </div>
             </div>
           </div>
@@ -3316,7 +3334,7 @@
               ${editorActionHtml()}
             </div>
 
-            <div id="editorPicturePanel"></div>
+            ${renderPicturePanel()}
 
             <div>
               <div class="label">問題欄</div>
@@ -3372,15 +3390,12 @@
       const tagSuggestBox = document.getElementById("tagSuggestBox");
       const editorHost = document.querySelector(".editorHost");
       const gutterModeSelect = document.getElementById("gutterModeSelect");
-      const editorPicturePanel = document.getElementById("editorPicturePanel");
-
-      if (editorPicturePanel) editorPicturePanel.innerHTML = renderPicturePanel();
-
+      const pictureSelect = document.getElementById("pictureSelect");
+      const reuploadPictureBtn = document.getElementById("reuploadPictureBtn");
       const editorInfo = document.createElement("div");
       editorInfo.className = "note";
       editorInfo.id = "editorInfo";
-      editorInfo.style.marginTop = "6px";
-      editorPicturePanel.parentElement.insertBefore(editorInfo, editorPicturePanel.nextSibling);
+      document.querySelector(".page .card").appendChild(editorInfo);
 
       function refreshKeyStatus() {
         if (!state.doc) {
@@ -3419,8 +3434,6 @@
         });
       }
 
-      const pictureSelect = document.getElementById("pictureSelect");
-      const reuploadPictureBtn = document.getElementById("reuploadPictureBtn");
       if (pictureSelect) {
         pictureSelect.value = state.pictureChoice || pictureSelect.value || "1";
         pictureSelect.addEventListener("change", () => {
@@ -3462,8 +3475,13 @@
           const onOffControls = parsed.onOffControls;
 
           if (!title) return alert("タイトルを入れてね");
+
           const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
-          if (!rawHasText) return alert("文字がひとつも読めなかったよ");
+          if (!items.length && !rawHasText) return alert("文字がひとつも読めなかったよ");
+          if (!items.length && rawHasText) {
+            const ok = confirm("問題として読めたものがないけど、そのまま保存する？");
+            if (!ok) return;
+          }
 
           const oldId = state.docId || "";
           let unique;
@@ -3491,9 +3509,6 @@
 
           const usedPics = getPictureRefsFromTexts(d.rawText, subtitle);
           const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
-          for (const [k, v] of Object.entries(prunedPictures)) {
-            if (typeof v !== "string") delete prunedPictures[k];
-          }
 
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
@@ -3514,7 +3529,7 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictureEntriesText: JSON.stringify(encodePictures(uploadedPictures)),
+              pictureEntriesText: encodePictures(uploadedPictures),
               comments: existingComments
             };
 
@@ -3933,8 +3948,6 @@
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
         : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
 
-      const refreshIcon = state.refreshFlash.comments ? "✓" : "↻";
-
       return `
         <div class="commentWrap">
           <div class="card commentWrap">
@@ -3979,7 +3992,6 @@
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
               <div class="commentToggleRow">
-                <button class="ghost miniAction tinyIconBtn" id="commentsRefreshBtn" type="button" aria-label="更新">${refreshIcon}</button>
                 <span class="commentBadge">表示 ${visibleComments.length}</span>
                 ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
               </div>
@@ -4087,7 +4099,6 @@
         const commentText = document.getElementById("commentText");
         const commentPrivate = document.getElementById("commentPrivate");
         const postCommentBtn = document.getElementById("postCommentBtn");
-        const commentsRefreshBtn = document.getElementById("commentsRefreshBtn");
         const scoreSuggestBox = document.getElementById("scoreSuggestBox");
         const commentHost = document.querySelector(".commentInputHost");
         const cancelReplyBtn = document.getElementById("cancelReplyBtn");
@@ -4104,7 +4115,6 @@
         }
         if (commentPrivate) commentPrivate.addEventListener("change", e => { state.commentDraft.isPrivate = !!e.target.checked; });
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
-        if (commentsRefreshBtn) commentsRefreshBtn.addEventListener("click", () => refreshCurrentDoc({ keepCommentsVisible: true }));
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
 
