@@ -40,10 +40,9 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
-    html, body{
-      overflow-x:auto;
-    }
-    *{box-sizing:border-box}
+    html, body{ overflow-x:auto; }
+    *{ box-sizing:border-box; }
+
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -52,7 +51,7 @@
       min-height:100vh;
     }
 
-    button,input,textarea,select{font:inherit}
+    button,input,textarea,select{ font:inherit; }
     button{
       border:none;
       border-radius:14px;
@@ -60,8 +59,8 @@
       cursor:pointer;
     }
 
-    .hide{display:none !important;}
-    .page{max-width:980px;margin:0 auto;padding:16px;min-height:100vh;}
+    .hide{ display:none !important; }
+    .page{ max-width:980px; margin:0 auto; padding:16px; min-height:100vh; }
 
     .titleArea{
       display:flex;
@@ -70,7 +69,7 @@
       flex-wrap:wrap;
       min-width:0;
     }
-    .titleBlock{min-width:0}
+    .titleBlock{ min-width:0; }
 
     .topbar{
       display:flex;
@@ -222,13 +221,8 @@
       scrollbar-gutter:stable;
     }
 
-    .editorMirror .memoText{
-      color:#98a0af;
-    }
-
-    body.dark .editorMirror .memoText{
-      color:#7e8798;
-    }
+    .editorMirror .memoText{ color:#98a0af; }
+    body.dark .editorMirror .memoText{ color:#7e8798; }
 
     .textarea{
       position:relative;
@@ -280,10 +274,7 @@
       word-break:break-word;
       white-space:normal;
     }
-
-    body.dark .sectionText{
-      color:#d7def0;
-    }
+    body.dark .sectionText{ color:#d7def0; }
 
     .question{
       font-size:clamp(22px,4vw,32px);
@@ -345,7 +336,6 @@
       font-weight:900;
       font-size:18px;
     }
-
     body.dark .good{
       border-color:rgba(91,140,255,.35);
       background:#13264a;
@@ -371,7 +361,6 @@
       word-break:break-word;
       color:#2b3241;
     }
-
     body.dark .explain{
       background:#182133;
       border-color:#2d3a4f;
@@ -432,9 +421,7 @@
       line-height:1.4;
     }
 
-    body.dark .reviewSection{
-      color:#d7def0;
-    }
+    body.dark .reviewSection{ color:#d7def0; }
 
     .reviewQ{
       font-weight:900;
@@ -559,14 +546,8 @@
       color:#2f6fed;
       font-weight:900;
     }
-
-    body.dark .scoreToken{
-      color:#66e08d;
-    }
-
-    body.dark .timeToken{
-      color:#8db2ff;
-    }
+    body.dark .scoreToken{ color:#66e08d; }
+    body.dark .timeToken{ color:#8db2ff; }
 
     .commentItem{
       border:1px solid var(--line);
@@ -775,14 +756,8 @@
       transition:.2s background;
       flex:none;
     }
-
-    body.dark .toggleSwitch{
-      background:#42506a;
-    }
-
-    .toggleSwitch.on{
-      background:var(--accent);
-    }
+    body.dark .toggleSwitch{ background:#42506a; }
+    .toggleSwitch.on{ background:var(--accent); }
 
     .toggleKnob{
       position:absolute;
@@ -795,10 +770,7 @@
       box-shadow:0 4px 10px rgba(0,0,0,.15);
       transition:.2s transform;
     }
-
-    .toggleSwitch.on .toggleKnob{
-      transform:translateX(24px);
-    }
+    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
 
     .settingHeader{
       display:grid;
@@ -911,10 +883,10 @@
       animation-fill-mode:both;
     }
 
-    .tutorialPage.anim-open{animation-name:tutInOpen;}
-    .tutorialPage.anim-next{animation-name:tutInRight;}
-    .tutorialPage.anim-prev{animation-name:tutInLeft;}
-    .tutorialPage.anim-close{animation-name:tutOutDown;}
+    .tutorialPage.anim-open{ animation-name:tutInOpen; }
+    .tutorialPage.anim-next{ animation-name:tutInRight; }
+    .tutorialPage.anim-prev{ animation-name:tutInLeft; }
+    .tutorialPage.anim-close{ animation-name:tutOutDown; }
 
     .tutorialCard{
       border:1px solid var(--line);
@@ -922,10 +894,7 @@
       padding:16px;
       background:rgba(127,127,127,.05);
     }
-
-    body.dark .tutorialCard{
-      background:rgba(255,255,255,.03);
-    }
+    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
 
     .tutorialHero{
       display:grid;
@@ -956,10 +925,7 @@
       white-space:pre-wrap;
       word-break:break-word;
     }
-
-    body.dark .tutorialCode{
-      background:#0a1220;
-    }
+    body.dark .tutorialCode{ background:#0a1220; }
 
     .tutorialFooter,
     .partnerFooter{
@@ -981,11 +947,12 @@
     }
 
     .dot{
-      width:8px;height:8px;border-radius:999px;
+      width:8px;
+      height:8px;
+      border-radius:999px;
       background:rgba(127,127,127,.35);
     }
-
-    .dot.active{background:var(--accent);}
+    .dot.active{ background:var(--accent); }
 
     .tutorialNavBtn{
       min-width:110px;
@@ -1064,44 +1031,44 @@
     }
 
     @keyframes tutInRight{
-      from{opacity:0;transform:translateX(28px);}
-      to{opacity:1;transform:translateX(0);}
+      from{ opacity:0; transform:translateX(28px); }
+      to{ opacity:1; transform:translateX(0); }
     }
     @keyframes tutInLeft{
-      from{opacity:0;transform:translateX(-28px);}
-      to{opacity:1;transform:translateX(0);}
+      from{ opacity:0; transform:translateX(-28px); }
+      to{ opacity:1; transform:translateX(0); }
     }
     @keyframes tutInOpen{
-      from{opacity:0;transform:translateY(14px) scale(.985);}
-      to{opacity:1;transform:translateY(0) scale(1);}
+      from{ opacity:0; transform:translateY(14px) scale(.985); }
+      to{ opacity:1; transform:translateY(0) scale(1); }
     }
     @keyframes tutOutDown{
-      from{opacity:1;transform:translateY(0) scale(1);}
-      to{opacity:0;transform:translateY(30px) scale(.98);}
+      from{ opacity:1; transform:translateY(0) scale(1); }
+      to{ opacity:0; transform:translateY(30px) scale(.98); }
     }
 
     @media (max-width:640px){
-      .page{padding:14px}
-      .title{font-size:22px}
-      .gridEditor{grid-template-columns:52px 1fr;min-height:380px}
-      .question{font-size:22px}
-      .answer{font-size:16px}
-      .bigBtn{width:100%}
-      .actions{justify-content:stretch}
-      .actions button{flex:1}
-      .topbar{align-items:flex-start}
-      .listItem{align-items:flex-start;flex-direction:column}
-      .listActions{justify-content:flex-start}
-      .tabSelect,.searchInput{min-width:0}
-      .homeTopRow{align-items:stretch}
-      .searchWrap{min-width:0}
-      .tutorialTop,.partnerTop{padding:14px 14px 0}
-      .tutorialBody,.partnerBody{padding:12px 14px 6px}
-      .tutorialFooter,.partnerFooter{padding:0 14px 14px}
-      .tutorialTitle,.partnerTitle{font-size:20px}
-      .tutorialHero h2{font-size:24px}
-      .tutorialNavBtn{min-width:88px}
-      .settingTitle{font-size:22px}
+      .page{ padding:14px; }
+      .title{ font-size:22px; }
+      .gridEditor{ grid-template-columns:52px 1fr; min-height:380px; }
+      .question{ font-size:22px; }
+      .answer{ font-size:16px; }
+      .bigBtn{ width:100%; }
+      .actions{ justify-content:stretch; }
+      .actions button{ flex:1; }
+      .topbar{ align-items:flex-start; }
+      .listItem{ align-items:flex-start; flex-direction:column; }
+      .listActions{ justify-content:flex-start; }
+      .tabSelect,.searchInput{ min-width:0; }
+      .homeTopRow{ align-items:stretch; }
+      .searchWrap{ min-width:0; }
+      .tutorialTop,.partnerTop{ padding:14px 14px 0; }
+      .tutorialBody,.partnerBody{ padding:12px 14px 6px; }
+      .tutorialFooter,.partnerFooter{ padding:0 14px 14px; }
+      .tutorialTitle,.partnerTitle{ font-size:20px; }
+      .tutorialHero h2{ font-size:24px; }
+      .tutorialNavBtn{ min-width:88px; }
+      .settingTitle{ font-size:22px; }
       .smallSelect{
         min-width:78px;
         max-width:78px;
@@ -1182,7 +1149,7 @@
       editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      refreshFlash: { home: false },
+      refreshFlash: { comments: false, home: false },
       pictureChoice: "1",
       quiz: {
         phase: "question",
@@ -1256,19 +1223,8 @@
         .toLowerCase();
     }
 
-    function splitAnswers(text) {
-      return String(text ?? "")
-        .split(/[、,]/)
-        .map(v => v.trim())
-        .filter(Boolean);
-    }
-
     function splitSearchTerms(q) {
-      return String(q ?? "")
-        .trim()
-        .split(/[\s\u3000]+/)
-        .map(v => v.trim())
-        .filter(Boolean);
+      return String(q ?? "").trim().split(/[\s\u3000]+/).map(v => v.trim()).filter(Boolean);
     }
 
     function normalizeOnOffTarget(raw) {
@@ -1302,13 +1258,11 @@
       let html = "";
       let memo = false;
       let buf = "";
-
       const flush = () => {
         if (!buf) return;
         html += memo ? `<span class="memoText">${esc(buf)}</span>` : esc(buf);
         buf = "";
       };
-
       for (let i = 0; i < s.length; i++) {
         const ch = s[i];
         if (ch === "\n") {
@@ -1329,85 +1283,12 @@
       return html;
     }
 
-    function splitAnswerFields(text) {
-      return String(text ?? "")
-        .replace(/\s*\\n\s*/g, "\n")
-        .replace(/\s*↵\s*/g, "\n")
-        .replace(/\s*↩︎\s*/g, "\n")
-        .split("\n")
-        .map(v => v.trim());
-    }
-
-    function normalizePictures(obj) {
-      const out = {};
-      if (!obj || typeof obj !== "object") return out;
-      for (const [k, v] of Object.entries(obj)) {
-        if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) out[String(k)] = v;
-      }
-      return out;
-    }
-
-    function getPictureMap() {
-      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
-    }
-
-    function getNextPictureNumber(text, pictures) {
-      const nums = [];
-      String(text || "").replace(/\[picture\(([^)]+)\)\]/g, (_, n) => { nums.push(n); return ""; });
-      for (const k of Object.keys(pictures || {})) nums.push(k);
-      if (!nums.length) return "1";
-      const numeric = nums.map(v => Number(v)).filter(n => Number.isFinite(n));
-      if (numeric.length) return String(Math.max(...numeric) + 1);
-      const s = new Set(nums.map(v => String(v)));
-      let i = 1;
-      while (s.has(String(i))) i++;
-      return String(i);
-    }
-
-    function getPictureRefsFromTexts(...texts) {
-      const set = new Set();
-      for (const t of texts) {
-        String(t || "").replace(/\[picture\(([^)]+)\)\]/g, (_, n) => {
-          set.add(String(n));
-          return "";
-        });
-      }
-      return set;
-    }
-
-    function prunePicturesMap(pictures, refs) {
-      const out = {};
-      const keep = refs instanceof Set ? refs : new Set(refs || []);
-      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))) {
-        if (keep.has(String(k))) out[String(k)] = v;
-      }
-      return out;
-    }
-
-    function encodePictures(pictures) {
-      return Object.entries(normalizePictures(pictures || {})).map(([k, v]) => `${k}|||${v}`);
-    }
-
-    function decodePictures(entries) {
-      const out = {};
-      for (const item of entries || []) {
-        if (typeof item !== "string") continue;
-        const idx = item.indexOf("|||");
-        if (idx < 1) continue;
-        const key = item.slice(0, idx);
-        const value = item.slice(idx + 3);
-        if (key && value) out[String(key)] = value;
-      }
-      return out;
-    }
-
     function splitRespectingQuotes(text, separators) {
       const s = String(text ?? "");
       const seps = [...separators].sort((a, b) => b.length - a.length);
       const out = [];
       let buf = "";
       let inQuotes = false;
-
       for (let i = 0; i < s.length;) {
         const ch = s[i];
         if (ch === '"') {
@@ -1476,18 +1357,15 @@
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}) {
       let s = String(text ?? "");
       s = s.replace(/\s*\\n\s*/g, "\n").replace(/\s*↵\s*/g, "\n").replace(/\s*↩︎\s*/g, "\n");
-
       let out = "";
       let color = null;
       let buf = "";
-
       const flush = () => {
         if (!buf) return;
         const safe = esc(buf);
         out += color ? `<span style="color:${color}">${safe}</span>` : safe;
         buf = "";
       };
-
       for (let i = 0; i < s.length;) {
         if (allowColor) {
           const m = s.slice(i).match(/^\[color\((#[0-9a-fA-F]{3,8})\)\]/);
@@ -1498,21 +1376,16 @@
             continue;
           }
         }
-
         const pm = s.slice(i).match(/^\[picture\(([^)]+)\)\]/);
         if (pm) {
           flush();
           const n = pm[1];
           const src = pictureMap[String(n)];
-          if (src) {
-            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
-          } else {
-            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
-          }
+          if (src) out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          else out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
           i += pm[0].length;
           continue;
         }
-
         const ch = s[i];
         if (ch === "\n") {
           flush();
@@ -1546,38 +1419,31 @@
       const tags = [];
       const onOffControls = [];
       const sameGroups = [];
-
       while (rest.startsWith("[")) {
         const tagMatch = rest.match(/^\[([^\]]+)\]/);
         if (!tagMatch) break;
-
         const token = tagMatch[1].trim();
         const tokenLower = token.toLowerCase();
         const after = rest.slice(tagMatch[0].length).trimStart();
-
         if (tokenLower.startsWith("onoroff:")) {
           const target = normalizeOnOffTarget(tokenLower.slice("onoroff:".length));
           if (target) onOffControls.push(target);
           rest = after;
           continue;
         }
-
         if (tokenLower.startsWith("same(")) {
           const g = parseSameTag(tokenLower);
           if (g.length) sameGroups.push(g);
           rest = after;
           continue;
         }
-
         if (TAGS.includes(tokenLower)) {
           tags.push(tokenLower);
           rest = after;
           continue;
         }
-
         break;
       }
-
       return { tags, onOffControls: Array.from(new Set(onOffControls)), sameGroups, rest };
     }
 
@@ -1631,7 +1497,6 @@
       const question = raw.slice(0, eqIdx).trim();
       if (!question) return null;
       const { mode, randomChoice } = pickMode(globalFlags, tags);
-
       const mergedSameGroups = [...(globalSameGroups || []), ...(sameGroups || [])];
 
       if (mode === "choice") {
@@ -1677,7 +1542,6 @@
         const raw = String(lines[i] ?? "");
         const trimmed = raw.trim();
         if (!trimmed) { i++; continue; }
-
         const parsed = parseLeadingSettings(raw);
         if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
           globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -1686,7 +1550,6 @@
           i++;
           continue;
         }
-
         break;
       }
 
@@ -1695,7 +1558,6 @@
         const line = String(lines[i] ?? "");
         const trimmed = line.trim();
         if (!trimmed) continue;
-
         const parsedSettings = parseLeadingSettings(line);
         if (!parsedSettings.rest && (parsedSettings.tags.length || parsedSettings.onOffControls.length || parsedSettings.sameGroups.length)) {
           globalFlags = mergeFlags(globalFlags, parsedSettings.tags);
@@ -1703,13 +1565,11 @@
           globalSameGroups.push(...parsedSettings.sameGroups);
           continue;
         }
-
         const parsed = parseQuestionLine(line, overrideFlags || globalFlags, globalSameGroups);
         if (parsed) {
           items.push({ id: uid(), section: currentSection, ...parsed });
           continue;
         }
-
         if (!trimmed.startsWith("[")) currentSection = trimmed;
       }
 
@@ -1752,7 +1612,6 @@
 
     function unpackItemFromFirestore(item) {
       if (!item || typeof item !== "object") return item;
-
       const decodeSameRules = (arr) => Array.isArray(arr)
         ? arr.map(v => String(v ?? "")).filter(Boolean).map(v => v.split("|||").map(x => x.trim()).filter(Boolean)).filter(g => g.length >= 2)
         : [];
@@ -1957,7 +1816,6 @@
       clearResultEnterHandler();
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
-
       resultEnterHandler = (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
@@ -1965,7 +1823,6 @@
         e.preventDefault();
         nextQuestion();
       };
-
       window.addEventListener("keydown", resultEnterHandler);
     }
 
@@ -2133,7 +1990,6 @@
         state.doc?.rawText || itemsToRawText(state.doc?.items || [], state.doc?.globalFlags || { random:false, choice:false, randomChoice:false, number:false, open:false }, state.doc?.onOffControls || []),
         activeFlags
       );
-
       const quizItems = (parsed.items && parsed.items.length) ? parsed.items : (state.doc?.items || []);
       const allIndices = quizItems.map((_, i) => i);
       const order = Array.isArray(orderIndices) ? orderIndices.slice() : (activeFlags.random ? shuffle(allIndices) : allIndices);
@@ -2290,14 +2146,12 @@
         const labels = [];
         let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
         let q = 0;
-
         let i = 0;
         while (i < lines.length && !String(lines[i]).trim()) { labels.push(""); i++; }
         while (i < lines.length) {
           const line = String(lines[i] ?? "");
           const trimmed = line.trim();
           if (!trimmed) { labels.push(""); i++; continue; }
-
           const parsed = parseLeadingSettings(line);
           if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
             globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -2305,7 +2159,6 @@
             i++;
             continue;
           }
-
           const qline = parseQuestionLine(line, globalFlags, []);
           if (qline) {
             q += 1;
@@ -2318,7 +2171,6 @@
         while (labels.length < lines.length) labels.push("");
         return labels;
       }
-
       return Array.from({ length: lines.length }, (_, i) => String(i + 1));
     }
 
@@ -2387,12 +2239,10 @@
 
     function setupFloatingTriggerSuggestions({ host, textarea, box, triggerChar, items, onPick }) {
       if (!host || !textarea || !box) return;
-
       const hide = () => {
         box.innerHTML = "";
         box.classList.add("hide");
       };
-
       const refresh = () => {
         const pos = textarea.selectionStart ?? 0;
         const active = pos > 0 && textarea.value[pos - 1] === triggerChar;
@@ -2431,7 +2281,6 @@
           });
         });
       };
-
       textarea.addEventListener("input", refresh);
       textarea.addEventListener("keyup", refresh);
       textarea.addEventListener("click", refresh);
@@ -2506,7 +2355,6 @@
             resolve(null);
           }
         }, { once: true });
-
         input.click();
       });
 
@@ -2580,23 +2428,19 @@
         alert(`更新で失敗したよ: ${err?.message || err}`);
       } finally {
         state.showComments = keepCommentsVisible ? currentShowComments : state.showComments;
-        startFlash("home", 800);
+        startFlash("comments", 800);
       }
     }
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
-
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
-
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
-
       const btn = document.getElementById("deleteBtn");
       if (btn) btn.disabled = true;
-
       (async () => {
         try {
           await deleteDoc(doc(db, COLLECTION, state.docId));
@@ -2651,13 +2495,27 @@
 
     function setupCommentSuggestions(host, textarea, box) {
       setupFloatingTriggerSuggestions({
-        host,
-        textarea,
-        box,
+        host, textarea, box,
         triggerChar: "@",
         items: makeCommentSuggestionItems(),
         onPick: () => {}
       });
+    }
+
+    function collectPictureIdsFromEditor() {
+      const ids = new Set();
+      const add = v => {
+        const s = String(v ?? "").trim();
+        if (s) ids.add(s);
+      };
+      const draftPictures = normalizePictures(state.draftPictures || {});
+      Object.keys(draftPictures).forEach(add);
+      const raw = String(state.draft?.rawText || "");
+      raw.replace(/\[picture\(([^)]+)\)\]/g, (_, id) => {
+        add(id);
+        return "";
+      });
+      return Array.from(ids);
     }
 
     function setupEditorTagSuggestions(host, textarea, box) {
@@ -2667,7 +2525,9 @@
         box,
         triggerChar: "#",
         items: () => {
-          const next = getNextPictureNumber(textarea.value, state.draftPictures);
+          const ids = collectPictureIdsFromEditor();
+          const nextId = ids.length ? ids.find(v => /^\d+$/.test(v)) ? String(Math.max(...ids.filter(v => /^\d+$/.test(v)).map(Number)) + 1) : "1" : "1";
+          const picLabel = ids.length ? `📤 [picture]` : `📤 [picture]`;
           return [
             { label: "[open]", value: "[open]" },
             { label: "[random]", value: "[random]" },
@@ -2675,7 +2535,8 @@
             { label: "[random choice]", value: "[random choice]" },
             { label: "[number]", value: "[number]" },
             { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-            { label: `[picture(${next})]`, value: `[picture(${next})]` }
+            { label: picLabel, value: `[picture(${nextId})]` },
+            ...ids.slice(0, 20).map(id => ({ label: `[picture(${id})]`, value: `[picture(${id})]` }))
           ];
         },
         onPick: (value) => {
@@ -2702,7 +2563,6 @@
 
     async function addComment() {
       if (!state.docId || !state.doc) return;
-
       let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
       const text = (state.commentDraft?.text || "").trim();
       const isPrivate = !!state.commentDraft?.isPrivate;
@@ -2826,6 +2686,9 @@
         number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
         open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
       };
+      const pictures = Array.isArray(data.pictureEntriesText) && data.pictureEntriesText.length
+        ? decodePictures(data.pictureEntriesText)
+        : normalizePictures(data.pictures || {});
       return {
         id,
         title: data.title || "問題",
@@ -2840,7 +2703,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictures: decodePictures(data.pictureEntriesText) || normalizePictures(data.pictures || {}),
+        pictures,
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -3087,10 +2950,7 @@
       if (!value) throw new Error("empty partner link");
       state.partnerLink = value;
       safeLocalSet(PARTNER_LINK_LOCAL_KEY, value);
-      await setDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID), {
-        partnerLink: value,
-        updatedAt: Date.now()
-      }, { merge: true });
+      await setDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID), { partnerLink: value, updatedAt: Date.now() }, { merge: true });
     }
 
     function openPartnerAction() {
@@ -3098,12 +2958,10 @@
         openPartnerModal();
         return;
       }
-
       if (!state.partnerLink) {
         alert("パートナーリンクはまだ未設定だよ");
         return;
       }
-
       window.open(state.partnerLink, "_blank", "noopener,noreferrer");
     }
 
@@ -3241,24 +3099,32 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
+    function collectPictureIdsFromEditor() {
+      const ids = new Set();
+      const add = v => {
+        const s = String(v ?? "").trim();
+        if (s) ids.add(s);
+      };
+      const draftPictures = normalizePictures(state.draftPictures || {});
+      Object.keys(draftPictures).forEach(add);
+      const raw = String(state.draft?.rawText || "");
+      raw.replace(/\[picture\(([^)]+)\)\]/g, (_, id) => {
+        add(id);
+        return "";
+      });
+      return Array.from(ids);
+    }
+
     function renderPicturePanel() {
       const pictureMap = normalizePictures(state.draftPictures || {});
-      const keys = Object.keys(pictureMap);
-      const current = state.pictureChoice || keys[0] || "1";
-      const next = getNextPictureNumber("", pictureMap);
-      const allChoices = Array.from(new Set([...keys, String(next)])).sort((a, b) => {
-        const an = Number(a), bn = Number(b);
-        if (Number.isFinite(an) && Number.isFinite(bn)) return an - bn;
-        if (Number.isFinite(an)) return -1;
-        if (Number.isFinite(bn)) return 1;
-        return String(a).localeCompare(String(b), "ja");
-      });
+      const ids = collectPictureIdsFromEditor();
+      const current = state.pictureChoice || ids[0] || "1";
       const currentSrc = pictureMap[current] || "";
       return `
         <div class="card" style="display:grid;gap:12px">
           <div class="row" style="justify-content:space-between;align-items:flex-end;">
             <div style="min-width:0;flex:1">
-              <div class="label">行表示</div>
+              <div class="label">行数 / 問題数</div>
               <select id="gutterModeSelect" class="input smallSelect">
                 <option value="line">行数</option>
                 <option value="question">問題数</option>
@@ -3268,9 +3134,9 @@
               <div class="label">画像</div>
               <div class="row" style="align-items:center;">
                 <select id="pictureSelect" class="input pictureSelect">
-                  ${allChoices.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("")}
+                  ${(ids.length ? ids : ["1"]).map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("")}
                 </select>
-                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📷</button>
+                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" title="再アップロード">📤</button>
               </div>
             </div>
           </div>
@@ -3392,10 +3258,14 @@
       const gutterModeSelect = document.getElementById("gutterModeSelect");
       const pictureSelect = document.getElementById("pictureSelect");
       const reuploadPictureBtn = document.getElementById("reuploadPictureBtn");
-      const editorInfo = document.createElement("div");
-      editorInfo.className = "note";
-      editorInfo.id = "editorInfo";
-      document.querySelector(".page .card").appendChild(editorInfo);
+
+      let editorInfo = document.getElementById("editorInfo");
+      if (!editorInfo) {
+        editorInfo = document.createElement("div");
+        editorInfo.className = "note";
+        editorInfo.id = "editorInfo";
+        document.querySelector(".page .card").appendChild(editorInfo);
+      }
 
       function refreshKeyStatus() {
         if (!state.doc) {
@@ -3529,7 +3399,7 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictureEntriesText: encodePictures(uploadedPictures),
+              pictureEntriesText: Object.entries(uploadedPictures).map(([k, v]) => `${k}|||${v}`),
               comments: existingComments
             };
 
@@ -3737,9 +3607,7 @@
 
             <div class="card" style="display:grid;gap:10px">
               <div class="label">${esc(modeLabel)}</div>
-              ${q.item.mode === "choice" ? `
-                <div id="choiceGrid" class="choiceGrid"></div>
-              ` : `
+              ${q.item.mode === "choice" ? `<div id="choiceGrid" class="choiceGrid"></div>` : `
                 <div class="answerFields" style="grid-template-columns:1fr;">
                   ${Array.from({ length: fieldCount }, (_, i) => `
                     <input
@@ -3819,11 +3687,8 @@
             }
             if (e.key === "Enter") {
               e.preventDefault();
-              if (i < inputs.length - 1) {
-                inputs[i + 1].focus();
-              } else {
-                submitAnswer();
-              }
+              if (i < inputs.length - 1) inputs[i + 1].focus();
+              else submitAnswer();
             }
           });
         });
@@ -3948,6 +3813,8 @@
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
         : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
 
+      const refreshIcon = state.refreshFlash.comments ? "✓" : "↻";
+
       return `
         <div class="commentWrap">
           <div class="card commentWrap">
@@ -3992,6 +3859,7 @@
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
               <div class="commentToggleRow">
+                <button class="ghost miniAction tinyIconBtn" id="commentsRefreshBtn" type="button" aria-label="更新">${refreshIcon}</button>
                 <span class="commentBadge">表示 ${visibleComments.length}</span>
                 ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
               </div>
@@ -4099,6 +3967,7 @@
         const commentText = document.getElementById("commentText");
         const commentPrivate = document.getElementById("commentPrivate");
         const postCommentBtn = document.getElementById("postCommentBtn");
+        const commentsRefreshBtn = document.getElementById("commentsRefreshBtn");
         const scoreSuggestBox = document.getElementById("scoreSuggestBox");
         const commentHost = document.querySelector(".commentInputHost");
         const cancelReplyBtn = document.getElementById("cancelReplyBtn");
@@ -4115,6 +3984,7 @@
         }
         if (commentPrivate) commentPrivate.addEventListener("change", e => { state.commentDraft.isPrivate = !!e.target.checked; });
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
+        if (commentsRefreshBtn) commentsRefreshBtn.addEventListener("click", () => refreshCurrentDoc({ keepCommentsVisible: true }));
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
 
@@ -4421,11 +4291,8 @@
 
       if (closeBtn) closeBtn.addEventListener("click", () => closePartnerModal());
       if (openBtn) openBtn.addEventListener("click", () => {
-        if (state.partnerLink) {
-          window.open(state.partnerLink, "_blank", "noopener,noreferrer");
-        } else {
-          alert("パートナーリンクはまだ未設定だよ");
-        }
+        if (state.partnerLink) window.open(state.partnerLink, "_blank", "noopener,noreferrer");
+        else alert("パートナーリンクはまだ未設定だよ");
         closePartnerModal();
       });
       if (editBtn) editBtn.addEventListener("click", async () => {
