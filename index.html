@@ -221,12 +221,8 @@
       scrollbar-gutter:stable;
     }
 
-    .editorMirror .memoText{
-      color:#98a0af;
-    }
-    body.dark .editorMirror .memoText{
-      color:#7e8798;
-    }
+    .editorMirror .memoText{ color:#98a0af; }
+    body.dark .editorMirror .memoText{ color:#7e8798; }
 
     .textarea{
       position:relative;
@@ -1042,6 +1038,18 @@
       justify-content:center;
     }
 
+    .statChip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(127,127,127,.08);
+      font-size:12px;
+      font-weight:800;
+      color:var(--text);
+    }
+
     @keyframes tutInRight{
       from{ opacity:0; transform:translateX(28px); }
       to{ opacity:1; transform:translateX(0); }
@@ -1108,6 +1116,13 @@
       deleteDoc,
       collection
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import {
+      getStorage,
+      ref as storageRef,
+      uploadBytes,
+      getDownloadURL,
+      deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBsiyr6pq0CLo4dT2c7QtoshZBqBKsviwE",
@@ -1121,11 +1136,11 @@
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
+    const storage = getStorage(appFirebase);
 
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
-    if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
@@ -1388,17 +1403,6 @@
         for (const token of collectPictureTokensFromText(t)) set.add(token);
       }
       return [...set];
-    }
-
-    function newPictureToken(existing = []){
-      const base = `img-${suffix4()}`;
-      let token = base;
-      let i = 1;
-      const set = new Set(existing || []);
-      while (set.has(token)){
-        token = `${base}-${i++}`;
-      }
-      return token;
     }
 
     function normalizePictures(obj){
@@ -2389,7 +2393,7 @@
       refresh();
     }
 
-    async function fileToWebpDataUrl(file){
+    async function fileToWebpBlob(file){
       const url = URL.createObjectURL(file);
       try{
         const img = await new Promise((resolve, reject) => {
@@ -2413,57 +2417,29 @@
         if (!ctx) throw new Error("canvas context unavailable");
         ctx.drawImage(img, 0, 0, cw, ch);
 
-        try{
-          const webp = canvas.toDataURL("image/webp", 0.75);
-          if (webp.startsWith("data:image/webp")) return webp;
-        }catch{}
+        const blob = await new Promise(resolve => {
+          canvas.toBlob(b => resolve(b || null), "image/webp", 0.82);
+        });
+
+        if (blob) return blob;
 
         const fallback = await new Promise(resolve => {
-          canvas.toBlob(blob => {
-            if (!blob) return resolve("");
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result || ""));
-            reader.readAsDataURL(blob);
-          }, "image/png");
+          canvas.toBlob(b => resolve(b || null), "image/png");
         });
-        return fallback || "";
+        if (fallback) return fallback;
+
+        throw new Error("画像の変換に失敗したよ");
       }finally{
         URL.revokeObjectURL(url);
       }
     }
 
-    async function pickPictureAndStore(token){
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.style.display = "none";
-      document.body.appendChild(input);
-
-      const result = await new Promise(resolve => {
-        input.addEventListener("change", async () => {
-          const file = input.files && input.files[0];
-          if (!file){
-            resolve(null);
-            return;
-          }
-          try{
-            const dataUrl = await fileToWebpDataUrl(file);
-            resolve(dataUrl || null);
-          }catch(err){
-            console.error(err);
-            resolve(null);
-          }
-        }, { once: true });
-
-        input.click();
-      });
-
-      input.remove();
-
-      if (result){
-        state.draftPictures[String(token)] = result;
-        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
-      }
+    async function uploadPictureForToken(docId, token, file){
+      const blob = await fileToWebpBlob(file);
+      const path = `quiz_images/${docId || "draft"}/${String(token)}.webp`;
+      const ref = storageRef(storage, path);
+      await uploadBytes(ref, blob, { contentType: blob.type || "image/webp" });
+      return await getDownloadURL(ref);
     }
 
     function isOpenDoc(docData){
@@ -2530,7 +2506,6 @@
 
     function openDeleteConfirmThenDelete(){
       if (!state.docId) return;
-
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
@@ -2604,11 +2579,12 @@
       });
     }
 
-    function editorPictureItemsFromCurrentText(){
+    function editorPictureTokens(){
       const existingTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {}));
-      const nextToken = newPictureToken(existingTokens);
-      const list = [...existingTokens, nextToken];
-      return [...new Set(list)].map(token => ({ label: `[picture(${token})]`, value: `[picture(${token})]` }));
+      const currentToken = state.pictureChoice || "";
+      const tokens = [...new Set([...existingTokens, ...Object.keys(state.draftPictures || {}), currentToken].filter(Boolean))];
+      if (!tokens.length) return [];
+      return tokens.sort((a,b) => String(a).localeCompare(String(b), "ja"));
     }
 
     function setupEditorTagSuggestions(host, textarea, box){
@@ -2624,11 +2600,11 @@
           { label: "[random choice]", value: "[random choice]" },
           { label: "[number]", value: "[number]" },
           { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-          ...editorPictureItemsFromCurrentText()
+          ...editorPictureTokens().map(token => ({ label: `[picture(${token})]`, value: `[picture(${token})]` }))
         ],
         onPick: (value) => {
           const m = String(value || "").match(/^\[picture\(([^)\r\n]+)\)\]$/);
-          if (m) void pickPictureAndStore(m[1]);
+          if (m) void preparePictureToken(m[1]);
         }
       });
     }
@@ -2720,7 +2696,15 @@
 
     const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
     const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
-    const homeButtonsHtml = () => helpButtonHtml();
+
+    function editorStatsHtml(){
+      const parsed = parseItems(state.draft?.rawText || "");
+      const lines = String(state.draft?.rawText || "").split(/\r?\n/).filter(v => v.trim() !== "").length;
+      return `
+        <span class="statChip">行数 ${lines}</span>
+        <span class="statChip">問題数 ${parsed.items.length}</span>
+      `;
+    }
 
     const editorActionHtml = () => {
       const buttons = [];
@@ -3047,12 +3031,10 @@
         openPartnerModal();
         return;
       }
-
       if (!state.partnerLink){
         alert("パートナーリンクはまだ未設定だよ");
         return;
       }
-
       window.open(state.partnerLink, "_blank", "noopener,noreferrer");
     }
 
@@ -3078,7 +3060,7 @@
                 <h1 class="title">問題作成サイト</h1>
                 <div class="sub">作って、そのまま遊べる</div>
               </div>
-              ${homeButtonsHtml()}
+              ${helpButtonHtml()}
             </div>
           </div>
 
@@ -3190,12 +3172,16 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
+    function hasPictureUiForDraft(){
+      const tokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {}));
+      return tokens.length > 0 || Object.keys(state.draftPictures || {}).length > 0;
+    }
+
     function renderPicturePanel(){
       const pictureMap = normalizePictures(state.draftPictures || {});
       const currentTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(pictureMap));
       const allChoices = [...new Set([...currentTokens, ...Object.keys(pictureMap), state.pictureChoice].filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), "ja"));
       const current = state.pictureChoice || allChoices[0] || "";
-      const currentSrc = pictureMap[current] || "";
       return `
         <div class="card" style="display:grid;gap:12px">
           <div class="row" style="justify-content:space-between;align-items:flex-end;">
@@ -3217,30 +3203,60 @@
             </div>
           </div>
           <div class="note">
-            選んだ [picture(n)] を差し替えられるよ。使われていない画像は保存時に外れるよ。
+            選んだ [picture(n)] を差し替えられるよ。保存したデータには画像そのものは入れず、保存サイズを小さくしているよ。
           </div>
-          ${currentSrc ? `<div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;"><img class="inlinePicture" src="${esc(currentSrc)}" alt="selected picture"></div>` : ""}
         </div>
       `;
     }
 
+    async function preparePictureToken(token){
+      if (!token) return;
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.style.display = "none";
+      document.body.appendChild(input);
+
+      const file = await new Promise(resolve => {
+        input.addEventListener("change", () => {
+          resolve(input.files && input.files[0] ? input.files[0] : null);
+        }, { once: true });
+        input.click();
+      });
+
+      input.remove();
+      if (!file) return;
+
+      try{
+        const docIdForStorage = state.docId || state.draft?.title || "draft";
+        const url = await uploadPictureForToken(docIdForStorage, token, file);
+        state.draftPictures[String(token)] = url;
+        state.pictureChoice = String(token);
+        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
+        render();
+      }catch(err){
+        console.error(err);
+        alert(`画像のアップロードで失敗したよ: ${err?.message || err}`);
+      }
+    }
+
     async function asyncUploadPicturesForDoc(docId, pictures){
-      return (async () => {
-        const out = {};
-        const entries = Object.entries(normalizePictures(pictures || {}));
-        for (const [num, value] of entries){
-          if (typeof value === "string" && (value.startsWith("data:image/") || value.startsWith("https://") || value.startsWith("http://"))) {
-            out[num] = value;
-          }
+      const out = {};
+      const entries = Object.entries(normalizePictures(pictures || {}));
+      for (const [num, value] of entries){
+        if (typeof value === "string" && (value.startsWith("https://") || value.startsWith("http://"))){
+          out[num] = value;
         }
-        return out;
-      })();
+      }
+      return out;
     }
 
     function renderEditor(){
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
+      const showPicturePanel = hasPictureUiForDraft();
+      const statsHtml = editorStatsHtml();
 
       root.innerHTML = `
         <div class="page">
@@ -3269,10 +3285,11 @@
             </div>
 
             <div class="row" style="justify-content:flex-end;align-items:center;">
+              ${showPicturePanel ? "" : statsHtml}
               ${editorActionHtml()}
             </div>
 
-            ${renderPicturePanel()}
+            ${showPicturePanel ? renderPicturePanel() : ""}
 
             <div>
               <div class="label">問題欄</div>
@@ -3360,6 +3377,7 @@
       problemText.addEventListener("input", e => {
         d.rawText = e.target.value;
         scheduleEditorSync(problemText, gutter, mirror);
+        render();
       });
       problemText.addEventListener("scroll", () => scheduleEditorSync(problemText, gutter, mirror));
 
@@ -3383,16 +3401,14 @@
       if (reuploadPictureBtn){
         reuploadPictureBtn.addEventListener("click", async () => {
           const choice = String((pictureSelect && pictureSelect.value) || state.pictureChoice || "").trim();
-          if (!choice) {
-            const token = newPictureToken(collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {})));
+          if (!choice){
+            const token = `img-${suffix4()}`;
             state.pictureChoice = token;
-            await pickPictureAndStore(token);
-            render();
+            await preparePictureToken(token);
             return;
           }
           state.pictureChoice = choice;
-          await pickPictureAndStore(choice);
-          render();
+          await preparePictureToken(choice);
         });
       }
 
@@ -3424,7 +3440,7 @@
 
           const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
           if (!items.length && !rawHasText) return alert("文字がひとつも読めなかったよ");
-          if (!items.length && rawHasText) {
+          if (!items.length && rawHasText){
             const ok = confirm("問題として読めたものがないけど、そのまま保存する？");
             if (!ok) return;
           }
@@ -3453,7 +3469,7 @@
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
-          const usedPics = getPictureTokensFromAll(d.rawText, subtitle, ...Object.keys(state.draftPictures || {}));
+          const usedPics = collectPictureTokensFromMany(d.rawText, subtitle, ...Object.keys(state.draftPictures || {}));
           const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
 
           saveBtn.disabled = true;
@@ -3544,19 +3560,6 @@
       refreshKeyStatus();
       titleInput.focus();
       bindGlobalButtons();
-    }
-
-    function getPictureTokensFromAll(...texts){
-      return collectPictureTokensFromMany(...texts);
-    }
-
-    function prunePicturesMap(pictures, refs){
-      const out = {};
-      const keep = new Set(refs || []);
-      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))){
-        if (keep.has(String(k))) out[String(k)] = v;
-      }
-      return out;
     }
 
     function renderSettings(){
@@ -4500,6 +4503,19 @@
         [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
+    }
+
+    function prunePicturesMap(pictures, refs){
+      const out = {};
+      const keep = new Set(refs || []);
+      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))){
+        if (keep.has(String(k))) out[String(k)] = v;
+      }
+      return out;
+    }
+
+    function getPictureTokensFromAll(...texts){
+      return collectPictureTokensFromMany(...texts);
     }
 
     window.addEventListener("hashchange", loadRoute);
