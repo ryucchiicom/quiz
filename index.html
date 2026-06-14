@@ -40,8 +40,12 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
+    html, body{
+      overflow-x:auto;
+    }
+
     *{ box-sizing:border-box; }
-    html, body{ overflow-x:auto; }
+
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -61,6 +65,16 @@
     .hide{ display:none !important; }
     .page{ max-width:980px; margin:0 auto; padding:16px; min-height:100vh; }
 
+    .titleArea{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      min-width:0;
+    }
+
+    .titleBlock{ min-width:0; }
+
     .topbar{
       display:flex;
       justify-content:space-between;
@@ -72,16 +86,6 @@
       backdrop-filter:blur(8px);
       z-index:5;
     }
-
-    .titleArea{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      min-width:0;
-    }
-
-    .titleBlock{ min-width:0; }
 
     .title{
       font-size:28px;
@@ -98,7 +102,6 @@
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
-      word-break:break-word;
     }
 
     .card{
@@ -116,13 +119,6 @@
       gap:16px;
     }
 
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
     .bigBtn,.primary{
       background:var(--accent);
       color:#fff;
@@ -135,6 +131,7 @@
       border:1px solid #d7e2ff;
       font-weight:700;
     }
+
     body.dark .ghost{
       background:#182133;
       color:#d7e5ff;
@@ -147,10 +144,18 @@
       border:1px solid #ffc7c7;
       font-weight:800;
     }
+
     body.dark .danger{
       background:#2a1620;
       color:#ffaaaa;
       border-color:#5b2a39;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
     .input{
@@ -162,6 +167,7 @@
       background:var(--panel);
       color:var(--text);
     }
+
     .input:focus{
       border-color:#9ab8ff;
       box-shadow:0 0 0 4px rgba(47,111,237,.08);
@@ -174,12 +180,6 @@
       margin-bottom:6px;
     }
 
-    .help,.note{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.8;
-    }
-
     .gridEditor{
       display:grid;
       grid-template-columns:64px 1fr;
@@ -188,6 +188,7 @@
       overflow:hidden;
       min-height:420px;
       background:var(--panel);
+      align-items:stretch;
     }
 
     .gutter{
@@ -200,6 +201,7 @@
       white-space:pre;
       user-select:none;
       overflow:hidden;
+      align-self:stretch;
       min-height:420px;
     }
 
@@ -222,6 +224,7 @@
       z-index:1;
       scrollbar-gutter:stable;
     }
+
     .editorMirror .memoText{ color:#98a0af; }
     body.dark .editorMirror .memoText{ color:#7e8798; }
 
@@ -243,6 +246,12 @@
       color:transparent;
       caret-color:var(--text);
       scrollbar-gutter:stable;
+    }
+
+    .help,.note{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
     }
 
     .quiz{
@@ -403,7 +412,6 @@
       border-color:rgba(91,140,255,.40);
       background:rgba(91,140,255,.10);
     }
-
     body.dark .reviewItem.reviewBad{
       border-color:rgba(255,118,118,.35);
       background:rgba(255,118,118,.08);
@@ -556,10 +564,12 @@
       border-color:var(--ownerLine);
       background:var(--ownerBg);
     }
+
     .commentEditor{
       border-color:var(--editorLine);
       background:var(--editorBg);
     }
+
     .commentViewer{
       border-color:var(--line);
       background:var(--panel);
@@ -646,6 +656,7 @@
       border-radius:999px;
       white-space:nowrap;
     }
+
     body.dark .publicBadge{
       color:#a9c0ff;
       border-color:rgba(91,140,255,.28);
@@ -660,7 +671,9 @@
     }
 
     .editorHost,
-    .commentInputHost{ position:relative; }
+    .commentInputHost{
+      position:relative;
+    }
 
     .floatSuggest{
       position:absolute;
@@ -744,8 +757,14 @@
       transition:.2s background;
       flex:none;
     }
-    body.dark .toggleSwitch{ background:#42506a; }
-    .toggleSwitch.on{ background:var(--accent); }
+
+    body.dark .toggleSwitch{
+      background:#42506a;
+    }
+
+    .toggleSwitch.on{
+      background:var(--accent);
+    }
 
     .toggleKnob{
       position:absolute;
@@ -758,7 +777,10 @@
       box-shadow:0 4px 10px rgba(0,0,0,.15);
       transition:.2s transform;
     }
-    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
+
+    .toggleSwitch.on .toggleKnob{
+      transform:translateX(24px);
+    }
 
     .settingHeader{
       display:grid;
@@ -778,14 +800,16 @@
       line-height:1.6;
     }
 
-    #tutorialLayer, #partnerLayer{
+    #tutorialLayer,
+    #partnerLayer{
       position:fixed;
       inset:0;
       z-index:1000;
       pointer-events:none;
     }
 
-    .tutorialOverlay, .partnerOverlay{
+    .tutorialOverlay,
+    .partnerOverlay{
       position:fixed;
       inset:0;
       pointer-events:auto;
@@ -798,12 +822,14 @@
       transition:opacity .22s ease, transform .22s ease;
     }
 
-    .tutorialOverlay.closing, .partnerOverlay.closing{
+    .tutorialOverlay.closing,
+    .partnerOverlay.closing{
       opacity:0;
       transform:translateY(18px);
     }
 
-    .tutorialPanel, .partnerPanel{
+    .tutorialPanel,
+    .partnerPanel{
       width:min(860px, 100%);
       max-height:min(86vh, 860px);
       overflow:hidden;
@@ -816,7 +842,8 @@
       grid-template-rows:auto 1fr auto;
     }
 
-    .tutorialTop, .partnerTop{
+    .tutorialTop,
+    .partnerTop{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
@@ -824,21 +851,24 @@
       padding:16px 18px 0;
     }
 
-    .tutorialTitle, .partnerTitle{
+    .tutorialTitle,
+    .partnerTitle{
       font-size:24px;
       font-weight:1000;
       line-height:1.1;
       margin:0;
     }
 
-    .tutorialSub, .partnerSub{
+    .tutorialSub,
+    .partnerSub{
       margin-top:6px;
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    .tutorialClose, .partnerClose{
+    .tutorialClose,
+    .partnerClose{
       width:44px;
       height:44px;
       border-radius:14px;
@@ -849,7 +879,8 @@
       font-weight:900;
     }
 
-    .tutorialBody, .partnerBody{
+    .tutorialBody,
+    .partnerBody{
       padding:14px 18px 6px;
       overflow:auto;
     }
@@ -861,6 +892,7 @@
       animation-duration:.26s;
       animation-fill-mode:both;
     }
+
     .tutorialPage.anim-open{ animation-name:tutInOpen; }
     .tutorialPage.anim-next{ animation-name:tutInRight; }
     .tutorialPage.anim-prev{ animation-name:tutInLeft; }
@@ -872,7 +904,9 @@
       padding:16px;
       background:rgba(127,127,127,.05);
     }
-    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
+    body.dark .tutorialCard{
+      background:rgba(255,255,255,.03);
+    }
 
     .tutorialHero{
       display:grid;
@@ -905,7 +939,8 @@
     }
     body.dark .tutorialCode{ background:#0a1220; }
 
-    .tutorialFooter, .partnerFooter{
+    .tutorialFooter,
+    .partnerFooter{
       display:flex;
       justify-content:space-between;
       gap:10px;
@@ -1306,10 +1341,6 @@
       return String(s ?? "").replace(/^"(.*)"$/s, "$1");
     }
 
-    function normalizeAnswerText(s){
-      return norm(unquoteAnswerLiteral(s));
-    }
-
     function parseSameTag(token){
       const inside = token.slice(4).trim();
       const groups = [];
@@ -1377,11 +1408,11 @@
       return out;
     }
 
-    function encodePictures(pictures){
+    function encodePicturesStore(pictures){
       return Object.entries(normalizePictures(pictures || {})).map(([k, v]) => `${k}|||${v}`);
     }
 
-    function decodePictures(entries){
+    function decodePicturesStore(entries){
       const out = {};
       for (const item of entries || []){
         if (typeof item !== "string") continue;
@@ -1394,8 +1425,40 @@
       return out;
     }
 
-    function getPictureMap(){
-      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
+    function pictureLocalKey(docId){
+      return `qb_pic_store_${docId || "new"}`;
+    }
+
+    function loadLocalPictures(docId){
+      try{
+        const raw = safeLocalGet(pictureLocalKey(docId));
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return normalizePictures(decodedMaybe(parsed));
+      }catch{
+        return {};
+      }
+    }
+
+    function saveLocalPictures(docId, pictures){
+      try{
+        const encoded = JSON.stringify(encodePicturesStore(pictures));
+        safeLocalSet(pictureLocalKey(docId), encoded);
+      }catch(err){
+        console.error(err);
+      }
+    }
+
+    function clearLocalPictures(docId){
+      try{
+        localStorage.removeItem(pictureLocalKey(docId));
+      }catch{}
+    }
+
+    function decodedMaybe(parsed){
+      if (Array.isArray(parsed)) return decodePicturesStore(parsed);
+      if (parsed && typeof parsed === "object") return parsed;
+      return {};
     }
 
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}){
@@ -2015,7 +2078,7 @@
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
-      state.draftPictures = { ...(state.doc?.pictures || {}) };
+      state.draftPictures = loadLocalPictures(state.docId) || {};
       state.pictureChoice = collectPictureTokensFromMany(state.draft.rawText, state.draft.subtitle, ...Object.keys(state.draftPictures))[0] || "";
       state.screen = "editor";
       render();
@@ -2072,6 +2135,7 @@
     function startQuiz(docData, id, orderIndices = null, onlyWrong = false){
       state.doc = { ...docData, comments: sortComments(docData.comments || []) };
       state.docId = id;
+      state.doc.pictures = loadLocalPictures(id);
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
       state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
@@ -2364,7 +2428,7 @@
           el.src = url;
         });
 
-        const maxSide = 1000;
+        const maxSide = 1200;
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
         const scale = Math.min(1, maxSide / Math.max(w, h));
@@ -2379,7 +2443,7 @@
         ctx.drawImage(img, 0, 0, cw, ch);
 
         try{
-          const webp = canvas.toDataURL("image/webp", 0.6);
+          const webp = canvas.toDataURL("image/webp", 0.68);
           if (webp.startsWith("data:image/webp")) return webp;
         }catch{}
 
@@ -2427,7 +2491,7 @@
 
       if (result){
         state.draftPictures[String(token)] = result;
-        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
+        saveLocalPictures(state.docId || "new", state.draftPictures);
       }
     }
 
@@ -2480,6 +2544,7 @@
         if (!snap.exists()) return;
         const data = snap.data() || {};
         const normalized = normalizeDoc(state.docId, data);
+        normalized.pictures = loadLocalPictures(state.docId);
         state.doc = normalized;
         const idx = state.allDocs.findIndex(d => d.id === state.docId);
         if (idx >= 0) state.allDocs[idx] = normalized;
@@ -2511,6 +2576,7 @@
           await deleteDoc(doc(db, COLLECTION, state.docId));
           removeMyMeta(state.docId);
           removeAccessRecord(state.docId);
+          clearLocalPictures(state.docId);
           state.allDocs = state.allDocs.filter(d => d.id !== state.docId);
           state.docId = "";
           state.doc = null;
@@ -2569,133 +2635,63 @@
       });
     }
 
-    function editorPictureItemsFromCurrentText(){
-      const existingTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {}));
-      const nextToken = newPictureToken(existingTokens);
-      const list = [...existingTokens, nextToken];
-      return [...new Set(list)].map(token => ({ label: `[picture(${token})]`, value: `[picture(${token})]` }));
+    function picturePanelMarkup(){
+      const pictureTokens = collectPictureTokensFromMany(
+        state.draft?.rawText || "",
+        state.draft?.subtitle || "",
+        ...Object.keys(state.draftPictures || {})
+      );
+      if (!pictureTokens.length) return "";
+
+      const pictureMap = normalizePictures(state.draftPictures || {});
+      const current = state.pictureChoice || pictureTokens[0] || "";
+      const allChoices = [...new Set([...pictureTokens, ...Object.keys(pictureMap)] )].sort((a,b) => String(a).localeCompare(String(b), "ja"));
+      const currentSrc = pictureMap[current] || "";
+
+      return `
+        <div class="card" style="display:grid;gap:12px">
+          <div class="row" style="justify-content:space-between;align-items:flex-end;">
+            <div style="min-width:0;flex:1">
+              <div class="label">表示</div>
+              <select id="gutterModeSelectInPanel" class="input smallSelect">
+                <option value="line">行数</option>
+                <option value="question">問題数</option>
+              </select>
+            </div>
+            <div style="min-width:0;flex:2">
+              <div class="label">画像</div>
+              <div class="row" style="align-items:center;">
+                <select id="pictureSelect" class="input pictureSelect">
+                  ${allChoices.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("")}
+                </select>
+                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📤</button>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            選んだ [picture(n)] を差し替えられるよ。使われていない画像は保存時に外れるよ。
+          </div>
+        </div>
+      `;
     }
 
-    function setupEditorTagSuggestions(host, textarea, box){
-      setupFloatingTriggerSuggestions({
-        host,
-        textarea,
-        box,
-        triggerChar: "#",
-        items: () => [
-          { label: "[open]", value: "[open]" },
-          { label: "[random]", value: "[random]" },
-          { label: "[choice]", value: "[choice]" },
-          { label: "[random choice]", value: "[random choice]" },
-          { label: "[number]", value: "[number]" },
-          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-          ...editorPictureItemsFromCurrentText()
-        ],
-        onPick: (value) => {
-          const m = String(value || "").match(/^\[picture\(([^)\r\n]+)\)\]$/);
-          if (m) void pickPictureAndStore(m[1]);
-        }
-      });
-    }
-
-    function updateCatalogDocFromState(){
-      if (!state.docId || !state.doc) return;
-      const idx = state.allDocs.findIndex(d => d.id === state.docId);
-      const normalized = normalizeDoc(state.docId, state.doc);
-      if (idx >= 0) state.allDocs[idx] = normalized;
-      else state.allDocs.unshift(normalized);
-      rebuildPublicOrder();
-    }
-
-    function latestCommentNameConflict(name){
-      const clean = String(name || "").trim();
-      if (!clean || clean === "匿名") return false;
-      return (state.doc?.comments || []).some(c => String(c.authorName || "").trim() === clean);
-    }
-
-    async function addComment(){
-      if (!state.docId || !state.doc) return;
-
-      let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
-      const text = (state.commentDraft?.text || "").trim();
-      const isPrivate = !!state.commentDraft?.isPrivate;
-      const replyTo = String(state.commentDraft?.replyTo || "");
-      if (!text) return alert("コメントを書いてね");
-
-      if (name !== "匿名" && latestCommentNameConflict(name)){
-        const yes = confirm(`「${name}」はもう使われてるよ。\n後ろに -uuid(4桁) を追加して投稿する？`);
-        if (yes) name = `${name}-${suffix4()}`;
-      }
-
-      const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
-      const proofs = {};
-      if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()){
-        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
-      }
-
-      const comment = {
-        id: uid(),
-        authorToken: getCommentToken(),
-        authorName: name,
-        authorRole: role,
-        text,
-        isPrivate,
-        parentId: replyTo || null,
-        proofs,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      setCommentName(name);
-      const next = sortComments([...(state.doc.comments || []), comment]);
-      await persistComments(next);
-
-      state.commentDraft.text = "";
-      state.commentDraft.isPrivate = false;
-      state.commentDraft.name = name;
-      state.commentDraft.replyTo = "";
-      state.commentDraft.scoreWanted = false;
-      state.showComments = true;
-      render();
-    }
-
-    async function toggleCommentVisibility(commentId){
-      if (!state.doc?.comments?.length) return;
-      const next = state.doc.comments.map(c => c.id === commentId ? { ...c, isPrivate: !c.isPrivate, updatedAt: Date.now() } : c);
-      await persistComments(next);
-      state.showComments = true;
-      render();
-    }
-
-    async function deleteComment(commentId){
-      if (!state.doc?.comments?.length) return;
-      if (!confirm("このコメントを削除する？")) return;
-      await persistComments(state.doc.comments.filter(c => c.id !== commentId && c.parentId !== commentId));
-      state.showComments = true;
-      render();
-    }
-
-    const quizCommentsToggleLabel = (comments) => {
-      const total = comments.length;
-      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      if (state.showComments) return "コメントを閉じる";
-      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
-    };
-
-    const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
-    const homeButtonsHtml = () => helpButtonHtml();
-
-    const editorActionHtml = () => {
+    function editorActionHtml(showGutterSelect){
       const buttons = [];
       if (state.doc){
         if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn" type="button">削除</button>`);
         else if (state.accessMode === "key") buttons.push(`<button class="danger" id="leaveBtn" type="button">脱退</button>`);
       }
+      if (showGutterSelect){
+        buttons.push(`
+          <select id="gutterModeSelect" class="input smallSelect">
+            <option value="line">行数</option>
+            <option value="question">問題数</option>
+          </select>
+        `);
+      }
       buttons.push(`<button class="primary" id="saveBtn" type="button">保存</button>`);
       return buttons.join("");
-    };
+    }
 
     async function ensureUniqueTitleAndId(baseTitle, currentId = ""){
       let candidateTitle = baseTitle.trim();
@@ -2732,6 +2728,7 @@
       const items = Array.isArray(data.items) && data.items.length
         ? data.items.map(unpackItemFromFirestore).filter(Boolean)
         : parsed.items;
+
       const globalFlags = {
         random: !!(data.globalFlags?.random ?? parsed.globalFlags?.random),
         choice: !!(data.globalFlags?.choice ?? parsed.globalFlags?.choice),
@@ -2739,6 +2736,7 @@
         number: !!(data.globalFlags?.number ?? parsed.globalFlags?.number),
         open: !!(data.globalFlags?.open ?? parsed.globalFlags?.open)
       };
+
       return {
         id,
         title: data.title || "問題",
@@ -2753,7 +2751,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictures: decodePictures(data.pictureEntriesText),
+        pictureTokens: Array.isArray(data.pictureTokens) ? data.pictureTokens.map(String) : [],
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -3042,7 +3040,8 @@
                 <h1 class="title">問題作成サイト</h1>
                 <div class="sub">作って、そのまま遊べる</div>
               </div>
-              ${homeButtonsHtml()}
+              <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+              <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
             </div>
           </div>
 
@@ -3077,7 +3076,7 @@
                 <div class="searchWrap">
                   <input id="homeSearchInput" class="input searchInput" type="text" placeholder="🔍 検索">
                   <button id="homeSearchBtn" class="ghost" type="button">検索</button>
-                  ${state.homeTab === "public" ? `<button id="homeReloadBtn" class="ghost tinyIconBtn" type="button" title="再読み込み">↻</button>` : ""}
+                  ${state.homeTab === "public" ? `<button id="homeReloadBtn" class="ghost tinyIconBtn" type="button" title="再読み込み">${state.refreshFlash.home ? "✓" : "↻"}</button>` : ""}
                 </div>
               </div>
 
@@ -3154,59 +3153,13 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
-    function picturePanelVisible(){
-      return collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {})).length > 0;
-    }
-
-    function renderPicturePanel(){
-      if (!picturePanelVisible()) return "";
-
-      const pictureMap = normalizePictures(state.draftPictures || {});
-      const currentTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(pictureMap));
-      const allChoices = [...new Set([...currentTokens, ...Object.keys(pictureMap), state.pictureChoice].filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), "ja"));
-      const current = state.pictureChoice || allChoices[0] || "";
-      return `
-        <div class="card" style="display:grid;gap:12px">
-          <div class="row" style="justify-content:space-between;align-items:flex-end;">
-            <div style="min-width:0;flex:1">
-              <div class="label">表示</div>
-              <select id="gutterModeSelect" class="input smallSelect">
-                <option value="line">行数</option>
-                <option value="question">問題数</option>
-              </select>
-            </div>
-            <div style="min-width:0;flex:2">
-              <div class="label">画像</div>
-              <div class="row" style="align-items:center;">
-                <select id="pictureSelect" class="input pictureSelect">
-                  ${allChoices.length ? allChoices.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("") : `<option value="">[picture(新規)]</option>`}
-                </select>
-                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📤</button>
-              </div>
-            </div>
-          </div>
-          <div class="note">選んだ [picture(n)] を差し替えられるよ。使われていない画像は保存時に外れるよ。</div>
-        </div>
-      `;
-    }
-
-    async function uploadPicturesForSave(pictures){
-      const out = {};
-      const entries = Object.entries(normalizePictures(pictures || {}));
-      for (const [num, value] of entries){
-        if (typeof value === "string" && (value.startsWith("data:image/") || value.startsWith("https://") || value.startsWith("http://"))) {
-          out[num] = value;
-        }
-      }
-      return out;
-    }
-
     function renderEditor(){
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
 
-      const picturePanel = renderPicturePanel();
+      const pictureTokens = collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {}));
+      const showPicturePanel = pictureTokens.length > 0;
 
       root.innerHTML = `
         <div class="page">
@@ -3235,11 +3188,10 @@
             </div>
 
             <div class="row" style="justify-content:flex-end;align-items:center;">
-              ${editorActionHtml()}
-              <div id="lineQuestionInfo" class="note"></div>
+              ${editorActionHtml(!showPicturePanel)}
             </div>
 
-            ${picturePanel}
+            ${showPicturePanel ? picturePanelMarkup() : ""}
 
             <div>
               <div class="label">問題欄</div>
@@ -3295,65 +3247,64 @@
       const tagSuggestBox = document.getElementById("tagSuggestBox");
       const editorHost = document.querySelector(".editorHost");
       const gutterModeSelect = document.getElementById("gutterModeSelect");
+      const gutterModeSelectInPanel = document.getElementById("gutterModeSelectInPanel");
       const pictureSelect = document.getElementById("pictureSelect");
       const reuploadPictureBtn = document.getElementById("reuploadPictureBtn");
-      const lineQuestionInfo = document.getElementById("lineQuestionInfo");
+      const editorInfo = document.createElement("div");
+      editorInfo.className = "note";
+      editorInfo.id = "editorInfo";
+      document.querySelector(".page .card").appendChild(editorInfo);
 
       function refreshKeyStatus(){
         if (!state.doc){
+          editorInfo.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
           keyBtn.disabled = false;
           keyBtn.textContent = "Key";
           return;
         }
         if (isOwner()){
+          editorInfo.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
           keyBtn.disabled = false;
           keyBtn.textContent = "Key";
           keyBtn.title = "";
         }else{
+          editorInfo.textContent = state.doc.keyMode === "open" ? "公開編集モード" : "Keyは主催者のみ変更できます";
           keyBtn.disabled = true;
           keyBtn.textContent = "Key";
           keyBtn.title = "Keyは主催者のみ変更できます";
         }
       }
 
-      function refreshLineQuestionInfo(){
-        const parsed = parseItems(problemText.value || "");
-        const qCount = parsed.items.length;
-        const lines = String(problemText.value || "").split(/\r?\n/).filter(v => String(v).trim().length > 0).length;
-        const hasPictures = picturePanelVisible();
-        if (lineQuestionInfo){
-          lineQuestionInfo.textContent = hasPictures ? "" : `${state.editorGutterMode === "question" ? `問題数 ${qCount}` : `行数 ${lines}`}`;
-        }
-      }
-
-      titleInput.addEventListener("input", e => {
-        d.title = e.target.value;
-      });
-      subInput.addEventListener("input", e => {
-        d.subtitle = e.target.value;
-        refreshLineQuestionInfo();
-      });
-
+      titleInput.addEventListener("input", e => d.title = e.target.value);
+      subInput.addEventListener("input", e => d.subtitle = e.target.value);
       problemText.addEventListener("input", e => {
         d.rawText = e.target.value;
         scheduleEditorSync(problemText, gutter, mirror);
-        refreshLineQuestionInfo();
-        renderPicturePanel();
+        if (!document.getElementById("pictureSelect") && collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {})).length) render();
       });
       problemText.addEventListener("scroll", () => scheduleEditorSync(problemText, gutter, mirror));
 
+      const currentGutterMode = state.editorGutterMode;
       if (gutterModeSelect){
-        gutterModeSelect.value = state.editorGutterMode;
+        gutterModeSelect.value = currentGutterMode;
         gutterModeSelect.addEventListener("change", () => {
           state.editorGutterMode = gutterModeSelect.value;
           localStorage.setItem(LOCAL_GUTTER_KEY, state.editorGutterMode);
           syncEditorArea(problemText, gutter, mirror);
-          refreshLineQuestionInfo();
+        });
+      }
+      if (gutterModeSelectInPanel){
+        gutterModeSelectInPanel.value = currentGutterMode;
+        gutterModeSelectInPanel.addEventListener("change", () => {
+          state.editorGutterMode = gutterModeSelectInPanel.value;
+          localStorage.setItem(LOCAL_GUTTER_KEY, state.editorGutterMode);
+          syncEditorArea(problemText, gutter, mirror);
         });
       }
 
       if (pictureSelect){
-        if (state.pictureChoice) pictureSelect.value = state.pictureChoice;
+        const current = state.pictureChoice || pictureSelect.value || "";
+        if (current) pictureSelect.value = current;
         pictureSelect.addEventListener("change", () => {
           state.pictureChoice = pictureSelect.value;
         });
@@ -3362,7 +3313,7 @@
       if (reuploadPictureBtn){
         reuploadPictureBtn.addEventListener("click", async () => {
           const choice = String((pictureSelect && pictureSelect.value) || state.pictureChoice || "").trim();
-          if (!choice) {
+          if (!choice){
             const token = newPictureToken(collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {})));
             state.pictureChoice = token;
             await pickPictureAndStore(token);
@@ -3432,17 +3383,14 @@
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
-          const usedPics = new Set(collectPictureTokensFromMany(d.rawText, subtitle));
-          const prunedPictures = {};
-          for (const [k, v] of Object.entries(state.draftPictures || {})){
-            if (usedPics.has(String(k))) prunedPictures[String(k)] = v;
-          }
+          const usedPics = collectPictureTokensFromMany(d.rawText, subtitle);
+          const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
 
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
 
           try{
-            const uploadedPictures = await uploadPicturesForSave(prunedPictures);
+            saveLocalPictures(newId, prunedPictures);
 
             const payload = {
               title: finalTitle,
@@ -3457,7 +3405,7 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictureEntriesText: encodePictures(uploadedPictures),
+              pictureTokens: usedPics,
               comments: existingComments
             };
 
@@ -3467,15 +3415,17 @@
               try{ await deleteDoc(doc(db, COLLECTION, oldId)); }catch(_){}
               removeMyMeta(oldId);
               removeAccessRecord(oldId);
+              clearLocalPictures(oldId);
               state.allDocs = state.allDocs.filter(x => x.id !== oldId);
             }
 
             state.docId = newId;
-            state.doc = { ...normalizeDoc(newId, payload), comments: sortComments(existingComments) };
-            state.draftPictures = { ...uploadedPictures };
+            state.doc = { ...normalizeDoc(newId, payload), comments: sortComments(existingComments), pictures: loadLocalPictures(newId) };
+            state.draftPictures = { ...prunedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
+            normalized.pictures = loadLocalPictures(newId);
             const idx = state.allDocs.findIndex(x => x.id === newId);
             if (idx >= 0) state.allDocs[idx] = normalized;
             else state.allDocs.unshift(normalized);
@@ -3524,7 +3474,6 @@
       syncEditorArea(problemText, gutter, mirror);
       setupEditorTagSuggestions(editorHost, problemText, tagSuggestBox);
       refreshKeyStatus();
-      refreshLineQuestionInfo();
       titleInput.focus();
       bindGlobalButtons();
     }
@@ -3645,7 +3594,8 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
               </div>
-              ${helpButtonHtml()}
+              <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+              <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3779,7 +3729,8 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
               </div>
-              ${helpButtonHtml()}
+              <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+              <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -3944,7 +3895,8 @@
                 <h1 class="title">${esc(state.doc.title || "問題")}</h1>
                 <div class="sub">${renderRichText(normalizeSubtitlePreview(state.doc.subtitle || ""), { pictureMap: pics })}</div>
               </div>
-              ${helpButtonHtml()}
+              <button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button>
+              <button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>
             </div>
             <div class="row">
               ${topButtonHtml()}
@@ -4390,6 +4342,7 @@
         const data = snap.data() || {};
         state.docId = id;
         state.doc = normalizeDoc(id, data);
+        state.doc.pictures = loadLocalPictures(id);
         setAccessModeForDoc(state.doc, id);
 
         if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open"){
@@ -4446,7 +4399,9 @@
           const snap = await getDoc(doc(db, COLLECTION, r.id));
           if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
           const data = snap.data() || {};
-          startQuiz(normalizeDoc(r.id, data), r.id);
+          const normalized = normalizeDoc(r.id, data);
+          normalized.pictures = loadLocalPictures(r.id);
+          startQuiz(normalized, r.id);
           maybeAutoOpenTutorial();
         }catch(err){
           console.error(err);
