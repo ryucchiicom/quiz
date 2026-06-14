@@ -40,8 +40,9 @@
       --editorLine:rgba(88,189,255,.45);
     }
 
+    html, body{ overflow-x:auto; }
     *{ box-sizing:border-box; }
-    html,body{ overflow-x:auto; }
+
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -97,7 +98,6 @@
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
-      word-break:break-word;
     }
 
     .card{
@@ -140,6 +140,7 @@
       border:1px solid #ffc7c7;
       font-weight:800;
     }
+
     body.dark .danger{
       background:#2a1620;
       color:#ffaaaa;
@@ -543,7 +544,6 @@
       color:#2f6fed;
       font-weight:900;
     }
-
     body.dark .scoreToken{ color:#66e08d; }
     body.dark .timeToken{ color:#8db2ff; }
 
@@ -753,8 +753,14 @@
       transition:.2s background;
       flex:none;
     }
-    body.dark .toggleSwitch{ background:#42506a; }
-    .toggleSwitch.on{ background:var(--accent); }
+
+    body.dark .toggleSwitch{
+      background:#42506a;
+    }
+
+    .toggleSwitch.on{
+      background:var(--accent);
+    }
 
     .toggleKnob{
       position:absolute;
@@ -767,7 +773,10 @@
       box-shadow:0 4px 10px rgba(0,0,0,.15);
       transition:.2s transform;
     }
-    .toggleSwitch.on .toggleKnob{ transform:translateX(24px); }
+
+    .toggleSwitch.on .toggleKnob{
+      transform:translateX(24px);
+    }
 
     .settingHeader{
       display:grid;
@@ -891,7 +900,9 @@
       padding:16px;
       background:rgba(127,127,127,.05);
     }
-    body.dark .tutorialCard{ background:rgba(255,255,255,.03); }
+    body.dark .tutorialCard{
+      background:rgba(255,255,255,.03);
+    }
 
     .tutorialHero{
       display:grid;
@@ -949,7 +960,6 @@
       border-radius:999px;
       background:rgba(127,127,127,.35);
     }
-
     .dot.active{ background:var(--accent); }
 
     .tutorialNavBtn{
@@ -1026,6 +1036,31 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
+    }
+
+    .pictureRow{
+      display:grid;
+      gap:8px;
+    }
+
+    .pictureRowItem{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .pictureTokenBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(127,127,127,.06);
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
     }
 
     @keyframes tutInRight{
@@ -1111,9 +1146,9 @@
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
+    if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
-    const PICTURES_COLLECTION = "quizPictures";
     const OWNER_COOKIE = "qb_owner_token";
     const PARTNER_ADMIN_COOKIE = "qb_partner_admin";
     const MY_KEY = "qb_my_quizzes";
@@ -1145,9 +1180,9 @@
       homeVisibleCount: { library: 20, public: 12 },
       publicOrder: [],
       editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
-      commentDraft: { name: "", text: "", isPrivate: false, replyTo: "" },
+      commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      refreshFlash: { home: false },
+      refreshFlash: { home: false, comments: false },
       pictureChoice: "",
       quiz: {
         phase: "question",
@@ -1291,6 +1326,7 @@
       const out = [];
       let buf = "";
       let inQuotes = false;
+
       for (let i = 0; i < s.length;) {
         const ch = s[i];
         if (ch === '"') {
@@ -1378,7 +1414,9 @@
       let token = base;
       let i = 1;
       const set = new Set(existing || []);
-      while (set.has(token)) token = `${base}-${i++}`;
+      while (set.has(token)) {
+        token = `${base}-${i++}`;
+      }
       return token;
     }
 
@@ -1445,8 +1483,11 @@
           flush();
           const n = pm[1];
           const src = pictureMap[String(n)];
-          if (src) out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
-          else out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          if (src) {
+            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          } else {
+            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          }
           i += pm[0].length;
           continue;
         }
@@ -1569,6 +1610,7 @@
       const question = raw.slice(0, eqIdx).trim();
       if (!question) return null;
       const { mode, randomChoice } = pickMode(globalFlags, tags);
+
       const mergedSameGroups = [...(globalSameGroups || []), ...(sameGroups || [])];
 
       if (mode === "choice") {
@@ -1623,6 +1665,7 @@
           i++;
           continue;
         }
+
         break;
       }
 
@@ -1697,7 +1740,10 @@
         return {
           ...item,
           options: Array.isArray(item.options)
-            ? item.options.map(o => ({ text: String(o?.text || ""), correct: !!o?.correct })).filter(o => o.text)
+            ? item.options.map(o => ({
+                text: String(o?.text || ""),
+                correct: !!o?.correct
+              })).filter(o => o.text)
             : [],
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
@@ -1881,6 +1927,7 @@
       clearResultEnterHandler();
       const isDesktop = window.matchMedia && window.matchMedia("(pointer:fine)").matches && window.innerWidth >= 700;
       if (!isDesktop) return;
+
       resultEnterHandler = (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
@@ -1888,6 +1935,7 @@
         e.preventDefault();
         nextQuestion();
       };
+
       window.addEventListener("keydown", resultEnterHandler);
     }
 
@@ -1897,6 +1945,7 @@
       const i = p.lastIndexOf("/");
       return i >= 0 ? p.slice(0, i + 1) : "/";
     };
+
     const prettyLink = (id) => `${location.origin}${basePath()}#/${id}`;
 
     function route() {
@@ -2002,10 +2051,6 @@
       return { title: "", subtitle: "", rawText: "", keyMode: "key", key: "" };
     }
 
-    function pictureTokensInDraft() {
-      return collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle);
-    }
-
     function openCreate() {
       state.doc = null;
       state.docId = "";
@@ -2018,51 +2063,6 @@
       render();
     }
 
-    async function loadQuizPictures(quizId, data) {
-      const legacy = normalizePictures(data?.pictures || decodePictures(data?.pictureEntriesText) || {});
-      const tokens = Array.isArray(data?.pictureTokens) && data.pictureTokens.length
-        ? data.pictureTokens.map(String)
-        : collectPictureTokensFromMany(data?.rawText, data?.subtitle, ...Object.keys(legacy));
-
-      const map = { ...legacy };
-      await Promise.all(tokens.map(async token => {
-        if (map[token]) return;
-        try {
-          const snap = await getDoc(doc(db, PICTURES_COLLECTION, pictureDocId(quizId, token)));
-          if (snap.exists()) {
-            const d = snap.data() || {};
-            if (typeof d.dataUrl === "string" && d.dataUrl.startsWith("data:image/")) map[token] = d.dataUrl;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }));
-      return map;
-    }
-
-    function pictureDocId(quizId, token) {
-      return `${quizId}__${encodeURIComponent(String(token))}`;
-    }
-
-    async function saveQuizPictures(quizId, pictures, oldTokens = []) {
-      const clean = normalizePictures(pictures || {});
-      const tokens = Object.keys(clean);
-      const now = Date.now();
-
-      await Promise.all(tokens.map(token => setDoc(
-        doc(db, PICTURES_COLLECTION, pictureDocId(quizId, token)),
-        { quizId, token, dataUrl: clean[token], updatedAt: now },
-        { merge: true }
-      )));
-
-      const oldSet = new Set((oldTokens || []).map(String));
-      await Promise.all([...oldSet].filter(token => !tokens.includes(token)).map(token =>
-        deleteDoc(doc(db, PICTURES_COLLECTION, pictureDocId(quizId, token))).catch(() => {})
-      ));
-
-      return clean;
-    }
-
     function openEditFromDoc() {
       state.draft = {
         title: state.doc?.title || "",
@@ -2072,7 +2072,7 @@
         key: state.doc?.key || ""
       };
       state.draftPictures = { ...(state.doc?.pictures || {}) };
-      state.pictureChoice = pictureTokensInDraft()[0] || Object.keys(state.draftPictures)[0] || "";
+      state.pictureChoice = collectPictureTokensFromMany(state.draft.rawText, state.draft.subtitle, ...Object.keys(state.draftPictures))[0] || "";
       state.screen = "editor";
       render();
     }
@@ -2125,13 +2125,12 @@
       render();
     }
 
-    async function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
-      const pictures = await loadQuizPictures(id, docData);
-      state.doc = { ...normalizeDoc(id, docData, pictures), pictures, comments: sortComments(docData.comments || []) };
+    function startQuiz(docData, id, orderIndices = null, onlyWrong = false) {
+      state.doc = { ...docData, comments: sortComments(docData.comments || []) };
       state.docId = id;
       setAccessModeForDoc(state.doc, id);
       state.showComments = false;
-      state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "" };
+      state.commentDraft = { name: getCommentName(), text: "", isPrivate: false, replyTo: "", scoreWanted: false };
 
       if (state.accessMode === "key") {
         rememberAccess(id, docData.key, {
@@ -2221,7 +2220,7 @@
     function isCorrectByGroups(givenFields, answerGroups, mode, sameGroups = []) {
       const groups = Array.isArray(answerGroups) ? answerGroups : [];
       if (!groups.length) return false;
-      if (groups.length === 1 && givenFields.length === 1) {
+      if (groups.length === 1 && (givenFields.length === 1)) {
         const candidates = groups[0] || [];
         return candidates.some(c => sameMatches(givenFields[0], c, sameGroups, mode));
       }
@@ -2260,12 +2259,14 @@
         const labels = [];
         let globalFlags = { random: false, choice: false, randomChoice: false, number: false, open: false };
         let q = 0;
+
         let i = 0;
         while (i < lines.length && !String(lines[i]).trim()) { labels.push(""); i++; }
         while (i < lines.length) {
           const line = String(lines[i] ?? "");
           const trimmed = line.trim();
           if (!trimmed) { labels.push(""); i++; continue; }
+
           const parsed = parseLeadingSettings(line);
           if (!parsed.rest && (parsed.tags.length || parsed.onOffControls.length || parsed.sameGroups.length)) {
             globalFlags = mergeFlags(globalFlags, parsed.tags);
@@ -2273,6 +2274,7 @@
             i++;
             continue;
           }
+
           const qline = parseQuestionLine(line, globalFlags, []);
           if (qline) {
             q += 1;
@@ -2285,6 +2287,7 @@
         while (labels.length < lines.length) labels.push("");
         return labels;
       }
+
       return Array.from({ length: lines.length }, (_, i) => String(i + 1));
     }
 
@@ -2294,8 +2297,10 @@
       textarea.style.height = `${next}px`;
       gutter.style.height = `${next}px`;
       if (mirror) mirror.style.height = `${next}px`;
+
       const labels = buildEditorGutterLabels(textarea.value, state.editorGutterMode);
       gutter.textContent = labels.length ? labels.join("\n") : "1";
+
       if (mirror) {
         mirror.innerHTML = renderMemoPreview(textarea.value);
         mirror.scrollTop = textarea.scrollTop;
@@ -2363,6 +2368,7 @@
         if (!active) return hide();
 
         const list = typeof items === "function" ? items() : items;
+
         box.classList.remove("hide");
         box.innerHTML = list.map(it => `<button type="button" class="ghost miniAction suggestChip" data-value="${esc(it.value)}">${esc(it.label)}</button>`).join("");
 
@@ -2414,7 +2420,7 @@
           el.src = url;
         });
 
-        const maxSide = 1200;
+        const maxSide = 1400;
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
         const scale = Math.min(1, maxSide / Math.max(w, h));
@@ -2429,7 +2435,7 @@
         ctx.drawImage(img, 0, 0, cw, ch);
 
         try {
-          const webp = canvas.toDataURL("image/webp", 0.72);
+          const webp = canvas.toDataURL("image/webp", 0.75);
           if (webp.startsWith("data:image/webp")) return webp;
         } catch {}
 
@@ -2485,6 +2491,50 @@
       return !!(docData?.globalFlags?.open || docData?.keyMode === "open");
     }
 
+    async function loadPictureDocs(docId) {
+      const map = {};
+      try {
+        const snap = await getDocs(collection(db, COLLECTION, docId, "pictures"));
+        snap.forEach(d => {
+          const data = d.data() || {};
+          if (typeof data.src === "string" && data.src) map[d.id] = data.src;
+        });
+      } catch (err) {
+        console.error("loadPictureDocs failed:", err);
+      }
+      return map;
+    }
+
+    async function savePictureDocs(docId, pictures, keepTokens) {
+      const keep = new Set((keepTokens || []).map(String));
+      const safePics = normalizePictures(pictures || {});
+      const existing = await getDocs(collection(db, COLLECTION, docId, "pictures"));
+
+      const ops = [];
+      for (const [token, src] of Object.entries(safePics)) {
+        if (!keep.has(String(token))) continue;
+        ops.push(setDoc(doc(db, COLLECTION, docId, "pictures", String(token)), { src, updatedAt: Date.now() }, { merge: true }));
+      }
+      for (const item of existing.docs) {
+        if (!keep.has(String(item.id))) {
+          ops.push(deleteDoc(doc(db, COLLECTION, docId, "pictures", String(item.id))));
+        }
+      }
+      await Promise.all(ops);
+      return safePics;
+    }
+
+    async function deleteAllPictureDocs(docId) {
+      try {
+        const snap = await getDocs(collection(db, COLLECTION, docId, "pictures"));
+        const ops = [];
+        snap.forEach(d => ops.push(deleteDoc(doc(db, COLLECTION, docId, "pictures", d.id))));
+        await Promise.all(ops);
+      } catch (err) {
+        console.error("deleteAllPictureDocs failed:", err);
+      }
+    }
+
     async function persistComments(nextComments) {
       if (!state.docId) return;
       const sorted = sortComments(nextComments);
@@ -2526,30 +2576,33 @@
       if (!state.docId) return;
       const currentShowComments = !!state.showComments;
       try {
-        const snap = await getDoc(doc(db, COLLECTION, state.docId));
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        const pictures = await loadQuizPictures(state.docId, data);
-        const normalized = normalizeDoc(state.docId, data, pictures);
-        state.doc = { ...normalized, pictures, comments: sortComments(Array.isArray(data.comments) ? data.comments : []) };
+        const loaded = await loadDocWithPictures(state.docId);
+        if (!loaded) return;
+        state.doc = loaded;
         const idx = state.allDocs.findIndex(d => d.id === state.docId);
-        if (idx >= 0) state.allDocs[idx] = state.doc;
-        else state.allDocs.unshift(state.doc);
+        const normDoc = normalizeDoc(state.docId, loaded);
+        if (idx >= 0) state.allDocs[idx] = normDoc;
+        else state.allDocs.unshift(normDoc);
         rebuildPublicOrder();
         if (keepCommentsVisible) state.showComments = currentShowComments;
         render();
       } catch (err) {
         console.error(err);
         alert(`更新で失敗したよ: ${err?.message || err}`);
+      } finally {
+        state.showComments = keepCommentsVisible ? currentShowComments : state.showComments;
+        startFlash("comments", 800);
       }
     }
 
     function openDeleteConfirmThenDelete() {
       if (!state.docId) return;
+
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
+
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
 
       const btn = document.getElementById("deleteBtn");
@@ -2558,10 +2611,7 @@
       (async () => {
         try {
           await deleteDoc(doc(db, COLLECTION, state.docId));
-          const oldTokens = collectPictureTokensFromMany(state.doc?.rawText, state.doc?.subtitle, ...Object.keys(state.doc?.pictures || {}));
-          await Promise.all(oldTokens.map(token =>
-            deleteDoc(doc(db, PICTURES_COLLECTION, pictureDocId(state.docId, token))).catch(() => {})
-          ));
+          await deleteAllPictureDocs(state.docId);
           removeMyMeta(state.docId);
           removeAccessRecord(state.docId);
           state.allDocs = state.allDocs.filter(d => d.id !== state.docId);
@@ -2622,12 +2672,11 @@
       });
     }
 
-    function editorPictureItemsFromCurrentText() {
-      const current = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle);
-      const existing = Object.keys(state.draftPictures || {});
-      const tokens = [...new Set([...current, ...existing])];
-      const nextToken = newPictureToken(tokens);
-      return [...tokens, nextToken].map(token => ({ label: `[picture(${token})]`, value: `[picture(${token})]` }));
+    function getPictureTokenListForEditor() {
+      const draft = state.draft || blankDraft();
+      const refs = collectPictureTokensFromMany(draft.rawText, draft.subtitle, ...Object.keys(state.draftPictures || {}));
+      const withCurrent = [...new Set([...refs, ...Object.keys(state.draftPictures || {}), state.pictureChoice].filter(Boolean))];
+      return withCurrent;
     }
 
     function setupEditorTagSuggestions(host, textarea, box) {
@@ -2636,15 +2685,20 @@
         textarea,
         box,
         triggerChar: "#",
-        items: () => [
-          { label: "[open]", value: "[open]" },
-          { label: "[random]", value: "[random]" },
-          { label: "[choice]", value: "[choice]" },
-          { label: "[random choice]", value: "[random choice]" },
-          { label: "[number]", value: "[number]" },
-          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-          ...editorPictureItemsFromCurrentText()
-        ],
+        items: () => {
+          const currentTokens = getPictureTokenListForEditor();
+          const next = newPictureToken(currentTokens);
+          return [
+            { label: "[open]", value: "[open]" },
+            { label: "[random]", value: "[random]" },
+            { label: "[choice]", value: "[choice]" },
+            { label: "[random choice]", value: "[random choice]" },
+            { label: "[number]", value: "[number]" },
+            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
+            ...currentTokens.map(t => ({ label: `[picture(${t})]`, value: `[picture(${t})]` })),
+            { label: `[picture(${next})]`, value: `[picture(${next})]` }
+          ];
+        },
         onPick: (value) => {
           const m = String(value || "").match(/^\[picture\(([^)\r\n]+)\)\]$/);
           if (m) void pickPictureAndStore(m[1]);
@@ -2655,8 +2709,9 @@
     function updateCatalogDocFromState() {
       if (!state.docId || !state.doc) return;
       const idx = state.allDocs.findIndex(d => d.id === state.docId);
-      if (idx >= 0) state.allDocs[idx] = state.doc;
-      else state.allDocs.unshift(state.doc);
+      const normalized = normalizeDoc(state.docId, state.doc);
+      if (idx >= 0) state.allDocs[idx] = normalized;
+      else state.allDocs.unshift(normalized);
       rebuildPublicOrder();
     }
 
@@ -2708,6 +2763,7 @@
       state.commentDraft.isPrivate = false;
       state.commentDraft.name = name;
       state.commentDraft.replyTo = "";
+      state.commentDraft.scoreWanted = false;
       state.showComments = true;
       render();
     }
@@ -2739,8 +2795,16 @@
     const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
     const homeButtonsHtml = () => helpButtonHtml();
 
-    const editorActionHtml = () => {
+    const editorActionHtml = (showGutterSelect = false) => {
       const buttons = [];
+      if (showGutterSelect) {
+        buttons.push(`
+          <select id="gutterModeSelect" class="input smallSelect">
+            <option value="line">行数</option>
+            <option value="question">問題数</option>
+          </select>
+        `);
+      }
       if (state.doc) {
         if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn" type="button">削除</button>`);
         else if (state.accessMode === "key") buttons.push(`<button class="danger" id="leaveBtn" type="button">脱退</button>`);
@@ -2779,7 +2843,7 @@
       state.publicOrder = shuffle(state.allDocs.filter(isOpenDoc).map(d => d.id));
     }
 
-    function normalizeDoc(id, data, pictures = null) {
+    function normalizeDoc(id, data) {
       const parsed = data.rawText ? parseItems(data.rawText) : { globalFlags: { random:false, choice:false, randomChoice:false, number:false, open:false }, onOffControls: [], items: [] };
       const items = Array.isArray(data.items) && data.items.length
         ? data.items.map(unpackItemFromFirestore).filter(Boolean)
@@ -2805,8 +2869,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictureTokens: Array.isArray(data.pictureTokens) ? data.pictureTokens.map(String) : collectPictureTokensFromMany(data.rawText, data.subtitle),
-        pictures: normalizePictures(pictures || data.pictures || decodePictures(data.pictureEntriesText) || {}),
+        pictures: decodePictures(data.pictureEntriesText),
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -3064,10 +3127,12 @@
         openPartnerModal();
         return;
       }
+
       if (!state.partnerLink) {
         alert("パートナーリンクはまだ未設定だよ");
         return;
       }
+
       window.open(state.partnerLink, "_blank", "noopener,noreferrer");
     }
 
@@ -3080,10 +3145,6 @@
 
       const topBtn = document.getElementById("topBtn");
       if (topBtn) topBtn.onclick = () => { location.hash = ""; };
-    }
-
-    function editorVisiblePictureTokens() {
-      return collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle);
     }
 
     function renderHome() {
@@ -3205,36 +3266,52 @@
       attachHomeObserver(state.homeTab, document.getElementById("homeSentinel") != null);
     }
 
-    function renderPicturePanel() {
-      const pictureTokens = editorVisiblePictureTokens();
+    function normalizeSubtitlePreview(text) {
+      return stripMemoSegments(String(text ?? ""));
+    }
+
+    function renderPictureManagerSection() {
       const pictureMap = normalizePictures(state.draftPictures || {});
-      const currentTokens = [...new Set([...pictureTokens, ...Object.keys(pictureMap)])];
-      const current = state.pictureChoice || currentTokens[0] || "";
+      const tokenList = getPictureTokenListForEditor();
+      if (!tokenList.length) return "";
+
+      const current = state.pictureChoice || tokenList[0] || "";
+      if (current && !state.pictureChoice) state.pictureChoice = current;
+
       return `
-        <div class="card" style="display:grid;gap:12px">
+        <div class="card pictureRow">
           <div class="row" style="justify-content:space-between;align-items:flex-end;">
-            <div style="min-width:0;flex:1">
-              <div class="label">表示</div>
-              <select id="gutterModeSelect" class="input smallSelect">
-                <option value="line">行数</option>
-                <option value="question">問題数</option>
-              </select>
-            </div>
             <div style="min-width:0;flex:2">
               <div class="label">画像</div>
-              <div class="row" style="align-items:center;">
+              <div class="pictureRowItem">
                 <select id="pictureSelect" class="input pictureSelect">
-                  ${currentTokens.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("")}
+                  ${tokenList.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("")}
                 </select>
                 <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📤</button>
               </div>
             </div>
           </div>
-          <div class="note">
-            選んだ [picture(n)] を差し替えられるよ。使われていない画像は保存時に外れるよ。
-          </div>
+          <div class="note">選んだ [picture(n)] の画像を差し替えられるよ。保存時は画像を別保存するから本文は軽くなるよ。</div>
         </div>
       `;
+    }
+
+    async function asyncUploadPicturesForDoc(docId, pictures) {
+      return (async () => {
+        const out = {};
+        const entries = Object.entries(normalizePictures(pictures || {}));
+        for (const [num, value] of entries) {
+          if (typeof value === "string" && (value.startsWith("data:image/") || value.startsWith("https://") || value.startsWith("http://"))) {
+            out[num] = value;
+          }
+        }
+        return out;
+      })();
+    }
+
+    function getUsedPictureTokensForDraft() {
+      const d = state.draft || blankDraft();
+      return collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {}));
     }
 
     function renderEditor() {
@@ -3242,17 +3319,8 @@
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
 
-      const pictureTokens = editorVisiblePictureTokens();
-      const showPicturePanel = pictureTokens.length > 0;
-      const actionRow = showPicturePanel
-        ? editorActionHtml()
-        : `<div class="row" style="align-items:center;justify-content:flex-end;">
-             <select id="gutterModeSelect" class="input smallSelect">
-               <option value="line">行数</option>
-               <option value="question">問題数</option>
-             </select>
-             ${editorActionHtml()}
-           </div>`;
+      const hasPictureUI = getUsedPictureTokensForDraft().length > 0;
+      const showGutterSelectInActionRow = !hasPictureUI;
 
       root.innerHTML = `
         <div class="page">
@@ -3280,9 +3348,11 @@
               <input id="subInput" class="input" type="text" placeholder="サブタイトル" value="${esc(d.subtitle)}">
             </div>
 
-            ${actionRow}
+            <div class="row" style="justify-content:flex-end;align-items:center;">
+              ${editorActionHtml(showGutterSelectInActionRow)}
+            </div>
 
-            ${showPicturePanel ? renderPicturePanel() : ""}
+            ${hasPictureUI ? renderPictureManagerSection() : ""}
 
             <div>
               <div class="label">問題欄</div>
@@ -3356,6 +3426,7 @@
           editorInfo.textContent = d.keyMode === "open" ? "Key: open（誰でも編集）" : (d.key ? "Key: 設定済み" : "Key: 未設定");
           keyBtn.disabled = false;
           keyBtn.textContent = "Key";
+          keyBtn.title = "";
         } else {
           editorInfo.textContent = state.doc.keyMode === "open" ? "公開編集モード" : "Keyは主催者のみ変更できます";
           keyBtn.disabled = true;
@@ -3369,6 +3440,7 @@
       problemText.addEventListener("input", e => {
         d.rawText = e.target.value;
         scheduleEditorSync(problemText, gutter, mirror);
+        render();
       });
       problemText.addEventListener("scroll", () => scheduleEditorSync(problemText, gutter, mirror));
 
@@ -3392,7 +3464,13 @@
       if (reuploadPictureBtn) {
         reuploadPictureBtn.addEventListener("click", async () => {
           const choice = String((pictureSelect && pictureSelect.value) || state.pictureChoice || "").trim();
-          if (!choice) return;
+          if (!choice) {
+            const token = newPictureToken(getPictureTokenListForEditor());
+            state.pictureChoice = token;
+            await pickPictureAndStore(token);
+            render();
+            return;
+          }
           state.pictureChoice = choice;
           await pickPictureAndStore(choice);
           render();
@@ -3416,56 +3494,54 @@
 
       if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
+          const title = d.title.trim();
+          const subtitle = d.subtitle.trim();
+          const parsed = parseItems(d.rawText);
+          const items = parsed.items;
+          const globalFlags = parsed.globalFlags;
+          const onOffControls = parsed.onOffControls;
+
+          if (!title) return alert("タイトルを入れてね");
+
+          const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
+          if (!items.length && !rawHasText) return alert("文字がひとつも読めなかったよ");
+          if (!items.length && rawHasText) {
+            const ok = confirm("問題として読めたものがないけど、そのまま保存する？");
+            if (!ok) return;
+          }
+
+          const oldId = state.docId || "";
+          let unique;
+          try {
+            unique = await ensureUniqueTitleAndId(title, oldId);
+          } catch (e) {
+            if (String(e?.message || e) === "SAVE_CANCELLED") {
+              alert("保存をやめたよ");
+              return;
+            }
+            throw e;
+          }
+
+          const finalTitle = unique.title;
+          const newId = unique.id;
+          const isExisting = !!state.doc;
+          const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
+          if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
+
+          const canChangeKey = !state.doc || isOwner();
+          const effectiveKeyMode = canChangeKey ? d.keyMode : (state.doc?.keyMode || "key");
+          const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
+          const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
+          const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
+
+          const usedPics = getPictureTokensFromAll(d.rawText, subtitle, ...Object.keys(state.draftPictures || {}));
+          const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
+
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
 
           try {
-            const title = d.title.trim();
-            const subtitle = d.subtitle.trim();
-            const parsed = parseItems(d.rawText);
-            const items = parsed.items;
-            const globalFlags = parsed.globalFlags;
-            const onOffControls = parsed.onOffControls;
-
-            if (!title) {
-              alert("タイトルを入れてね");
-              return;
-            }
-
-            const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
-            const picTokens = collectPictureTokensFromMany(d.rawText, subtitle);
-            if (!items.length && !rawHasText && !picTokens.length) {
-              alert("文字がひとつも読めなかったよ");
-              return;
-            }
-
-            const oldId = state.docId || "";
-            let unique;
-            try {
-              unique = await ensureUniqueTitleAndId(title, oldId);
-            } catch (e) {
-              if (String(e?.message || e) === "SAVE_CANCELLED") {
-                alert("保存をやめたよ");
-                return;
-              }
-              throw e;
-            }
-
-            const finalTitle = unique.title;
-            const newId = unique.id;
-            const isExisting = !!state.doc;
-            const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
-            if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
-
-            const canChangeKey = !state.doc || isOwner();
-            const effectiveKeyMode = canChangeKey ? d.keyMode : (state.doc?.keyMode || "key");
-            const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
-            const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
-            const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
-            const oldPictureTokens = Array.isArray(state.doc?.pictureTokens) ? state.doc.pictureTokens : collectPictureTokensFromMany(state.doc?.rawText, state.doc?.subtitle, ...Object.keys(state.doc?.pictures || {}));
-
-            const usedPics = new Set(picTokens);
-            const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
+            const uploadedPictures = await asyncUploadPicturesForDoc(newId, prunedPictures);
 
             const payload = {
               title: finalTitle,
@@ -3480,40 +3556,39 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictureTokens: [...usedPics],
+              pictureRefs: usedPics,
               comments: existingComments
             };
 
             await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
-            const savedPictures = await saveQuizPictures(newId, prunedPictures, oldPictureTokens);
+            await savePictureDocs(newId, uploadedPictures, usedPics);
 
             if (oldId && oldId !== newId) {
               try { await deleteDoc(doc(db, COLLECTION, oldId)); } catch (_) {}
+              await deleteAllPictureDocs(oldId);
               removeMyMeta(oldId);
               removeAccessRecord(oldId);
               state.allDocs = state.allDocs.filter(x => x.id !== oldId);
             }
 
             state.docId = newId;
-            state.doc = normalizeDoc(newId, payload, savedPictures);
-            state.doc.comments = sortComments(existingComments);
-            state.draftPictures = { ...savedPictures };
+            state.doc = { ...normalizeDoc(newId, payload), comments: sortComments(existingComments), pictures: uploadedPictures };
+            state.draftPictures = { ...uploadedPictures };
             d.title = finalTitle;
 
+            const normalized = normalizeDoc(newId, payload);
             const idx = state.allDocs.findIndex(x => x.id === newId);
-            if (idx >= 0) state.allDocs[idx] = state.doc;
-            else state.allDocs.unshift(state.doc);
+            if (idx >= 0) state.allDocs[idx] = normalized;
+            else state.allDocs.unshift(normalized);
             rebuildPublicOrder();
 
-            if (isOwner() || !isExisting) {
-              upsertMyMeta({
-                id: newId,
-                title: payload.title,
-                subtitle: payload.subtitle,
-                createdAt: payload.createdAt,
-                updatedAt: payload.updatedAt
-              });
-            }
+            if (isOwner() || !isExisting) upsertMyMeta({
+              id: newId,
+              title: payload.title,
+              subtitle: payload.subtitle,
+              createdAt: payload.createdAt,
+              updatedAt: payload.updatedAt
+            });
             if (state.accessMode === "key") {
               rememberAccess(newId, effectiveKey, {
                 title: payload.title,
@@ -3529,7 +3604,10 @@
             alert(`保存したよ！\n\n${link}`);
 
             if (items.length) {
-              startQuiz(state.doc, newId);
+              await loadDocWithPictures(newId).then(loaded => {
+                if (loaded) startQuiz(loaded, newId);
+                else startQuiz(state.doc, newId);
+              });
             } else {
               state.screen = "editor";
               render();
@@ -3552,6 +3630,15 @@
       refreshKeyStatus();
       titleInput.focus();
       bindGlobalButtons();
+    }
+
+    async function loadDocWithPictures(id) {
+      const snap = await getDoc(doc(db, COLLECTION, id));
+      if (!snap.exists()) return null;
+      const data = snap.data() || {};
+      const base = normalizeDoc(id, data);
+      const pics = await loadPictureDocs(id);
+      return { ...base, pictures: pics };
     }
 
     function renderSettings() {
@@ -3773,8 +3860,11 @@
             }
             if (e.key === "Enter") {
               e.preventDefault();
-              if (i < inputs.length - 1) inputs[i + 1].focus();
-              else submitAnswer();
+              if (i < inputs.length - 1) {
+                inputs[i + 1].focus();
+              } else {
+                submitAnswer();
+              }
             }
           });
         });
@@ -3899,6 +3989,8 @@
         ? `<div class="timeOnlyNote">間違えた問題だけのやり直しでは点数は入れられないよ。</div>`
         : `<div id="scoreSuggestBox" class="floatSuggest hide"></div>`;
 
+      const refreshIcon = state.refreshFlash.comments ? "✓" : "↻";
+
       return `
         <div class="commentWrap">
           <div class="card commentWrap">
@@ -3943,6 +4035,7 @@
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
               <div class="commentToggleRow">
+                <button class="ghost miniAction tinyIconBtn" id="commentsRefreshBtn" type="button" aria-label="更新">${refreshIcon}</button>
                 <span class="commentBadge">表示 ${visibleComments.length}</span>
                 ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
               </div>
@@ -4050,6 +4143,7 @@
         const commentText = document.getElementById("commentText");
         const commentPrivate = document.getElementById("commentPrivate");
         const postCommentBtn = document.getElementById("postCommentBtn");
+        const commentsRefreshBtn = document.getElementById("commentsRefreshBtn");
         const scoreSuggestBox = document.getElementById("scoreSuggestBox");
         const commentHost = document.querySelector(".commentInputHost");
         const cancelReplyBtn = document.getElementById("cancelReplyBtn");
@@ -4066,6 +4160,7 @@
         }
         if (commentPrivate) commentPrivate.addEventListener("change", e => { state.commentDraft.isPrivate = !!e.target.checked; });
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
+        if (commentsRefreshBtn) commentsRefreshBtn.addEventListener("click", () => refreshCurrentDoc({ keepCommentsVisible: true }));
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
 
@@ -4306,6 +4401,7 @@
       state.tutorial.closing = true;
       state.tutorial.motion = "close";
       renderTutorialLayer();
+
       setTimeout(() => {
         state.tutorial.open = false;
         state.tutorial.closing = false;
@@ -4407,13 +4503,12 @@
     async function openEditRoute(id) {
       state.screen = "loading";
       render();
+
       try {
-        const snap = await getDoc(doc(db, COLLECTION, id));
-        if (!snap.exists()) { state.screen = "home"; render(); return; }
-        const data = snap.data() || {};
-        const pictures = await loadQuizPictures(id, data);
+        const loaded = await loadDocWithPictures(id);
+        if (!loaded) { state.screen = "home"; render(); return; }
         state.docId = id;
-        state.doc = { ...normalizeDoc(id, data, pictures), pictures, comments: sortComments(Array.isArray(data.comments) ? data.comments : []) };
+        state.doc = loaded;
         setAccessModeForDoc(state.doc, id);
 
         if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open") {
@@ -4467,10 +4562,9 @@
         state.showComments = false;
         render();
         try {
-          const snap = await getDoc(doc(db, COLLECTION, r.id));
-          if (!snap.exists()) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
-          const data = snap.data() || {};
-          await startQuiz(data, r.id);
+          const loaded = await loadDocWithPictures(r.id);
+          if (!loaded) { state.screen = "home"; render(); maybeAutoOpenTutorial(); return; }
+          startQuiz(loaded, r.id);
           maybeAutoOpenTutorial();
         } catch (err) {
           console.error(err);
