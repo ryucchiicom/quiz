@@ -221,8 +221,12 @@
       scrollbar-gutter:stable;
     }
 
-    .editorMirror .memoText{ color:#98a0af; }
-    body.dark .editorMirror .memoText{ color:#7e8798; }
+    .editorMirror .memoText{
+      color:#98a0af;
+    }
+    body.dark .editorMirror .memoText{
+      color:#7e8798;
+    }
 
     .textarea{
       position:relative;
@@ -1213,6 +1217,8 @@
     let homeObserver = null;
     const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
 
+    const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => resolve()));
+
     function uid(){
       if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -1412,23 +1418,6 @@
         if (typeof v === "string" && (v.startsWith("data:image/") || v.startsWith("https://") || v.startsWith("http://"))) {
           out[String(k)] = v;
         }
-      }
-      return out;
-    }
-
-    function encodePictures(pictures){
-      return Object.entries(normalizePictures(pictures || {})).map(([k, v]) => `${k}|||${v}`);
-    }
-
-    function decodePictures(entries){
-      const out = {};
-      for (const item of entries || []){
-        if (typeof item !== "string") continue;
-        const idx = item.indexOf("|||");
-        if (idx < 1) continue;
-        const key = item.slice(0, idx);
-        const value = item.slice(idx + 3);
-        if (key && value) out[String(key)] = value;
       }
       return out;
     }
@@ -2579,11 +2568,21 @@
       });
     }
 
+    function newPictureToken(existing = []){
+      const base = `img-${suffix4()}`;
+      let token = base;
+      let i = 1;
+      const set = new Set(existing || []);
+      while (set.has(token)){
+        token = `${base}-${i++}`;
+      }
+      return token;
+    }
+
     function editorPictureTokens(){
       const existingTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {}));
       const currentToken = state.pictureChoice || "";
       const tokens = [...new Set([...existingTokens, ...Object.keys(state.draftPictures || {}), currentToken].filter(Boolean))];
-      if (!tokens.length) return [];
       return tokens.sort((a,b) => String(a).localeCompare(String(b), "ja"));
     }
 
@@ -2593,15 +2592,20 @@
         textarea,
         box,
         triggerChar: "#",
-        items: () => [
-          { label: "[open]", value: "[open]" },
-          { label: "[random]", value: "[random]" },
-          { label: "[choice]", value: "[choice]" },
-          { label: "[random choice]", value: "[random choice]" },
-          { label: "[number]", value: "[number]" },
-          { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
-          ...editorPictureTokens().map(token => ({ label: `[picture(${token})]`, value: `[picture(${token})]` }))
-        ],
+        items: () => {
+          const tokens = editorPictureTokens();
+          const nextToken = newPictureToken(tokens);
+          return [
+            { label: "[open]", value: "[open]" },
+            { label: "[random]", value: "[random]" },
+            { label: "[choice]", value: "[choice]" },
+            { label: "[random choice]", value: "[random choice]" },
+            { label: "[number]", value: "[number]" },
+            { label: "[ONorOFF:random]", value: "[ONorOFF:random]" },
+            ...tokens.map(token => ({ label: `[picture(${token})]`, value: `[picture(${token})]` })),
+            { label: `[picture(${nextToken})]`, value: `[picture(${nextToken})]` }
+          ];
+        },
         onPick: (value) => {
           const m = String(value || "").match(/^\[picture\(([^)\r\n]+)\)\]$/);
           if (m) void preparePictureToken(m[1]);
@@ -2624,78 +2628,10 @@
       return (state.doc?.comments || []).some(c => String(c.authorName || "").trim() === clean);
     }
 
-    async function addComment(){
-      if (!state.docId || !state.doc) return;
-
-      let name = (state.commentDraft?.name || getCommentName()).trim() || "匿名";
-      const text = (state.commentDraft?.text || "").trim();
-      const isPrivate = !!state.commentDraft?.isPrivate;
-      const replyTo = String(state.commentDraft?.replyTo || "");
-      if (!text) return alert("コメントを書いてね");
-
-      if (name !== "匿名" && latestCommentNameConflict(name)){
-        const yes = confirm(`「${name}」はもう使われてるよ。\n後ろに -uuid(4桁) を追加して投稿する？`);
-        if (yes) name = `${name}-${suffix4()}`;
-      }
-
-      const role = state.accessMode === "owner" ? "owner" : (state.accessMode === "key" ? "editor" : "viewer");
-      const proofs = {};
-      if (text.includes("[[SCORE]]")) proofs.scoreLabel = currentScoreMeta().label;
-      if (text.includes("[[TIME]]") && isPerfectScore()){
-        proofs.timeLabel = formatElapsed(state.quiz.elapsedMs || (Date.now() - (state.quiz.startedAt || Date.now())));
-      }
-
-      const comment = {
-        id: uid(),
-        authorToken: getCommentToken(),
-        authorName: name,
-        authorRole: role,
-        text,
-        isPrivate,
-        parentId: replyTo || null,
-        proofs,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
-      setCommentName(name);
-      const next = sortComments([...(state.doc.comments || []), comment]);
-      await persistComments(next);
-
-      state.commentDraft.text = "";
-      state.commentDraft.isPrivate = false;
-      state.commentDraft.name = name;
-      state.commentDraft.replyTo = "";
-      state.commentDraft.scoreWanted = false;
-      state.showComments = true;
-      render();
+    function hasPictureUiForDraft(){
+      const tokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {}));
+      return tokens.length > 0 || Object.keys(state.draftPictures || {}).length > 0;
     }
-
-    async function toggleCommentVisibility(commentId){
-      if (!state.doc?.comments?.length) return;
-      const next = state.doc.comments.map(c => c.id === commentId ? { ...c, isPrivate: !c.isPrivate, updatedAt: Date.now() } : c);
-      await persistComments(next);
-      state.showComments = true;
-      render();
-    }
-
-    async function deleteComment(commentId){
-      if (!state.doc?.comments?.length) return;
-      if (!confirm("このコメントを削除する？")) return;
-      await persistComments(state.doc.comments.filter(c => c.id !== commentId && c.parentId !== commentId));
-      state.showComments = true;
-      render();
-    }
-
-    const quizCommentsToggleLabel = (comments) => {
-      const total = comments.length;
-      const hidden = comments.filter(c => c.isPrivate && !canViewComment(c)).length;
-      if (state.showComments) return "コメントを閉じる";
-      return hidden > 0 ? `コメント (${total}) 🫥 ${hidden}` : `コメント (${total})`;
-    };
-
-    const topButtonHtml = () => `<button class="ghost" id="topBtn" type="button">トップ</button>`;
-    const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
 
     function editorStatsHtml(){
       const parsed = parseItems(state.draft?.rawText || "");
@@ -2704,6 +2640,79 @@
         <span class="statChip">行数 ${lines}</span>
         <span class="statChip">問題数 ${parsed.items.length}</span>
       `;
+    }
+
+    async function preparePictureToken(token){
+      if (!token) return;
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.style.display = "none";
+      document.body.appendChild(input);
+
+      const file = await new Promise(resolve => {
+        input.addEventListener("change", () => {
+          resolve(input.files && input.files[0] ? input.files[0] : null);
+        }, { once: true });
+        input.click();
+      });
+
+      input.remove();
+      if (!file) return;
+
+      try{
+        const docIdForStorage = state.docId || state.draft?.title || "draft";
+        const url = await uploadPictureForToken(docIdForStorage, token, file);
+        state.draftPictures[String(token)] = url;
+        state.pictureChoice = String(token);
+        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
+        render();
+      }catch(err){
+        console.error(err);
+        alert(`画像のアップロードで失敗したよ: ${err?.message || err}`);
+      }
+    }
+
+    function renderPicturePanel(){
+      const pictureMap = normalizePictures(state.draftPictures || {});
+      const currentTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(pictureMap));
+      const allChoices = [...new Set([...currentTokens, ...Object.keys(pictureMap), state.pictureChoice].filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), "ja"));
+      return `
+        <div class="card" style="display:grid;gap:12px">
+          <div class="row" style="justify-content:space-between;align-items:flex-end;">
+            <div style="min-width:0;flex:1">
+              <div class="label">表示</div>
+              <select id="gutterModeSelect" class="input smallSelect">
+                <option value="line">行数</option>
+                <option value="question">問題数</option>
+              </select>
+            </div>
+            <div style="min-width:0;flex:2">
+              <div class="label">画像</div>
+              <div class="row" style="align-items:center;">
+                <select id="pictureSelect" class="input pictureSelect">
+                  ${allChoices.length ? allChoices.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("") : `<option value="">[picture(新規)]</option>`}
+                </select>
+                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📤</button>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            選んだ [picture(n)] を差し替えられるよ。保存したデータには画像そのものは入れず、保存サイズを小さくしているよ。
+          </div>
+        </div>
+      `;
+    }
+
+    async function asyncUploadPicturesForDoc(docId, pictures){
+      const out = {};
+      const entries = Object.entries(normalizePictures(pictures || {}));
+      for (const [num, value] of entries){
+        if (typeof value === "string" && (value.startsWith("https://") || value.startsWith("http://"))){
+          out[num] = value;
+        }
+      }
+      return out;
     }
 
     const editorActionHtml = () => {
@@ -2772,7 +2781,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictures: decodePictures(data.pictureEntriesText),
+        pictures: normalizePictures(data.pictures || {}),
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -3060,7 +3069,7 @@
                 <h1 class="title">問題作成サイト</h1>
                 <div class="sub">作って、そのまま遊べる</div>
               </div>
-              ${helpButtonHtml()}
+              ${homeButtonsHtml()}
             </div>
           </div>
 
@@ -3170,85 +3179,6 @@
 
     function normalizeSubtitlePreview(text){
       return stripMemoSegments(String(text ?? ""));
-    }
-
-    function hasPictureUiForDraft(){
-      const tokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(state.draftPictures || {}));
-      return tokens.length > 0 || Object.keys(state.draftPictures || {}).length > 0;
-    }
-
-    function renderPicturePanel(){
-      const pictureMap = normalizePictures(state.draftPictures || {});
-      const currentTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(pictureMap));
-      const allChoices = [...new Set([...currentTokens, ...Object.keys(pictureMap), state.pictureChoice].filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), "ja"));
-      const current = state.pictureChoice || allChoices[0] || "";
-      return `
-        <div class="card" style="display:grid;gap:12px">
-          <div class="row" style="justify-content:space-between;align-items:flex-end;">
-            <div style="min-width:0;flex:1">
-              <div class="label">表示</div>
-              <select id="gutterModeSelect" class="input smallSelect">
-                <option value="line">行数</option>
-                <option value="question">問題数</option>
-              </select>
-            </div>
-            <div style="min-width:0;flex:2">
-              <div class="label">画像</div>
-              <div class="row" style="align-items:center;">
-                <select id="pictureSelect" class="input pictureSelect">
-                  ${allChoices.length ? allChoices.map(n => `<option value="${esc(n)}">${esc(`[picture(${n})]`)}</option>`).join("") : `<option value="">[picture(新規)]</option>`}
-                </select>
-                <button id="reuploadPictureBtn" class="ghost tinyIconBtn" type="button" aria-label="再アップロード">📤</button>
-              </div>
-            </div>
-          </div>
-          <div class="note">
-            選んだ [picture(n)] を差し替えられるよ。保存したデータには画像そのものは入れず、保存サイズを小さくしているよ。
-          </div>
-        </div>
-      `;
-    }
-
-    async function preparePictureToken(token){
-      if (!token) return;
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.style.display = "none";
-      document.body.appendChild(input);
-
-      const file = await new Promise(resolve => {
-        input.addEventListener("change", () => {
-          resolve(input.files && input.files[0] ? input.files[0] : null);
-        }, { once: true });
-        input.click();
-      });
-
-      input.remove();
-      if (!file) return;
-
-      try{
-        const docIdForStorage = state.docId || state.draft?.title || "draft";
-        const url = await uploadPictureForToken(docIdForStorage, token, file);
-        state.draftPictures[String(token)] = url;
-        state.pictureChoice = String(token);
-        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
-        render();
-      }catch(err){
-        console.error(err);
-        alert(`画像のアップロードで失敗したよ: ${err?.message || err}`);
-      }
-    }
-
-    async function asyncUploadPicturesForDoc(docId, pictures){
-      const out = {};
-      const entries = Object.entries(normalizePictures(pictures || {}));
-      for (const [num, value] of entries){
-        if (typeof value === "string" && (value.startsWith("https://") || value.startsWith("http://"))){
-          out[num] = value;
-        }
-      }
-      return out;
     }
 
     function renderEditor(){
@@ -3377,7 +3307,6 @@
       problemText.addEventListener("input", e => {
         d.rawText = e.target.value;
         scheduleEditorSync(problemText, gutter, mirror);
-        render();
       });
       problemText.addEventListener("scroll", () => scheduleEditorSync(problemText, gutter, mirror));
 
@@ -3402,7 +3331,7 @@
         reuploadPictureBtn.addEventListener("click", async () => {
           const choice = String((pictureSelect && pictureSelect.value) || state.pictureChoice || "").trim();
           if (!choice){
-            const token = `img-${suffix4()}`;
+            const token = newPictureToken(collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {})));
             state.pictureChoice = token;
             await preparePictureToken(token);
             return;
@@ -3429,54 +3358,53 @@
 
       if (saveBtn){
         saveBtn.addEventListener("click", async () => {
-          const title = d.title.trim();
-          const subtitle = d.subtitle.trim();
-          const parsed = parseItems(d.rawText);
-          const items = parsed.items;
-          const globalFlags = parsed.globalFlags;
-          const onOffControls = parsed.onOffControls;
-
-          if (!title) return alert("タイトルを入れてね");
-
-          const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
-          if (!items.length && !rawHasText) return alert("文字がひとつも読めなかったよ");
-          if (!items.length && rawHasText){
-            const ok = confirm("問題として読めたものがないけど、そのまま保存する？");
-            if (!ok) return;
-          }
-
-          const oldId = state.docId || "";
-          let unique;
-          try{
-            unique = await ensureUniqueTitleAndId(title, oldId);
-          }catch(e){
-            if (String(e?.message || e) === "SAVE_CANCELLED"){
-              alert("保存をやめたよ");
-              return;
-            }
-            throw e;
-          }
-
-          const finalTitle = unique.title;
-          const newId = unique.id;
-          const isExisting = !!state.doc;
-          const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
-          if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
-
-          const canChangeKey = !state.doc || isOwner();
-          const effectiveKeyMode = canChangeKey ? d.keyMode : (state.doc?.keyMode || "key");
-          const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
-          const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
-          const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
-
-          const usedPics = collectPictureTokensFromMany(d.rawText, subtitle, ...Object.keys(state.draftPictures || {}));
-          const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
-
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
+          await nextFrame();
 
           try{
-            const uploadedPictures = await asyncUploadPicturesForDoc(newId, prunedPictures);
+            const title = d.title.trim();
+            const subtitle = d.subtitle.trim();
+            const parsed = parseItems(d.rawText);
+            const items = parsed.items;
+            const globalFlags = parsed.globalFlags;
+            const onOffControls = parsed.onOffControls;
+
+            if (!title) throw new Error("タイトルを入れてね");
+
+            const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
+            if (!items.length && !rawHasText) throw new Error("文字がひとつも読めなかったよ");
+            if (!items.length && rawHasText){
+              const ok = confirm("問題として読めたものがないけど、そのまま保存する？");
+              if (!ok) return;
+            }
+
+            const oldId = state.docId || "";
+            let unique;
+            try{
+              unique = await ensureUniqueTitleAndId(title, oldId);
+            }catch(e){
+              if (String(e?.message || e) === "SAVE_CANCELLED"){
+                alert("保存をやめたよ");
+                return;
+              }
+              throw e;
+            }
+
+            const finalTitle = unique.title;
+            const newId = unique.id;
+            const isExisting = !!state.doc;
+            const ownerToken = isExisting ? (state.doc.ownerToken || getCookie(OWNER_COOKIE) || uid()) : (getCookie(OWNER_COOKIE) || uid());
+            if (!isExisting) setCookie(OWNER_COOKIE, ownerToken);
+
+            const canChangeKey = !state.doc || isOwner();
+            const effectiveKeyMode = canChangeKey ? d.keyMode : (state.doc?.keyMode || "key");
+            const effectiveKey = canChangeKey ? (d.keyMode === "open" ? "" : d.key) : (state.doc?.key || "");
+            const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
+            const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
+
+            const usedPics = collectPictureTokensFromMany(d.rawText, subtitle, ...Object.keys(state.draftPictures || {}));
+            const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
 
             const payload = {
               title: finalTitle,
@@ -3491,7 +3419,7 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              pictureEntriesText: encodePictures(uploadedPictures),
+              pictures: prunedPictures,
               comments: existingComments
             };
 
@@ -3506,7 +3434,7 @@
 
             state.docId = newId;
             state.doc = { ...normalizeDoc(newId, payload), comments: sortComments(existingComments) };
-            state.draftPictures = { ...uploadedPictures };
+            state.draftPictures = { ...prunedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -4512,10 +4440,6 @@
         if (keep.has(String(k))) out[String(k)] = v;
       }
       return out;
-    }
-
-    function getPictureTokensFromAll(...texts){
-      return collectPictureTokensFromMany(...texts);
     }
 
     window.addEventListener("hashchange", loadRoute);
