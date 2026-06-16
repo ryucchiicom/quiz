@@ -221,8 +221,12 @@
       scrollbar-gutter:stable;
     }
 
-    .editorMirror .memoText{ color:#98a0af; }
-    body.dark .editorMirror .memoText{ color:#7e8798; }
+    .editorMirror .memoText{
+      color:#98a0af;
+    }
+    body.dark .editorMirror .memoText{
+      color:#7e8798;
+    }
 
     .textarea{
       position:relative;
@@ -1102,7 +1106,6 @@
       getDocs,
       setDoc,
       deleteDoc,
-      deleteField,
       collection
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -1122,6 +1125,7 @@
     const root = document.getElementById("app");
     const tutorialLayer = document.getElementById("tutorialLayer");
     const partnerLayer = document.getElementById("partnerLayer");
+    if (!root) throw new Error("Missing #app");
 
     const COLLECTION = "quizzes";
     const OWNER_COOKIE = "qb_owner_token";
@@ -1134,9 +1138,9 @@
     const PARTNER_LINK_LOCAL_KEY = "qb_partner_link";
     const SETTINGS_COLLECTION = "siteSettings";
     const SETTINGS_DOC_ID = "main";
-    const LOCAL_GUTTER_KEY = "qb_editor_gutter_mode";
-    const DRAFT_PICTURE_CACHE_ID = "__draft__";
     const TAGS = ["random", "choice", "random choice", "number", "open", "same"];
+    const LOCAL_GUTTER_KEY = "qb_editor_gutter_mode";
+
     const CONTROL_LABELS = { random: "問題順ランダム" };
     const CONTROL_HINTS = { random: "問題の順番をランダムにする" };
 
@@ -1157,7 +1161,7 @@
       editorGutterMode: localStorage.getItem(LOCAL_GUTTER_KEY) || "line",
       commentDraft: { name: "", text: "", isPrivate: false, replyTo: "", scoreWanted: false },
       partnerLink: safeLocalGet(PARTNER_LINK_LOCAL_KEY) || "",
-      refreshFlash: { home: false, comments: false },
+      refreshFlash: { home: false },
       pictureChoice: "",
       quiz: {
         phase: "question",
@@ -1224,11 +1228,25 @@
     }
 
     function norm(s){
-      return String(s ?? "").replace(/\u3000/g, " ").trim().replace(/\s+/g, " ").toLowerCase();
+      return String(s ?? "")
+        .replace(/\u3000/g, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
     }
 
     function splitSearchTerms(q){
-      return String(q ?? "").trim().split(/[\s\u3000]+/).map(v => v.trim()).filter(Boolean);
+      return String(q ?? "")
+        .trim()
+        .split(/[\s\u3000]+/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function normalizeOnOffTarget(raw){
+      const t = String(raw ?? "").trim().toLowerCase();
+      if (t === "random") return t;
+      return null;
     }
 
     function stripMemoSegments(text){
@@ -1256,11 +1274,13 @@
       let html = "";
       let memo = false;
       let buf = "";
+
       const flush = () => {
         if (!buf) return;
         html += memo ? `<span class="memoText">${esc(buf)}</span>` : esc(buf);
         buf = "";
       };
+
       for (let i = 0; i < s.length; i++){
         const ch = s[i];
         if (ch === "\n"){
@@ -1283,11 +1303,12 @@
 
     function splitRespectingQuotes(text, separators){
       const s = String(text ?? "");
-      const seps = [...separators].sort((a, b) => b.length - a.length);
+      const seps = [...separators].sort((a,b)=>b.length-a.length);
       const out = [];
       let buf = "";
       let inQuotes = false;
-      for (let i = 0; i < s.length;){
+
+      for (let i = 0; i < s.length; ){
         const ch = s[i];
         if (ch === '"'){
           inQuotes = !inQuotes;
@@ -1374,7 +1395,9 @@
       let token = base;
       let i = 1;
       const set = new Set(existing || []);
-      while (set.has(token)) token = `${base}-${i++}`;
+      while (set.has(token)){
+        token = `${base}-${i++}`;
+      }
       return token;
     }
 
@@ -1406,47 +1429,8 @@
       return out;
     }
 
-    function pictureCacheKey(docId){
-      return `qb_picture_cache_${String(docId || DRAFT_PICTURE_CACHE_ID)}`;
-    }
-
-    function loadPictureCache(docId){
-      try{
-        const raw = safeLocalGet(pictureCacheKey(docId));
-        const obj = raw ? JSON.parse(raw) : {};
-        return normalizePictures(obj);
-      }catch{
-        return {};
-      }
-    }
-
-    function savePictureCache(docId, map){
-      try{
-        safeLocalSet(pictureCacheKey(docId), JSON.stringify(normalizePictures(map || {})));
-      }catch(err){
-        console.error(err);
-      }
-    }
-
-    function clearPictureCache(docId){
-      try{
-        localStorage.removeItem(pictureCacheKey(docId));
-      }catch{}
-    }
-
-    function hydratePictureCacheFromDoc(docId, docData){
-      const legacy = normalizePictures(docData?.pictures || decodePictures(docData?.pictureEntriesText) || {});
-      const local = loadPictureCache(docId);
-      const merged = { ...legacy, ...local };
-      if (Object.keys(merged).length) savePictureCache(docId, merged);
-      return merged;
-    }
-
     function getPictureMap(){
-      if (state.screen === "editor"){
-        return normalizePictures({ ...loadPictureCache(state.docId || DRAFT_PICTURE_CACHE_ID), ...(state.draftPictures || {}), ...(state.doc?.pictures || {}) });
-      }
-      return normalizePictures({ ...loadPictureCache(state.docId || DRAFT_PICTURE_CACHE_ID), ...(state.doc?.pictures || {}) });
+      return normalizePictures(state.doc?.pictures || state.draftPictures || {});
     }
 
     function renderRichText(text, { allowColor = true, pictureMap = {} } = {}){
@@ -1456,6 +1440,7 @@
       let out = "";
       let color = null;
       let buf = "";
+
       const flush = () => {
         if (!buf) return;
         const safe = esc(buf);
@@ -1463,7 +1448,7 @@
         buf = "";
       };
 
-      for (let i = 0; i < s.length;){
+      for (let i = 0; i < s.length; ){
         if (allowColor){
           const m = s.slice(i).match(/^\[color\((#[0-9a-fA-F]{3,8})\)\]/);
           if (m){
@@ -1479,8 +1464,11 @@
           flush();
           const n = pm[1];
           const src = pictureMap[String(n)];
-          if (src) out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
-          else out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          if (src){
+            out += `<img class="inlinePicture" src="${esc(src)}" alt="picture ${esc(n)}">`;
+          }else{
+            out += `<span class="pictureMissing">[picture(${esc(n)})]</span>`;
+          }
           i += pm[0].length;
           continue;
         }
@@ -1528,7 +1516,7 @@
         const after = rest.slice(tagMatch[0].length).trimStart();
 
         if (tokenLower.startsWith("onoroff:")){
-          const target = tokenLower.slice("onoroff:".length).trim();
+          const target = normalizeOnOffTarget(tokenLower.slice("onoroff:".length));
           if (target) onOffControls.push(target);
           rest = after;
           continue;
@@ -1578,7 +1566,7 @@
 
     function findFirstUnquoted(text, targets){
       const s = String(text ?? "");
-      const t = [...targets].sort((a, b) => b.length - a.length);
+      const t = [...targets].sort((a,b)=>b.length-a.length);
       let inQuotes = false;
       for (let i = 0; i < s.length; i++){
         const ch = s[i];
@@ -1731,7 +1719,10 @@
         return {
           ...item,
           options: Array.isArray(item.options)
-            ? item.options.map(o => ({ text: String(o?.text || ""), correct: !!o?.correct })).filter(o => o.text)
+            ? item.options.map(o => ({
+                text: String(o?.text || ""),
+                correct: !!o?.correct
+              })).filter(o => o.text)
             : [],
           randomChoice: !!item.randomChoice,
           localTags: Array.isArray(item.localTags) ? item.localTags.map(String) : [],
@@ -2044,7 +2035,7 @@
       state.docId = "";
       state.accessMode = "none";
       state.draft = blankDraft();
-      state.draftPictures = loadPictureCache(DRAFT_PICTURE_CACHE_ID);
+      state.draftPictures = {};
       state.pictureChoice = "";
       state.showComments = false;
       state.screen = "editor";
@@ -2059,7 +2050,7 @@
         keyMode: state.doc?.keyMode || "key",
         key: state.doc?.key || ""
       };
-      state.draftPictures = hydratePictureCacheFromDoc(state.docId, state.doc || {});
+      state.draftPictures = { ...(state.doc?.pictures || {}) };
       state.pictureChoice = collectPictureTokensFromMany(state.draft.rawText, state.draft.subtitle, ...Object.keys(state.draftPictures))[0] || "";
       state.screen = "editor";
       render();
@@ -2144,8 +2135,6 @@
       applyOnOffDefaultsToQuiz();
       state.quiz.pendingOrder = orderIndices || null;
       state.quiz.pendingOnlyWrong = !!onlyWrong;
-
-      state.doc.pictures = hydratePictureCacheFromDoc(id, docData);
 
       if (state.quiz.onOffControls.length){
         state.quiz.phase = "settings";
@@ -2410,7 +2399,7 @@
           el.src = url;
         });
 
-        const maxSide = 900;
+        const maxSide = 1400;
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
         const scale = Math.min(1, maxSide / Math.max(w, h));
@@ -2425,7 +2414,7 @@
         ctx.drawImage(img, 0, 0, cw, ch);
 
         try{
-          const webp = canvas.toDataURL("image/webp", 0.62);
+          const webp = canvas.toDataURL("image/webp", 0.75);
           if (webp.startsWith("data:image/webp")) return webp;
         }catch{}
 
@@ -2473,7 +2462,7 @@
 
       if (result){
         state.draftPictures[String(token)] = result;
-        savePictureCache(state.docId || DRAFT_PICTURE_CACHE_ID, state.draftPictures);
+        safeLocalSet(`qb_pic_draft_${state.docId || "new"}`, JSON.stringify(state.draftPictures));
       }
     }
 
@@ -2481,22 +2470,11 @@
       return !!(docData?.globalFlags?.open || docData?.keyMode === "open");
     }
 
-    function removePictureFieldsForFirestore(){
-      return {
-        pictures: deleteField(),
-        pictureEntriesText: deleteField()
-      };
-    }
-
     async function persistComments(nextComments){
       if (!state.docId) return;
       const sorted = sortComments(nextComments);
       const updatedAt = Date.now();
-      await setDoc(doc(db, COLLECTION, state.docId), {
-        comments: sorted,
-        updatedAt,
-        ...removePictureFieldsForFirestore()
-      }, { merge: true });
+      await setDoc(doc(db, COLLECTION, state.docId), { comments: sorted, updatedAt }, { merge: true });
       state.doc.comments = sorted;
       state.doc.updatedAt = updatedAt;
       if (state.accessMode === "owner"){
@@ -2547,17 +2525,17 @@
       }catch(err){
         console.error(err);
         alert(`更新で失敗したよ: ${err?.message || err}`);
-      }finally{
-        state.showComments = keepCommentsVisible ? currentShowComments : state.showComments;
       }
     }
 
     function openDeleteConfirmThenDelete(){
       if (!state.docId) return;
+
       const title = state.doc?.title || state.draft?.title || "";
       const typed = prompt(`削除するには、タイトル「${title}」をそのまま入力してね`, "");
       if (typed === null) return;
       if (typed.trim() !== title.trim()) return alert("タイトルが違うから削除をやめたよ");
+
       if (!confirm(`本当に「${title}」を削除する？\nこの操作は戻せないよ。`)) return;
 
       const btn = document.getElementById("deleteBtn");
@@ -2568,8 +2546,6 @@
           await deleteDoc(doc(db, COLLECTION, state.docId));
           removeMyMeta(state.docId);
           removeAccessRecord(state.docId);
-          clearPictureCache(state.docId);
-          clearPictureCache(DRAFT_PICTURE_CACHE_ID);
           state.allDocs = state.allDocs.filter(d => d.id !== state.docId);
           state.docId = "";
           state.doc = null;
@@ -2746,7 +2722,7 @@
     const helpButtonHtml = () => `<button class="ghost miniAction" id="helpBtn" type="button">説明を読む</button><button class="ghost miniAction" id="partnerBtn" type="button">パートナー</button>`;
     const homeButtonsHtml = () => helpButtonHtml();
 
-    function editorActionHtml(){
+    const editorActionHtml = () => {
       const buttons = [];
       if (state.doc){
         if (state.accessMode === "owner") buttons.push(`<button class="danger" id="deleteBtn" type="button">削除</button>`);
@@ -2754,7 +2730,7 @@
       }
       buttons.push(`<button class="primary" id="saveBtn" type="button">保存</button>`);
       return buttons.join("");
-    }
+    };
 
     async function ensureUniqueTitleAndId(baseTitle, currentId = ""){
       let candidateTitle = baseTitle.trim();
@@ -2812,7 +2788,7 @@
         slug: data.slug || id,
         createdAt: data.createdAt || null,
         updatedAt: data.updatedAt || null,
-        pictures: normalizePictures(data.pictures || decodePictures(data.pictureEntriesText)),
+        pictures: decodePictures(data.pictureEntriesText),
         comments: sortComments(Array.isArray(data.comments) ? data.comments : [])
       };
     }
@@ -2824,7 +2800,7 @@
         if (item.section) parts.push(stripMemoSegments(item.section));
         parts.push(stripMemoSegments(item.question || ""));
         if (item.mode === "choice") parts.push((item.options || []).map(o => stripMemoSegments(o.text)).join(" "));
-        else{
+        else {
           const answerText = Array.isArray(item.answerGroups) && item.answerGroups.length
             ? item.answerGroups.map(group => group.join(" ")).join(" ")
             : (item.answers || []).join(" ");
@@ -3023,6 +2999,7 @@
       const ordered = order.map(id => docs.find(d => d.id === id)).filter(Boolean);
       const visible = ordered.slice(0, state.homeVisibleCount.public);
       const hasMore = ordered.length > visible.length;
+      const refreshIcon = state.refreshFlash.home ? "✓" : "↻";
       return `
         <div class="card">
           <div class="homeSectionTitle">オンライン公開クイズ</div>
@@ -3070,10 +3047,12 @@
         openPartnerModal();
         return;
       }
+
       if (!state.partnerLink){
         alert("パートナーリンクはまだ未設定だよ");
         return;
       }
+
       window.open(state.partnerLink, "_blank", "noopener,noreferrer");
     }
 
@@ -3211,26 +3190,12 @@
       return stripMemoSegments(String(text ?? ""));
     }
 
-    function renderEditorActionsAndStats(showStats){
-      return `
-        <div class="row" style="justify-content:space-between;align-items:center;">
-          <div id="editorInfo" class="note"></div>
-          <div class="row" style="justify-content:flex-end;align-items:center;">
-            ${showStats ? `<div class="note">行数: ${esc(state._editorLineCount || 0)} / 問題数: ${esc(state._editorQuestionCount || 0)}</div>` : ""}
-            ${editorActionHtml()}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPicturePanel(pictureTokens){
+    function renderPicturePanel(){
       const pictureMap = normalizePictures(state.draftPictures || {});
-      const allChoices = [...new Set([
-        ...pictureTokens,
-        ...Object.keys(pictureMap),
-        state.pictureChoice
-      ].filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "ja"));
+      const currentTokens = collectPictureTokensFromMany(state.draft?.rawText, state.draft?.subtitle, ...Object.keys(pictureMap));
+      const allChoices = [...new Set([...currentTokens, ...Object.keys(pictureMap), state.pictureChoice].filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), "ja"));
       const current = state.pictureChoice || allChoices[0] || "";
+      const currentSrc = pictureMap[current] || "";
       return `
         <div class="card" style="display:grid;gap:12px">
           <div class="row" style="justify-content:space-between;align-items:flex-end;">
@@ -3251,7 +3216,10 @@
               </div>
             </div>
           </div>
-          <div class="note">選んだ [picture(n)] を差し替えられるよ。表示用の画像プレビューは出さないようにしてある。</div>
+          <div class="note">
+            選んだ [picture(n)] を差し替えられるよ。使われていない画像は保存時に外れるよ。
+          </div>
+          ${currentSrc ? `<div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;"><img class="inlinePicture" src="${esc(currentSrc)}" alt="selected picture"></div>` : ""}
         </div>
       `;
     }
@@ -3273,15 +3241,6 @@
       clearResultEnterHandler();
       const d = state.draft || blankDraft();
       document.title = "作成 / 編集 | 問題作成サイト";
-
-      const parsedForStats = parseItems(d.rawText || "");
-      const lineCount = String(d.rawText || "").split(/\r?\n/).length;
-      const questionCount = parsedForStats.items.length;
-      state._editorLineCount = lineCount;
-      state._editorQuestionCount = questionCount;
-
-      const pictureTokens = collectPictureTokensFromMany(d.rawText, d.subtitle);
-      const showPicturePanel = pictureTokens.length > 0;
 
       root.innerHTML = `
         <div class="page">
@@ -3309,9 +3268,11 @@
               <input id="subInput" class="input" type="text" placeholder="サブタイトル" value="${esc(d.subtitle)}">
             </div>
 
-            ${renderEditorActionsAndStats(!showPicturePanel)}
+            <div class="row" style="justify-content:flex-end;align-items:center;">
+              ${editorActionHtml()}
+            </div>
 
-            ${showPicturePanel ? renderPicturePanel(pictureTokens) : ""}
+            ${renderPicturePanel()}
 
             <div>
               <div class="label">問題欄</div>
@@ -3369,7 +3330,10 @@
       const gutterModeSelect = document.getElementById("gutterModeSelect");
       const pictureSelect = document.getElementById("pictureSelect");
       const reuploadPictureBtn = document.getElementById("reuploadPictureBtn");
-      const editorInfo = document.getElementById("editorInfo");
+      const editorInfo = document.createElement("div");
+      editorInfo.className = "note";
+      editorInfo.id = "editorInfo";
+      document.querySelector(".page .card").appendChild(editorInfo);
 
       function refreshKeyStatus(){
         if (!state.doc){
@@ -3395,7 +3359,6 @@
       subInput.addEventListener("input", e => d.subtitle = e.target.value);
       problemText.addEventListener("input", e => {
         d.rawText = e.target.value;
-        state.draft = d;
         scheduleEditorSync(problemText, gutter, mirror);
       });
       problemText.addEventListener("scroll", () => scheduleEditorSync(problemText, gutter, mirror));
@@ -3420,7 +3383,7 @@
       if (reuploadPictureBtn){
         reuploadPictureBtn.addEventListener("click", async () => {
           const choice = String((pictureSelect && pictureSelect.value) || state.pictureChoice || "").trim();
-          if (!choice){
+          if (!choice) {
             const token = newPictureToken(collectPictureTokensFromMany(d.rawText, d.subtitle, ...Object.keys(state.draftPictures || {})));
             state.pictureChoice = token;
             await pickPictureAndStore(token);
@@ -3461,7 +3424,7 @@
 
           const rawHasText = !!String(d.rawText || "").replace(/\s+/g, "").trim();
           if (!items.length && !rawHasText) return alert("文字がひとつも読めなかったよ");
-          if (!items.length && rawHasText){
+          if (!items.length && rawHasText) {
             const ok = confirm("問題として読めたものがないけど、そのまま保存する？");
             if (!ok) return;
           }
@@ -3490,16 +3453,15 @@
           const existingCreatedAt = normalizeTs(state.doc?.createdAt) || Date.now();
           const existingComments = Array.isArray(state.doc?.comments) ? state.doc.comments : [];
 
-          const usedPics = getPictureTokensFromAll(d.rawText, subtitle);
-          const cacheSourceId = oldId || state.docId || DRAFT_PICTURE_CACHE_ID;
-          const pictureCache = prunePicturesMap(loadPictureCache(cacheSourceId), usedPics);
-          savePictureCache(newId, pictureCache);
-          if (cacheSourceId !== newId) clearPictureCache(cacheSourceId);
+          const usedPics = getPictureTokensFromAll(d.rawText, subtitle, ...Object.keys(state.draftPictures || {}));
+          const prunedPictures = prunePicturesMap(state.draftPictures || {}, usedPics);
 
           saveBtn.disabled = true;
           saveBtn.textContent = "保存中...";
 
           try{
+            const uploadedPictures = await asyncUploadPicturesForDoc(newId, prunedPictures);
+
             const payload = {
               title: finalTitle,
               subtitle,
@@ -3513,8 +3475,8 @@
               slug: newId,
               createdAt: existingCreatedAt,
               updatedAt: Date.now(),
-              comments: existingComments,
-              ...removePictureFieldsForFirestore()
+              pictureEntriesText: encodePictures(uploadedPictures),
+              comments: existingComments
             };
 
             await setDoc(doc(db, COLLECTION, newId), payload, { merge: true });
@@ -3524,12 +3486,11 @@
               removeMyMeta(oldId);
               removeAccessRecord(oldId);
               state.allDocs = state.allDocs.filter(x => x.id !== oldId);
-              clearPictureCache(oldId);
             }
 
             state.docId = newId;
-            state.doc = { ...normalizeDoc(newId, payload), comments: sortComments(existingComments), pictures: pictureCache };
-            state.draftPictures = { ...pictureCache };
+            state.doc = { ...normalizeDoc(newId, payload), comments: sortComments(existingComments) };
+            state.draftPictures = { ...uploadedPictures };
             d.title = finalTitle;
 
             const normalized = normalizeDoc(newId, payload);
@@ -3583,6 +3544,19 @@
       refreshKeyStatus();
       titleInput.focus();
       bindGlobalButtons();
+    }
+
+    function getPictureTokensFromAll(...texts){
+      return collectPictureTokensFromMany(...texts);
+    }
+
+    function prunePicturesMap(pictures, refs){
+      const out = {};
+      const keep = new Set(refs || []);
+      for (const [k, v] of Object.entries(normalizePictures(pictures || {}))){
+        if (keep.has(String(k))) out[String(k)] = v;
+      }
+      return out;
     }
 
     function renderSettings(){
@@ -3798,7 +3772,7 @@
             state.quiz.typedAnswers[i] = e.target.value;
           });
           input.addEventListener("keydown", e => {
-            if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)){
+            if (q.item.mode === "number" && e.key.length === 1 && !/^\d$/.test(e.key)) {
               e.preventDefault();
               return;
             }
@@ -3974,7 +3948,6 @@
             <div class="commentHeader">
               <div class="label" style="font-size:14px">コメント一覧</div>
               <div class="commentToggleRow">
-                <button class="ghost miniAction tinyIconBtn" id="commentsRefreshBtn" type="button" aria-label="更新">${state.refreshFlash.comments ? "✓" : "↻"}</button>
                 <span class="commentBadge">表示 ${visibleComments.length}</span>
                 ${hiddenCount > 0 ? `<span class="commentBadge">🫥 ${hiddenCount}</span>` : ""}
               </div>
@@ -4082,7 +4055,6 @@
         const commentText = document.getElementById("commentText");
         const commentPrivate = document.getElementById("commentPrivate");
         const postCommentBtn = document.getElementById("postCommentBtn");
-        const commentsRefreshBtn = document.getElementById("commentsRefreshBtn");
         const scoreSuggestBox = document.getElementById("scoreSuggestBox");
         const commentHost = document.querySelector(".commentInputHost");
         const cancelReplyBtn = document.getElementById("cancelReplyBtn");
@@ -4099,7 +4071,6 @@
         }
         if (commentPrivate) commentPrivate.addEventListener("change", e => { state.commentDraft.isPrivate = !!e.target.checked; });
         if (postCommentBtn) postCommentBtn.addEventListener("click", addComment);
-        if (commentsRefreshBtn) commentsRefreshBtn.addEventListener("click", () => refreshCurrentDoc({ keepCommentsVisible: true }));
         if (commentText && scoreSuggestBox && commentHost) setupCommentSuggestions(commentHost, commentText, scoreSuggestBox);
         if (cancelReplyBtn) cancelReplyBtn.addEventListener("click", () => { state.commentDraft.replyTo = ""; render(); });
 
@@ -4449,7 +4420,6 @@
         const data = snap.data() || {};
         state.docId = id;
         state.doc = normalizeDoc(id, data);
-        state.doc.pictures = hydratePictureCacheFromDoc(id, data);
         setAccessModeForDoc(state.doc, id);
 
         if (state.accessMode === "key" || state.accessMode === "owner" || state.accessMode === "open"){
@@ -4517,6 +4487,12 @@
       }
     }
 
+    if (systemDark){
+      const onThemeChange = () => { applySystemTheme(); render(); };
+      if (systemDark.addEventListener) systemDark.addEventListener("change", onThemeChange);
+      else if (systemDark.addListener) systemDark.addListener(onThemeChange);
+    }
+
     function shuffle(arr){
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--){
@@ -4524,12 +4500,6 @@
         [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
-    }
-
-    if (systemDark){
-      const onThemeChange = () => { applySystemTheme(); render(); };
-      if (systemDark.addEventListener) systemDark.addEventListener("change", onThemeChange);
-      else if (systemDark.addListener) systemDark.addListener(onThemeChange);
     }
 
     window.addEventListener("hashchange", loadRoute);
